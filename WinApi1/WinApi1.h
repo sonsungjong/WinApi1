@@ -71,6 +71,7 @@ public:
     }
 
     HWND Window() const { return m_hWnd; }
+    HINSTANCE m_hInst = NULL;
 
 protected:
     virtual PCTSTR  ClassName() const = 0;
@@ -84,6 +85,7 @@ class MainWindow : public BaseWindow<MainWindow>
     void OnCreate();
     void OnPaint();
     void OnDestroy();
+    void OnCommand(WPARAM wParam);
 
 public:
     explicit MainWindow();

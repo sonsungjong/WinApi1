@@ -6,6 +6,7 @@
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
 	MainWindow win;
+	win.m_hInst = hInstance;
 
 	if (!win.Create(L"WinApi1", WS_OVERLAPPEDWINDOW))
 	{
@@ -49,6 +50,9 @@ LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		OnDestroy();
 		break;
+	case WM_COMMAND:
+		OnCommand(wParam);
+		break;
 	}
 
 	return DefWindowProc(m_hWnd, msg, wParam, lParam);
@@ -71,4 +75,9 @@ void MainWindow::OnPaint()
 void MainWindow::OnDestroy()
 {
 	PostQuitMessage(0);
+}
+
+void MainWindow::OnCommand(WPARAM wParam)
+{
+	int wm_id = LOWORD(wParam);
 }
