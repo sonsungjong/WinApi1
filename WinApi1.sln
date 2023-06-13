@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DlgProcClass1", "DlgProcCla
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D2DOmok", "D2DOmok\D2DOmok.vcxproj", "{14077BF8-9AAB-4BE7-B478-29FAED37D74D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDCP", "WinDCP\WinDCP.vcxproj", "{429B1D54-8A04-41B2-A045-CFF8455CB83F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +43,14 @@ Global
 		{14077BF8-9AAB-4BE7-B478-29FAED37D74D}.Release|x64.Build.0 = Release|x64
 		{14077BF8-9AAB-4BE7-B478-29FAED37D74D}.Release|x86.ActiveCfg = Release|Win32
 		{14077BF8-9AAB-4BE7-B478-29FAED37D74D}.Release|x86.Build.0 = Release|Win32
+		{429B1D54-8A04-41B2-A045-CFF8455CB83F}.Debug|x64.ActiveCfg = Debug|x64
+		{429B1D54-8A04-41B2-A045-CFF8455CB83F}.Debug|x64.Build.0 = Debug|x64
+		{429B1D54-8A04-41B2-A045-CFF8455CB83F}.Debug|x86.ActiveCfg = Debug|Win32
+		{429B1D54-8A04-41B2-A045-CFF8455CB83F}.Debug|x86.Build.0 = Debug|Win32
+		{429B1D54-8A04-41B2-A045-CFF8455CB83F}.Release|x64.ActiveCfg = Release|x64
+		{429B1D54-8A04-41B2-A045-CFF8455CB83F}.Release|x64.Build.0 = Release|x64
+		{429B1D54-8A04-41B2-A045-CFF8455CB83F}.Release|x86.ActiveCfg = Release|Win32
+		{429B1D54-8A04-41B2-A045-CFF8455CB83F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
