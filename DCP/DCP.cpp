@@ -1,4 +1,8 @@
+// DCP.cpp : Defines the functions for the static library.
+//
+
 #include "framework.h"
+#include <windows.h>
 #include "DCP.h"
 
 #pragma comment(lib, "gdiplus.lib")
@@ -91,7 +95,7 @@ void DCP::CreateDCP(int a_width, int a_height)
 void DCP::Rectangle(int a_sx, int a_sy, int a_ex, int a_ey, Gdiplus::ARGB a_pen_color, Gdiplus::ARGB a_fill_color)
 {
 	// 사각형 내부색
-	if(a_fill_color != NULL) {
+	if (a_fill_color != NULL) {
 		m_temp_color.SetValue(a_fill_color);
 		((Gdiplus::SolidBrush*)mp_brush)->SetColor(m_temp_color);
 	}
@@ -160,7 +164,7 @@ void DCP::FillSolidEllipse(int a_sx, int a_sy, int a_ex, int a_ey, Gdiplus::ARGB
 		((Gdiplus::SolidBrush*)mp_brush)->SetColor(m_temp_color);
 	}
 	mp_graphic->FillEllipse(mp_brush, a_sx, a_sy, a_ex - a_sx, a_ey - a_sy);
-	
+
 }
 
 void DCP::DrawLine(int a_sx, int a_sy, int a_ex, int a_ey, Gdiplus::ARGB a_pen_color)
@@ -182,7 +186,7 @@ void DCP::MoveTo(int a_sx, int a_sy)
 
 void DCP::LineTo(int a_ex, int a_ey, Gdiplus::ARGB a_pen_color)
 {
-	if(a_pen_color != NULL) {
+	if (a_pen_color != NULL) {
 		m_temp_color.SetValue(a_pen_color);
 		mp_pen->SetColor(m_temp_color);
 	}
