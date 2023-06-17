@@ -27,9 +27,15 @@
     <ClInclude Include="MyThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DlgClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
