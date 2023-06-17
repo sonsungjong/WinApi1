@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DCP", "DCP\DCP.vcxproj", "{
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinApi2", "WinApi2\WinApi2.vcxproj", "{21CE6D81-DB88-4791-BE69-8BE398D626AE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DlgProcClass2", "DlgProcClass2\DlgProcClass2.vcxproj", "{54A56996-3071-4154-8350-39F2FD295C25}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -71,6 +73,14 @@ Global
 		{21CE6D81-DB88-4791-BE69-8BE398D626AE}.Release|x64.Build.0 = Release|x64
 		{21CE6D81-DB88-4791-BE69-8BE398D626AE}.Release|x86.ActiveCfg = Release|Win32
 		{21CE6D81-DB88-4791-BE69-8BE398D626AE}.Release|x86.Build.0 = Release|Win32
+		{54A56996-3071-4154-8350-39F2FD295C25}.Debug|x64.ActiveCfg = Debug|x64
+		{54A56996-3071-4154-8350-39F2FD295C25}.Debug|x64.Build.0 = Debug|x64
+		{54A56996-3071-4154-8350-39F2FD295C25}.Debug|x86.ActiveCfg = Debug|Win32
+		{54A56996-3071-4154-8350-39F2FD295C25}.Debug|x86.Build.0 = Debug|Win32
+		{54A56996-3071-4154-8350-39F2FD295C25}.Release|x64.ActiveCfg = Release|x64
+		{54A56996-3071-4154-8350-39F2FD295C25}.Release|x64.Build.0 = Release|x64
+		{54A56996-3071-4154-8350-39F2FD295C25}.Release|x86.ActiveCfg = Release|Win32
+		{54A56996-3071-4154-8350-39F2FD295C25}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

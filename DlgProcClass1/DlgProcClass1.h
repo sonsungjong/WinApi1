@@ -5,8 +5,11 @@
 class DlgClass
 {
 public:
-	explicit DlgClass();
-	virtual ~DlgClass();
+	DlgClass() : m_hWnd(NULL) {}
+	~DlgClass() {}
+
+	static LRESULT CALLBACK DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	LRESULT CALLBACK HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	void OnCommand(int id);
 	void OnPaint();
@@ -14,7 +17,9 @@ public:
 	void OnInitialDialog();
 
 	HWND m_hWnd;
-	HINSTANCE m_hInst;
+	HFONT m_font;
+	HDC m_hdc;
+
 private:
 
 };

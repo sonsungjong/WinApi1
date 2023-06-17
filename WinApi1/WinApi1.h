@@ -82,15 +82,15 @@ protected:
 
 class MainWindow : public BaseWindow<MainWindow>
 {
-    void OnCreate();
-    void OnPaint();
-    void OnDestroy();
-    void OnCommand(WPARAM wParam);
 
 public:
     explicit MainWindow();
     virtual ~MainWindow();
 
+    void OnCreate();
+    void OnPaint();
+    void OnDestroy();
+    void OnCommand(WPARAM wParam);
     PCTSTR  ClassName() const { return _T("Window Class"); }
     LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 };

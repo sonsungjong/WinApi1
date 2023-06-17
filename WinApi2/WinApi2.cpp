@@ -1,90 +1,74 @@
 #include "framework.h"
 #include "WinApi2.h"
 
-class WinApp {
-public:
-    WinApp(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow);
-    virtual ~WinApp() {}
-    int run();
-    static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-    BOOL OnCreate(HWND ah_wnd, LPCREATESTRUCT lpCreateStruct) {
-        
-    }
-    void OnDestroy(HWND ah_wnd) {
-        PostQuitMessage(0);
-    }
-
-private:
-    LRESULT CALLBACK RunWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-    HINSTANCE m_hInst;
-    HINSTANCE hPrevInstance;
-    LPWSTR lpCmdLine;
-    int nCmdShow;
-
-    HWND m_hWnd;
-};
+int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPTSTR lpCmdLine, _In_ int nCmdShow)
+{
+    WinApp win(L"my_sample_class_name", hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+    
+    win.Create(L"타이틀 네임 123 !");
+    return 0;
+}
 
 // 생성자
-WinApp::WinApp(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
-    : m_hInst(hInstance), hPrevInstance(hPrevInstance), lpCmdLine(lpCmdLine), nCmdShow(nCmdShow), m_hWnd(NULL) {
-
-    WNDCLASSEX wcex;
-
-    wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.style = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc = WndProc;
-    wcex.cbClsExtra = 0;
-    wcex.cbWndExtra = 0;
-    wcex.hInstance = hInstance;
-    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
-    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszMenuName = nullptr;
-    wcex.lpszClassName = L"SampleWindowClass";
-    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
-    RegisterClassEx(&wcex);
-
-    hWnd = CreateWindowExW();
+WinApp::WinApp(const wchar_t* ap_class_name, HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
+{
+    m_hInst = hInstance;
+    m_class_name = ap_class_name;
+    m_cmd_show = nCmdShow;
 }
 
-LRESULT CALLBACK WinApp::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    WinApp* app;
-    if (msg == WM_NCCREATE) {
-        app = (WinApp*)(((CREATESTRUCT*)lParam)->lpCreateParams);
-        SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)(app));
-        app->m_hWnd = hWnd;
-    }
-    else {
-        app = (WinApp*)(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-    }
-
-    if (app) {
-        return app->RunWndProc(hWnd, msg, wParam, lParam);
-    }
-    else {
-        return DefWindowProc(hWnd, msg, wParam, lParam);
-    }
+WinApp::~WinApp()
+{
 }
 
-LRESULT WinApp::RunWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT WinApp::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
+        HANDLE_MSG(hWnd, WM_PAINT, OnPaint);
+        HANDLE_MSG(hWnd, WM_COMMAND, OnCommand);
         HANDLE_MSG(hWnd, WM_DESTROY, OnDestroy);
+        HANDLE_MSG(hWnd, WM_CREATE, OnCreate);
+        HANDLE_MSG(hWnd, WM_LBUTTONDOWN, OnLButtonDown);
     }
     return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
-int WinApp::run() {
-    // Normal WinMain code here...
-    // Instead of calling WinMain, you would instantiate the WinApp class and call its run method.
-    return 0;  // Return exit code.
+BOOL WinApp::OnCreate(HWND ah_wnd, LPCREATESTRUCT lpCreateStruct)
+{
+    BaseWindow::OnCreate(ah_wnd, lpCreateStruct);
+
+    m_button1 = CreateWindowW(L"Button", L"버튼 윈도우 생성", WS_CHILD | WS_VISIBLE | WS_BORDER, 100, 100, 200, 24, m_hWnd, (HMENU)IDC_BUTTON1, m_hInst, NULL);
+    m_edit1 = CreateWindowW(L"Edit", NULL, WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, 10, 95, 200, 30, m_hWnd, (HMENU)IDC_EDIT1, m_hInst, NULL);
+
+
+    return TRUE;
 }
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
+
+void WinApp::OnDestroy(HWND ah_wnd)
 {
-    WinApp app(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
-    return app.run();
+    PostQuitMessage(0);
+}
+
+void WinApp::OnCommand(HWND ah_wnd, int a_id, HWND ah_wnd_ctrl, UINT codeNotify)
+{
+    if (a_id == IDC_BUTTON1) {
+        wchar_t str_width[20] = { 0, };
+        wchar_t str_height[20] = { 0, };
+        swprintf_s(str_width, 19, L"가로크기 : %d", m_rect.right - m_rect.left);
+        swprintf_s(str_height, 19, L"세로크기 : %d", m_rect.bottom - m_rect.top);
+        MessageBox(m_hWnd, str_width, str_height, MB_OK);
+    }
+    else if (a_id == IDCANCEL) {
+        OnDestroy(m_hWnd);
+    }
+}
+
+void WinApp::OnPaint(HWND ah_wnd)
+{
+    PAINTSTRUCT ps;
+    HDC hdc = BeginPaint(m_hWnd, &ps);
+    FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+    EndPaint(m_hWnd, &ps);
 }
