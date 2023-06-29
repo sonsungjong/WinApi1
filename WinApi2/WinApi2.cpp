@@ -67,8 +67,14 @@ void WinApp::OnCommand(HWND ah_wnd, int a_id, HWND ah_wnd_ctrl, UINT codeNotify)
 
 void WinApp::OnPaint(HWND ah_wnd)
 {
-    PAINTSTRUCT ps;
     HDC hdc = BeginPaint(m_hWnd, &ps);
     FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
     EndPaint(m_hWnd, &ps);
+}
+
+void WinApp::OnLButtonDown(HWND ah_wnd, BOOL a_double_click, int a_x, int a_y, UINT a_key_flags)
+{
+    HDC hdc = GetDC(m_hWnd);
+    Rectangle(hdc, 500, 10, 700, 200);
+    ReleaseDC(m_hWnd, hdc);
 }

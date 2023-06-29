@@ -116,6 +116,7 @@ public:
     void OnDestroy(HWND ah_wnd);
     void OnCommand(HWND ah_wnd, int a_id, HWND ah_wnd_ctrl, UINT codeNotify);
     void OnPaint(HWND ah_wnd);
+    void OnLButtonDown(HWND ah_wnd, BOOL a_double_click, int a_x, int a_y, UINT a_key_flags);
     BOOL OnCreate(HWND ah_wnd, LPCREATESTRUCT lpCreateStruct);
 
     PCTSTR  ClassName() const { return m_class_name; }
@@ -128,4 +129,5 @@ private:
     int m_cmd_show;
     HWND m_button1;
     HWND m_edit1;
+    PAINTSTRUCT ps;
 };
