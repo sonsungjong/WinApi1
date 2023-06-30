@@ -43,7 +43,16 @@ void DlgClass::OnPaint(HWND hwnd)
 void DlgClass::OnLButtonDown(HWND ah_wnd, BOOL a_double_click, int a_x, int a_y, UINT a_key_flags)
 {
     hdc = GetDC(m_hWnd);
-    Ellipse(hdc, 10, 10, 120, 120);
+    if (a_key_flags & MK_SHIFT) {
+        Rectangle(hdc, a_x - 30, a_y - 30, a_x + 30, a_y + 30);
+    }
+    else if (a_key_flags & MK_CONTROL) {
+        Ellipse(hdc, a_x - 30, a_y - 30, a_x + 30, a_y + 30);
+    }
+    else {
+        RoundRect(hdc, a_x - 30, a_y - 30, a_x + 30, a_y + 30, 10, 10);
+        // °¡·Î µÕ±Û°Ô 10, ¼¼·Î µÕ±Û°Ô 10
+    }
     ReleaseDC(m_hWnd, hdc);
 }
 
