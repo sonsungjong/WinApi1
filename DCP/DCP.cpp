@@ -1,8 +1,4 @@
-// DCP.cpp : Defines the functions for the static library.
-//
-
 #include "framework.h"
-#include <windows.h>
 #include "DCP.h"
 
 #pragma comment(lib, "gdiplus.lib")
