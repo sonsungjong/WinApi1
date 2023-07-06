@@ -7,7 +7,7 @@ template<class DERIVED_TYPE>
 class BaseWindow
 {
 public:
-    static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+    static INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         DERIVED_TYPE* pThis = NULL;
 
@@ -75,7 +75,7 @@ public:
 
 protected:
     virtual PCTSTR  ClassName() const = 0;
-    virtual LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) = 0;
+    virtual INT_PTR HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) = 0;
 
     HWND m_hWnd = NULL;
 };
@@ -92,7 +92,7 @@ public:
     void OnDestroy();
     void OnCommand(WPARAM wParam);
     PCTSTR  ClassName() const { return _T("Window Class"); }
-    LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
+    INT_PTR HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 };
 
 #endif

@@ -46,7 +46,7 @@ void DlgClass::OnInitialDialog()
     SetWindowPos(m_hWnd, HWND_TOP, 100, 100, 475, 500, NULL);
 }
 
-LRESULT DlgClass::DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR DlgClass::DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static DlgClass* dlg;
 	if (msg == WM_INITDIALOG) {
@@ -59,7 +59,7 @@ LRESULT DlgClass::DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 
 	if (dlg) {
-		LRESULT result = dlg->HandleMessage(hWnd, msg, wParam, lParam);
+        INT_PTR result = dlg->HandleMessage(hWnd, msg, wParam, lParam);
 
 		if (msg == WM_DESTROY) {
 			delete dlg;
@@ -71,7 +71,7 @@ LRESULT DlgClass::DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 }
 
-LRESULT DlgClass::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR DlgClass::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
@@ -79,15 +79,15 @@ LRESULT DlgClass::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     {
         OnPaint();
     }
-    return (LRESULT)TRUE;
+    return (INT_PTR)TRUE;
     case WM_COMMAND:
     {
         OnCommand(LOWORD(wParam));
     }
-    return (LRESULT)TRUE;
+    return (INT_PTR)TRUE;
     case WM_INITDIALOG:
         OnInitialDialog();
-        return (LRESULT)TRUE;
+        return (INT_PTR)TRUE;
     case WM_DESTROY:
         OnDestroy();
         break;
@@ -95,5 +95,5 @@ LRESULT DlgClass::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         DestroyWindow(hWnd);
         break;
     }
-    return (LRESULT)FALSE;
+    return (INT_PTR)FALSE;
 }

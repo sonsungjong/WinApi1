@@ -2,7 +2,7 @@
 #include "DlgClass.h"
 #include "MyThread103.h"
 
-LRESULT DlgClass::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR DlgClass::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
@@ -13,10 +13,10 @@ LRESULT DlgClass::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     
     case WM_INITDIALOG:
         OnInitialDialog();
-        return (LRESULT)TRUE;
+        return (INT_PTR)TRUE;
 
     }
-    return (LRESULT)FALSE;
+    return (INT_PTR)FALSE;
 }
 
 void DlgClass::OnCommand(HWND ah_wnd, int id, HWND ah_wnd_ctrl, UINT codeNotify)

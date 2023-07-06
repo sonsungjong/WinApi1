@@ -5,7 +5,7 @@ public:
     DlgClass() : m_hWnd(NULL) {}
     ~DlgClass() {}
 
-    static LRESULT CALLBACK DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+    static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         DlgClass* dlg;
         if (msg == WM_INITDIALOG) {
@@ -18,7 +18,7 @@ public:
         }
 
         if (dlg) {
-            LRESULT result = dlg->HandleMessage(hWnd, msg, wParam, lParam);
+            INT_PTR result = dlg->HandleMessage(hWnd, msg, wParam, lParam);
 
             if (msg == WM_NCDESTROY) {
                 delete dlg;
@@ -32,7 +32,7 @@ public:
         }
     }
 
-    LRESULT CALLBACK HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    INT_PTR CALLBACK HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
     void OnCommand(HWND ah_wnd, int id, HWND ah_wnd_ctrl, UINT codeNotify);
     void OnPaint(HWND hwnd);

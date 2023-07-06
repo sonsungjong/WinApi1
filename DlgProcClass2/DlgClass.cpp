@@ -1,7 +1,7 @@
 #include "framework.h"
 #include "DlgClass.h"
 
-LRESULT DlgClass::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR DlgClass::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
@@ -9,15 +9,15 @@ LRESULT DlgClass::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     {
         OnPaint();
     }
-    return (LRESULT)TRUE;
+    return (INT_PTR)TRUE;
     case WM_COMMAND:
     {
         OnCommand(LOWORD(wParam));
     }
-    return (LRESULT)TRUE;
+    return (INT_PTR)TRUE;
     case WM_INITDIALOG:
         OnInitialDialog();
-        return (LRESULT)TRUE;
+        return (INT_PTR)TRUE;
     case WM_DESTROY:
         OnDestroy();
         break;
@@ -25,7 +25,7 @@ LRESULT DlgClass::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         DestroyWindow(hWnd);
         break;
     }
-    return (LRESULT)FALSE;
+    return (INT_PTR)FALSE;
 }
 
 void DlgClass::OnPaint()

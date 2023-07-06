@@ -1,8 +1,8 @@
 #include "framework.h"
-#include "MyThread106.h"
+#include "MyThread107.h"
 #include "DlgClass.h"
 
-DlgClass::DlgClass() : m_hWnd(NULL), m_hdc(NULL), m_data_list(NULL)
+DlgClass::DlgClass() : m_hWnd(NULL), m_hdc(NULL)
 {
 	ps = { 0, };
 }
@@ -22,10 +22,11 @@ INT_PTR CALLBACK DlgClass::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
 
 void DlgClass::OnCommand(HWND hwnd, int id, HWND wnd_ctrl, UINT codeNotify)
 {
-	if (id == IDC_ADD_BTN) {
-		ClickAddBtn();
+	if (id >= IDC_BUTTON1 && id <= IDC_BUTTON3) {
+		SetDlgItemInt(m_hWnd, IDC_MSG_EDIT, id - IDC_BUTTON1 + 1, 1);
 	}
 }
+
 void DlgClass::OnPaint(HWND hwnd)
 {
 	m_hdc = BeginPaint(hwnd, &ps);
@@ -42,19 +43,8 @@ void DlgClass::OnClose(HWND hwnd)
 }
 BOOL DlgClass::OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 {
-	m_data_list = GetDlgItem(m_hWnd, IDC_DATA_LIST);
+
 
 	return TRUE;
 }
 
-void DlgClass::ClickAddBtn()
-{
-	TCHAR str[128] = { 0, };
-	GetDlgItemText(m_hWnd, IDC_MSG_EDIT, str, 128);
-
-	// SendMessage(m_data_list, LB_ADDSTRING, 0, (LPARAM)str);
-	int index = (int)SendMessage(m_data_list, LB_INSERTSTRING, -1, (LPARAM)str);
-	SendMessage(m_data_list, LB_SETCURSEL, index, NULL);
-
-	SetDlgItemText(m_hWnd, IDC_MSG_EDIT, _T(""));
-}

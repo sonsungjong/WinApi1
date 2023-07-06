@@ -42,7 +42,7 @@ MainWindow::~MainWindow()
 {
 }
 
-LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{

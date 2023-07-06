@@ -7,7 +7,7 @@ DlgClass::DlgClass() : m_hWnd(NULL), m_hdc(NULL)
 	ps = { 0, };
 }
 
-LRESULT CALLBACK DlgClass::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgClass::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -27,7 +27,7 @@ LRESULT CALLBACK DlgClass::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		OnDestroy(m_hWnd);
 		break;
 	}
-	return (LRESULT)FALSE;
+	return (INT_PTR)FALSE;
 }
 
 void DlgClass::OnCommand(HWND ah_wnd, int id, HWND ah_wnd_ctrl, UINT codeNotify)

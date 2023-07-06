@@ -41,8 +41,7 @@ public:
 	void OnClose(HWND hwnd);
 	BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam);
 
-	void ClickAddBtn();
-	HWND m_data_list;
+
 
 	HWND m_hWnd;
 	HDC m_hdc;

@@ -4,7 +4,7 @@
 
 class BaseWindow {
 public:
-    static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+    static INT_PTR CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         BaseWindow* app = NULL;
 
@@ -102,7 +102,7 @@ public:
 protected:
     virtual PCTSTR  ClassName() const = 0;
     virtual int CmdShow() const = 0;
-    virtual LRESULT HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) = 0;
+    virtual INT_PTR HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) = 0;
 
 
 };
@@ -121,7 +121,7 @@ public:
 
     PCTSTR  ClassName() const { return m_class_name; }
     int CmdShow() const {return m_cmd_show;}
-    LRESULT HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    INT_PTR HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
 private:

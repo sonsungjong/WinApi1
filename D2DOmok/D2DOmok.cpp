@@ -36,7 +36,7 @@ ID2D1Factory* gp_factory;
 // D2D 클라이언트에 그림을 그리는 객체
 ID2D1HwndRenderTarget* gp_render_target;
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
