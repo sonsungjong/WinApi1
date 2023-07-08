@@ -45,7 +45,7 @@ public:
 	void PushClear();
 	void PushBack();
 	void PushOperation(int id);
-
+	void PushEqual();
 
 	HWND m_hWnd;
 	HDC m_hdc;
