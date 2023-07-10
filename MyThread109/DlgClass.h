@@ -41,12 +41,18 @@ public:
 	void OnDestroy(HWND hwnd);
 	void OnClose(HWND hwnd);
 	BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam);
+	BOOL OnNotify(int ctrl_id, NMHDR* pnmh);
 
 	HWND m_hWnd;
 	HDC m_hdc;
 
+	void PushAddBtn();
+	void PushModifyBtn();
+
 protected:
 	PAINTSTRUCT ps;
+
+	HWND m_list_ctrl;
 
 };
 
