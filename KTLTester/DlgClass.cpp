@@ -94,12 +94,18 @@ void DlgClass::OnCommand(int id)
             std::wstring lstr = L"작업이 진행 중이에요. 잠시만 기다려주세요. [" + std::to_wstring(dbValue1) + L"/" + std::to_wstring(dbValue2) + L"]";
             SetDlgItemText(m_hWnd, IDC_TEXT1, lstr.c_str());
 
+            // 라이브러리 동작 (선택 파일 경로 추가 필요)
+            //double result = runAcceleration("", dbValue1, dbValue2, 0.0, 0.0);
             double result = runAcceleration(dbValue1, dbValue2, 0.0, 0.0);
+
             double* pResult = new double(result);
             PostMessage(m_hWnd, WM_USER + 1, 0, reinterpret_cast<LPARAM>(pResult));
 
             //MessageBox(GetActiveWindow(), lstr.c_str(), L"결과", MB_OK);
         }
+    }
+    else if (id == IDC_BUTTON_SELECT_FILE) {
+        operateButtonSelectFile();
     }
 }
 
@@ -118,4 +124,12 @@ void DlgClass::OnInitialDialog()
 
     SetWindowPos(m_hWnd, HWND_TOP, posX, posY, windowWidth, windowHeight, SWP_NOZORDER | SWP_NOSIZE);
     SetDlgItemText(m_hWnd, IDC_TEXT1, L"가속계수 입력 예시값 : 333.15 / 90.0");
+
+    SetDlgItemText(m_hWnd, IDC_EDIT_FILE_PATH, L"");
+}
+
+void DlgClass::operateButtonSelectFile()
+{
+    // 파일 선택 다이얼로그를 열어서 해당 문자열을 경로에 저장
+    MessageBox(GetActiveWindow(), L"파일 선택 버튼", L"버튼", MB_OK);
 }

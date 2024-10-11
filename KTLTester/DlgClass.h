@@ -38,9 +38,10 @@ public:
     void OnPaint();
     void OnDestroy();
     void OnInitialDialog();
+    void operateButtonSelectFile();
 
     HWND m_hWnd;
 
 private:
-
+    
 };
