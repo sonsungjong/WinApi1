@@ -2,8 +2,12 @@
 class DlgClass
 {
 public:
-    DlgClass() : m_hWnd(NULL) {}
-    ~DlgClass() {}
+    DlgClass();
+    ~DlgClass();
+    DlgClass(const DlgClass& other);
+    DlgClass& operator=(const DlgClass& other);
+    DlgClass(DlgClass&& other) noexcept;
+    DlgClass& operator=(DlgClass&& other) noexcept;
 
     static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
@@ -43,5 +47,5 @@ public:
     HWND m_hWnd;
 
 private:
-    
+    std::string m_strFileFullPath;
 };

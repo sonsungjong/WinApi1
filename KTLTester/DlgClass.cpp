@@ -32,11 +32,12 @@ INT_PTR DlgClass::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         std::wstring lstr = L"작업이 완료되었습니다. 가속계수: " + std::to_wstring(result);
 
         // 버튼을 다시 활성화
-        SetDlgItemText(m_hWnd, IDC_TEXT1, lstr.c_str());
+        SetDlgItemText(m_hWnd, IDC_TEXT_HEADER, lstr.c_str());
         EnableWindow(GetDlgItem(m_hWnd, IDOK), TRUE);
         EnableWindow(GetDlgItem(m_hWnd, IDCANCEL), TRUE);
-        EnableWindow(GetDlgItem(m_hWnd, IDC_EDIT1), TRUE);
-        EnableWindow(GetDlgItem(m_hWnd, IDC_EDIT2), TRUE);
+        EnableWindow(GetDlgItem(m_hWnd, IDC_EDIT_TEMPERATURE), TRUE);
+        EnableWindow(GetDlgItem(m_hWnd, IDC_EDIT_HUMIDITY), TRUE);
+        EnableWindow(GetDlgItem(m_hWnd, IDC_BUTTON_SELECT_FILE), TRUE);
         MessageBox(GetActiveWindow(), lstr.c_str(), L"가속계수산출 결과", MB_OK);
         
         break;
@@ -65,8 +66,9 @@ void DlgClass::OnCommand(int id)
     {
         //EndDialog(m_hWnd, id);
         // EditControl을 비운다
-        SetWindowText(GetDlgItem(m_hWnd, IDC_EDIT1), _T(""));
-        SetWindowText(GetDlgItem(m_hWnd, IDC_EDIT2), _T(""));
+        SetWindowText(GetDlgItem(m_hWnd, IDC_EDIT_TEMPERATURE), _T(""));
+        SetWindowText(GetDlgItem(m_hWnd, IDC_EDIT_HUMIDITY), _T(""));
+        SetWindowText(GetDlgItem(m_hWnd, IDC_EDIT_FILE_PATH), _T(""));
     }
     else if (id == IDOK) {
         //MessageBox(m_hWnd, _T("id"), _T("ok"), MB_OK);
@@ -76,8 +78,8 @@ void DlgClass::OnCommand(int id)
         TCHAR szEdit1[100], szEdit2[100];
         wchar_t* dump1 = NULL;
         wchar_t* dump2 = NULL;
-        GetWindowText(GetDlgItem(m_hWnd, IDC_EDIT1), szEdit1, 100);
-        GetWindowText(GetDlgItem(m_hWnd, IDC_EDIT2), szEdit2, 100);
+        GetWindowText(GetDlgItem(m_hWnd, IDC_EDIT_TEMPERATURE), szEdit1, 100);
+        GetWindowText(GetDlgItem(m_hWnd, IDC_EDIT_HUMIDITY), szEdit2, 100);
 
         double dbValue1 = wcstod(szEdit1, &dump1);
         double dbValue2 = wcstod(szEdit2, &dump2);
@@ -88,15 +90,15 @@ void DlgClass::OnCommand(int id)
         else {
             EnableWindow(GetDlgItem(m_hWnd, IDOK), FALSE);
             EnableWindow(GetDlgItem(m_hWnd, IDCANCEL), FALSE);
-            EnableWindow(GetDlgItem(m_hWnd, IDC_EDIT1), FALSE);
-            EnableWindow(GetDlgItem(m_hWnd, IDC_EDIT2), FALSE);
+            EnableWindow(GetDlgItem(m_hWnd, IDC_EDIT_TEMPERATURE), FALSE);
+            EnableWindow(GetDlgItem(m_hWnd, IDC_EDIT_HUMIDITY), FALSE);
+            EnableWindow(GetDlgItem(m_hWnd, IDC_BUTTON_SELECT_FILE), FALSE);
 
             std::wstring lstr = L"작업이 진행 중이에요. 잠시만 기다려주세요. [" + std::to_wstring(dbValue1) + L"/" + std::to_wstring(dbValue2) + L"]";
-            SetDlgItemText(m_hWnd, IDC_TEXT1, lstr.c_str());
+            SetDlgItemText(m_hWnd, IDC_TEXT_HEADER, lstr.c_str());
 
             // 라이브러리 동작 (선택 파일 경로 추가 필요)
-            //double result = runAcceleration("", dbValue1, dbValue2, 0.0, 0.0);
-            double result = runAcceleration(dbValue1, dbValue2, 0.0, 0.0);
+            double result = runAcceleration(m_strFileFullPath.c_str(), dbValue1, dbValue2);
 
             double* pResult = new double(result);
             PostMessage(m_hWnd, WM_USER + 1, 0, reinterpret_cast<LPARAM>(pResult));
@@ -123,13 +125,76 @@ void DlgClass::OnInitialDialog()
     int posY = (screenHeight - windowHeight) / 2;
 
     SetWindowPos(m_hWnd, HWND_TOP, posX, posY, windowWidth, windowHeight, SWP_NOZORDER | SWP_NOSIZE);
-    SetDlgItemText(m_hWnd, IDC_TEXT1, L"가속계수 입력 예시값 : 333.15 / 90.0");
+    SetDlgItemText(m_hWnd, IDC_TEXT_HEADER, L"가속계수 입력 예시값 : 333.15 / 90.0");
 
     SetDlgItemText(m_hWnd, IDC_EDIT_FILE_PATH, L"");
 }
 
+// 생성자
+DlgClass::DlgClass()
+    : m_hWnd(NULL)
+{
+    m_strFileFullPath.clear();
+}
+
+// 소멸자
+DlgClass::~DlgClass()
+{
+}
+
+// 복사 생성자
+DlgClass::DlgClass(const DlgClass& other)
+    : m_hWnd(other.m_hWnd), m_strFileFullPath(other.m_strFileFullPath)
+{
+}
+
+// 복사 대입 연산자
+DlgClass& DlgClass::operator=(const DlgClass& other)
+{
+    if (this != &other) {
+        m_hWnd = other.m_hWnd;
+        m_strFileFullPath = other.m_strFileFullPath;
+    }
+    return *this;
+}
+
+// 이동 생성자
+DlgClass::DlgClass(DlgClass&& other) noexcept
+    : m_hWnd(other.m_hWnd), m_strFileFullPath(std::move(other.m_strFileFullPath))
+{
+    other.m_hWnd = NULL;
+}
+
+// 이동 대입 연산자
+DlgClass& DlgClass::operator=(DlgClass&& other) noexcept
+{
+    if (this != &other) {
+        m_hWnd = other.m_hWnd;
+        m_strFileFullPath = std::move(other.m_strFileFullPath);
+        other.m_hWnd = NULL;
+    }
+    return *this;
+}
+
 void DlgClass::operateButtonSelectFile()
 {
-    // 파일 선택 다이얼로그를 열어서 해당 문자열을 경로에 저장
-    MessageBox(GetActiveWindow(), L"파일 선택 버튼", L"버튼", MB_OK);
+    char szFile[_MAX_PATH] = { 0 };
+
+    OPENFILENAMEA ofn;
+    memset(&ofn, 0, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = GetActiveWindow();
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = sizeof(szFile) / sizeof(szFile[0]);
+    ofn.lpstrFilter = "Excel Files(.xlsx)\0*.xlsx\0All Files\0*.*\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+    if (GetOpenFileNameA(&ofn) == TRUE) {
+        SetDlgItemTextA(m_hWnd, IDC_EDIT_FILE_PATH, szFile);
+        m_strFileFullPath = std::string(szFile);                // 선택된 파일경로를 멤버변수에 담는다
+    }
 }

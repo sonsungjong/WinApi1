@@ -12,10 +12,9 @@
 #define IDC_KTLTESTER                   109
 #define IDR_MAINFRAME                   128
 #define IDD_DIALOG1                     129
-#define IDC_EDIT1                       1000
-#define IDC_EDIT2                       1001
-#define IDC_TEXT1                       1002
-#define IDC_EDIT3                       1003
+#define IDC_EDIT_TEMPERATURE            1000
+#define IDC_EDIT_HUMIDITY               1001
+#define IDC_TEXT_HEADER                 1002
 #define IDC_EDIT_FILE_PATH              1003
 #define IDC_BUTTON_SELECT_FILE          1004
 #define IDC_STATIC                      -1
