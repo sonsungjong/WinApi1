@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.35130.168
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinApi1", "WinApi1\WinApi1.vcxproj", "{4486B793-15F9-4FE5-A65C-B2A33A0B4B62}"
 EndProject
@@ -40,6 +40,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShapeMap2", "ShapeMap2\ShapeMap2.vcxproj", "{58B50755-80FA-482B-929C-AA6E664383BA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KTLTester", "KTLTester\KTLTester.vcxproj", "{17440682-E176-4B9B-85C5-24E2781DC4E6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DX11s02n03", "DX11s02n03\DX11s02n03.vcxproj", "{4D3A562F-B3D6-4851-98D7-4BCF114DB87F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -201,6 +203,14 @@ Global
 		{17440682-E176-4B9B-85C5-24E2781DC4E6}.Release|x64.Build.0 = Release|x64
 		{17440682-E176-4B9B-85C5-24E2781DC4E6}.Release|x86.ActiveCfg = Release|Win32
 		{17440682-E176-4B9B-85C5-24E2781DC4E6}.Release|x86.Build.0 = Release|Win32
+		{4D3A562F-B3D6-4851-98D7-4BCF114DB87F}.Debug|x64.ActiveCfg = Debug|x64
+		{4D3A562F-B3D6-4851-98D7-4BCF114DB87F}.Debug|x64.Build.0 = Debug|x64
+		{4D3A562F-B3D6-4851-98D7-4BCF114DB87F}.Debug|x86.ActiveCfg = Debug|Win32
+		{4D3A562F-B3D6-4851-98D7-4BCF114DB87F}.Debug|x86.Build.0 = Debug|Win32
+		{4D3A562F-B3D6-4851-98D7-4BCF114DB87F}.Release|x64.ActiveCfg = Release|x64
+		{4D3A562F-B3D6-4851-98D7-4BCF114DB87F}.Release|x64.Build.0 = Release|x64
+		{4D3A562F-B3D6-4851-98D7-4BCF114DB87F}.Release|x86.ActiveCfg = Release|Win32
+		{4D3A562F-B3D6-4851-98D7-4BCF114DB87F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
