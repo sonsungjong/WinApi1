@@ -3,7 +3,12 @@
 
 #include "framework.h"
 #include "main.h"
+#include <d3d11.h>
+#include <dxgi.h>
+#include "DemoBlankWndD3D.h"
 
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dxgi.lib")
 
 // 전역 변수:
 HINSTANCE g_hInst;                                // 현재 인스턴스입니다.
@@ -36,6 +41,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_DX11S02N03));
 
+    // D3D Tester //
+    CDemoBlankWndD3D demo;
+    if (!demo.Initialize(g_hWnd, g_hInst)) {
+        return -1;
+    }
+
     // 기본 메시지 루프입니다:
     MSG msg = {0};
     while (GetMessage(&msg, nullptr, 0, 0))
@@ -46,11 +57,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             DispatchMessage(&msg);
         }
 
-        // Update and Render
-
+        // D3D Update and Render //
+        demo.Update();
+        demo.Render();
     }
 
-    return (int) msg.wParam;
+    // D3D Termiate //
+    demo.Terminate();
+
+    return (int)msg.wParam;
 }
 
 ATOM MyRegisterClass(HINSTANCE hInstance)
