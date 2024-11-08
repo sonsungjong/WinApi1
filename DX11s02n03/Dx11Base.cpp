@@ -21,7 +21,7 @@ bool CDx11Base::Initialize(HWND hWnd, HINSTANCE hInst)
 	m_hInst = hInst;
 
 	::RECT rc;
-	::GetClientRect(hWnd, &rc);
+	::GetClientRect(hWnd, &rc);						// 윈도우창 크기를 가져온다
 	unsigned int nWidth = rc.right = rc.left;
 	unsigned int nHeight = rc.bottom - rc.top;
 

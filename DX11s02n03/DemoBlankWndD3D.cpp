@@ -28,7 +28,7 @@ void CDemoBlankWndD3D::Render()
         return;
 
     // Clear back buffer
-    float color[4] = { 0.0f, 0.0f, 0.5f, 1.0f };
+    float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };            // R, G, B, A
     m_pD3DContext->ClearRenderTargetView(m_pD3DRenderTargetView, color);
 
     // Present back buffer to display
