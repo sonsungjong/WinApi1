@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "DemoBlankWndD3D.h"
 
 CDemoBlankWndD3D::CDemoBlankWndD3D()

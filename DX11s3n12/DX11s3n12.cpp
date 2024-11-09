@@ -1,12 +1,10 @@
-﻿// DX11s02n03.cpp : 애플리케이션에 대한 진입점을 정의합니다.
-//
-
+﻿#include "pch.h"
 #include "framework.h"
-#include "main.h"
+#include "DX11s3n12.h"
+
 #include <d3d11.h>
 #include <dxgi.h>
 #include "DemoBlankWndD3D.h"
-#include "TriangleDX11.h"
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -21,9 +19,9 @@ BOOL                CreateMainWnd(int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+    _In_opt_ HINSTANCE hPrevInstance,
+    _In_ LPWSTR    lpCmdLine,
+    _In_ int       nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
@@ -40,17 +38,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_DX11S02N03));
+    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_DX11S3N12));
 
     // D3D Init //
     CDemoBlankWndD3D demo;
-    //CTriangleDX11 demo;
     if (!demo.Initialize(g_hWnd, g_hInst)) {
         return -1;
     }
 
     // 기본 메시지 루프입니다:
-    MSG msg = {0};
+    MSG msg = { 0 };
     while (GetMessage(&msg, nullptr, 0, 0))
     {
         if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
@@ -74,17 +71,17 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 {
     WNDCLASSEXW wcex;
     wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = NULL;
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = NULL;
-    wcex.lpszClassName  = L"BlankWndClass";
-    wcex.hIconSm        = NULL;
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = NULL;
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = NULL;
+    wcex.lpszClassName = L"BlankWndClass";
+    wcex.hIconSm = NULL;
 
     return RegisterClassExW(&wcex);
 }
@@ -94,21 +91,21 @@ BOOL CreateMainWnd(int nCmdShow)
     RECT rc = { 0, 0, 640, 480 };
     ::AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
-   g_hWnd = ::CreateWindowW(L"BlankWndClass", L"Blank Window", 
-       WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, CW_USEDEFAULT, 
-       rc.right - rc.left, rc.bottom-rc.top,
-       nullptr, nullptr, g_hInst, nullptr);
+    g_hWnd = ::CreateWindowW(L"BlankWndClass", L"Blank Window",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT,
+        rc.right - rc.left, rc.bottom - rc.top,
+        nullptr, nullptr, g_hInst, nullptr);
 
-   if (!g_hWnd)
-   {
-      return FALSE;
-   }
+    if (!g_hWnd)
+    {
+        return FALSE;
+    }
 
-   ShowWindow(g_hWnd, nCmdShow);
-   UpdateWindow(g_hWnd);
+    ShowWindow(g_hWnd, nCmdShow);
+    UpdateWindow(g_hWnd);
 
-   return TRUE;
+    return TRUE;
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -118,7 +115,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     switch (message)
     {
-    case WM_PAINT:    
+    case WM_PAINT:
         hdc = ::BeginPaint(hWnd, &ps);
         ::EndPaint(hWnd, &ps);
         break;
