@@ -2,8 +2,18 @@
 #include "main.h"
 #include <d3d11.h>
 #include <dxgi.h>
+
+#include <DX11Engine/Engine.h>
+
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
+
+// 라이브러리 경로는 // 2번 적어준다
+#ifdef _DEBUG
+#pragma comment(lib, "DX11Engine//DX11EngineD.lib")
+#else
+#pragma comment(lib, "DX11Engine//DX11Engine.lib")
+#endif
 
 HINSTANCE g_hInst;
 HWND g_hWnd;
@@ -67,30 +77,38 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     RegisterClassExW(&wcex);
 
     // 창의 크기를 지정
-    RECT rc = { 0, 0, 640, 480 };
-    ::AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+    //RECT rc = { 0, 0, 640, 480 };
+    //::AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);              // 여백보정
 
-    g_hWnd = ::CreateWindowW(L"Test1", L"Blank Window",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        rc.right - rc.left, rc.bottom - rc.top,
-        nullptr, nullptr, g_hInst, nullptr);
+    //g_hWnd = ::CreateWindowW(L"Test1", L"Blank Window",
+    //    WS_OVERLAPPEDWINDOW,
+    //    CW_USEDEFAULT, CW_USEDEFAULT,
+    //    rc.right - rc.left, rc.bottom - rc.top,
+    //    nullptr, nullptr, g_hInst, nullptr);
+
+    // 윈도우 생성 후 핸들값 반환
+    g_hWnd = ::CreateWindowW(L"Test1", L"My Window1", WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
     ShowWindow(g_hWnd, true);
     UpdateWindow(g_hWnd);
+
+    // DirectX 엔진 초기화
+    if (!SUCCEEDED(CEngine::getInstance()->init(g_hWnd, POINT{1280, 768})))
+    {
+        ::MessageBox(g_hWnd, L"엔진 초기화 실패", L"엔진 초기화 실패", MB_OK);
+        return 0;
+    }
 
     // 단축키 테이블
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_DX11CLIENT));
 
     MSG msg = { 0 };
-    while (true)
+    while (WM_QUIT != msg.message)
     {
+        // DirectX는 항상 렌더링 될 수 있게 PeekMessage를 사용해야한다
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {
-            if (WM_QUIT == msg.message) {
-                break;
-            }
-
             // 메시지 처리
             if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
             {
@@ -100,7 +118,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else 
         {
-            // 현재 큐에 담긴 메시지가 없음 (엔진 실행)
+            // 엔진 렌더링 수행
 
         }
     }
