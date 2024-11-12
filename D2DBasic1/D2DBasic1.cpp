@@ -3,9 +3,9 @@
 
 #include "DrawRectangle.h"
 
-#pragma comment(lib, "d2d1.lib")
-#pragma comment(lib, "dwrite.lib")
-#pragma comment(lib, "WindowsCodecs.lib")
+#pragma comment(lib, "d2d1.lib")           // Direct2D 라이브러리
+#pragma comment(lib, "dwrite.lib")         // DirectWrite 라이브러리
+#pragma comment(lib, "windowscodecs.lib")  // WIC 라이브러리 (이미지 디코딩 필수)
 
 // GPU : unsigned int, float
 

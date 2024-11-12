@@ -3,10 +3,9 @@
 #define SAFE_RELEASE(p) {if(p){(p)->Release(); (p)=NULL;}}
 
 #include <Windows.h>
-#include <d2d1.h>
-#include <d2d1helper.h>
-#include <dwrite.h>
-#include <wincodec.h>
+#include <d2d1.h>       // Direct2D 기본 헤더
+#include <dwrite.h>     // DirectWrite 헤더 (텍스트 렌더링이 필요한 경우)
+#include <wincodec.h>   // WIC 헤더 (이미지 로딩을 위한 필수 요소)
 
 class DemoApp
 {
