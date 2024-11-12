@@ -19,6 +19,11 @@ CDevice::~CDevice()
 {
 	m_device->Release();
 	m_context->Release();
+	m_swapChain->Release();
+	m_renderTargetTex->Release();
+	m_RTV->Release();
+	m_depthStencilTex->Release();
+	m_DSV->Release();
 }
 
 int CDevice::init(HWND _hWnd, POINT _resolution)
@@ -37,6 +42,89 @@ int CDevice::init(HWND _hWnd, POINT _resolution)
 	D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, 
 		nullptr, iFlag, nullptr, 0, D3D11_SDK_VERSION, 
 		&m_device, &level, &m_context);
+
+	// SwapChain 생성
+	if (!(SUCCEEDED(createSwapChain())))
+	{
+		return E_FAIL;
+	}
+
+	if (!(SUCCEEDED(createView()))) {
+		return E_FAIL;
+	}
+
+	return S_OK;
+}
+
+int CDevice::createSwapChain()
+{
+	DXGI_SWAP_CHAIN_DESC desc = {};
+
+	desc.OutputWindow = m_hWnd;				// 출력 윈도우 핸들값
+	desc.Windowed = true;
+
+	// 모니터는 보통 60Hz ~ 144Hz 로 화면을 갱신한다
+	desc.BufferCount = 1;									// 백버퍼를 한개로 만든다 (참조 FLIP으로 전달하려면 2개 이상)
+	desc.BufferDesc.Width = static_cast<UINT>(m_render_resolution.x);
+	desc.BufferDesc.Height = static_cast<UINT>(m_render_resolution.y);
+	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+
+	desc.BufferDesc.RefreshRate.Denominator = 1;				// 화면 갱신 비율
+	desc.BufferDesc.RefreshRate.Numerator = 60;
+	desc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+	desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+
+	desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;					// 모니터 독립적인 프레임 제한 없는 BITBLT 방식
+
+	IDXGIDevice* pDXGIDevice = nullptr;
+	IDXGIAdapter* pAdapter = nullptr;
+	IDXGIFactory* pFactory = nullptr;
+
+	m_device->QueryInterface(__uuidof(IDXGIDevice), (void**)&pDXGIDevice);
+	pDXGIDevice->GetParent(__uuidof(IDXGIAdapter), (void**)&pAdapter);
+	pAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&pFactory);
+
+	if (FAILED(pFactory->CreateSwapChain(m_device, &desc, &m_swapChain))) {
+		return E_FAIL;
+	}
+
+	pDXGIDevice->Release();
+	pAdapter->Release();
+	pFactory->Release();
+
+	return S_OK;
+}
+
+int CDevice::createView()
+{
+	// DX11 까지는 0번 버퍼가 다음 사용할 백버퍼
+	// 1. RenderTarget Texture 를 0번 스왚체인으로부터 가져오기
+	m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&m_renderTargetTex);
+	// 2. RenderTargetView를 생성한다
+	m_device->CreateRenderTargetView(m_renderTargetTex, nullptr, &m_RTV);
+
+	// 3. DepthStencil 용 Texture 제작
+	D3D11_TEXTURE2D_DESC desc = {};
+	desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	desc.Width = static_cast<UINT>(m_render_resolution.x);
+	desc.Height = static_cast<UINT>(m_render_resolution.y);
+	desc.ArraySize = 1;
+	desc.CPUAccessFlags = 0;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.MipLevels = 1;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	m_device->CreateTexture2D(&desc, nullptr, &m_depthStencilTex);
+	// 4. DepthStencil View
+	m_device->CreateDepthStencilView(m_depthStencilTex, nullptr, &m_DSV);
+
+	// RenderTarget과 DepthStencilTarget을 출력으로 지정
+	m_context->OMSetRenderTargets(1, &m_RTV, m_DSV);
 
 	return S_OK;
 }

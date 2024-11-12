@@ -20,6 +20,9 @@ private:
 public:
 	int init(HWND _hWnd, POINT _resolution);
 
+private:
+	int createSwapChain();
+	int createView();
 
 public:
 	// 간략화버전 싱글턴패턴
