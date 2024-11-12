@@ -39,9 +39,12 @@ int CDevice::init(HWND _hWnd, POINT _resolution)
 	iFlag = D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-	D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, 
-		nullptr, iFlag, nullptr, 0, D3D11_SDK_VERSION, 
-		&m_device, &level, &m_context);
+	if (FAILED(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE,
+		nullptr, iFlag, nullptr, 0, D3D11_SDK_VERSION,
+		&m_device, &level, &m_context)))
+	{
+		return E_FAIL;
+	}
 
 	// SwapChain 생성
 	if (!(SUCCEEDED(createSwapChain())))
@@ -49,11 +52,34 @@ int CDevice::init(HWND _hWnd, POINT _resolution)
 		return E_FAIL;
 	}
 
+	// View 생성
 	if (!(SUCCEEDED(createView()))) {
 		return E_FAIL;
 	}
 
+	// ViewPort 생성 : 윈도우 화면에 보여질 영역을 설정
+	D3D11_VIEWPORT viewport = {};
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = static_cast<FLOAT>(m_render_resolution.x);
+	viewport.Height = static_cast<FLOAT>(m_render_resolution.y);
+	// 깊이 텍스쳐에 저장되는 깊이 Min, Max 지정
+	viewport.MinDepth = 0;
+	viewport.MaxDepth = 1;
+	// ViewPort 정보 세팅
+	m_context->RSSetViewports(1, &viewport);
+
 	return S_OK;
+}
+
+void CDevice::clearTarget(float(&_ArrColor)[4])
+{
+	m_context->ClearRenderTargetView(m_RTV, _ArrColor);
+}
+
+void CDevice::present()
+{
+	m_swapChain->Present(0, 0);
 }
 
 int CDevice::createSwapChain()
@@ -80,6 +106,8 @@ int CDevice::createSwapChain()
 
 	desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;					// 모니터 독립적인 프레임 제한 없는 BITBLT 방식
 
+	// ComPtr<IDXGIDevice> 를 사용하면 초기화 및 릴리즈가 필요없음
+	// 단일 포인터는 .Get() 으로, 이중포인터는 .GetAddressOf() 로 반환
 	IDXGIDevice* pDXGIDevice = nullptr;
 	IDXGIAdapter* pAdapter = nullptr;
 	IDXGIFactory* pFactory = nullptr;

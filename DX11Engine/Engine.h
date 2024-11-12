@@ -11,12 +11,22 @@
 class CEngine
 {
 private:
+	static CEngine* g_this;
+	// 생성자를 private에 둬서 외부에서 객체생성을 불가능하게
+	CEngine();
+	virtual ~CEngine();
+	CEngine(const CEngine& _origin) = delete;
+	CEngine operator=(const CEngine& _origin) = delete;
+
+private:
 	HWND m_hWnd;
 	POINT m_resolution;
 
 public:
 	int init(HWND _hWnd, POINT _resolution);
 
+	// 매 프레임마다 엔진에 들어오는 함수
+	void progress();
 
 public:
 	// 정적 멤버함수로 만들어서 객체가 없어도 호출 가능하게 만든다
@@ -36,14 +46,6 @@ public:
 		}
 	}
 
-private:
-	// 생성자를 private에 둬서 외부에서 객체생성을 불가능하게
-	CEngine();
-	virtual ~CEngine();
-	CEngine(const CEngine& _origin) = delete;
-	CEngine operator=(const CEngine& _origin) = delete;
-
-	static CEngine* g_this;
 };
 
 #endif		ENGINE_H_

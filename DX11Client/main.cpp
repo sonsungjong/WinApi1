@@ -119,7 +119,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         else 
         {
             // 엔진 렌더링 수행
-
+            CEngine::getInstance()->progress();
         }
     }
 

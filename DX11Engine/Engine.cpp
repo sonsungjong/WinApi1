@@ -25,10 +25,20 @@ int CEngine::init(HWND _hWnd, POINT _resolution)
 		return E_FAIL;
 	}
 
-	// SwahChain 생성
-	
-
 	return S_OK;
+}
+
+void CEngine::progress()
+{
+	// Level->tick();								// 한틱에 수행할 행동
+
+	float clear_color[4] = { 0.3f, 0.3f, 0.3f, 1.f };
+	CDevice::getInstance()->clearTarget(clear_color);			// 모두 지우고
+
+	// Level->render();							// 렌더타겟에 그린다
+
+	// SwapChain->Present();				// 윈도우 화면에 보낸다
+	CDevice::getInstance()->present();
 }
 
 CEngine::CEngine()
