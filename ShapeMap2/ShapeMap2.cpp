@@ -71,7 +71,7 @@ BOOL MainWindow::OnCreate(HWND ah_wnd, LPCREATESTRUCT lpCreateStruct)
 	m_dcp.Clear(RGB24(50, 70, 90));
 
 	ShapeConvertClass* p_shp = new ShapeConvertClass;
-	std::string strShapeDirectoryPath = "C:\\world_m2023_english_shp";
+	std::string strShapeDirectoryPath = "C:\\kmap_20230729";
 	p_shp->readShapeDirectory(strShapeDirectoryPath);
 	auto points = p_shp->getPoints();
 	auto polylines = p_shp->getPolyLines();
@@ -131,6 +131,8 @@ BOOL MainWindow::OnCreate(HWND ah_wnd, LPCREATESTRUCT lpCreateStruct)
 		if (vertices.size() > 0) {
 			std::vector<Gdiplus::PointF> pointsArray(vertices.size());
 			for (size_t i = 0; i < vertices.size(); ++i) {
+				//pointsArray[i].X = vertices[i].first;
+				//pointsArray[i].Y = vertices[i].second;
 				pointsArray[i].X = (vertices[i].first - minX) * scale;
 				pointsArray[i].Y = wnd_height - ((vertices[i].second - minY) * scale);
 			}
@@ -148,6 +150,8 @@ BOOL MainWindow::OnCreate(HWND ah_wnd, LPCREATESTRUCT lpCreateStruct)
 			//Gdiplus::PointF* pointsArray = new Gdiplus::PointF[vertices.size()];					// 동적할당에서 벡터로 변경
 			std::vector<Gdiplus::PointF> pointsArray(vertices.size());
 			for (size_t i = 0; i < vertices.size(); ++i) {
+				//pointsArray[i].X = vertices[i].first;
+				//pointsArray[i].Y = vertices[i].second;
 				pointsArray[i].X = (vertices[i].first - minX) * scale;
 				pointsArray[i].Y = wnd_height - ((vertices[i].second - minY) * scale);
 			}
