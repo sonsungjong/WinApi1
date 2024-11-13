@@ -124,22 +124,23 @@ BOOL MainWindow::OnCreate(HWND ah_wnd, LPCREATESTRUCT lpCreateStruct)
 	float scaleX = static_cast<float>(width) / mapWidth;
 	float scaleY = static_cast<float>(height) / mapHeight;
 	float scale = std::min(scaleX, scaleY);  // 가로/세로 비율을 맞추기 위해 최소 스케일 사용
-	int i = 0;
+	int k = 0;
 	for (const auto& polygon : polygons) 
 	{
+		k++;
+		if (k != 4) {
+			continue;
+		}
 		const std::vector<std::pair<float, float>>& vertices = polygon.second;
 		if (vertices.size() > 1) {
 			Gdiplus::PointF* pointsArray = new Gdiplus::PointF[vertices.size()];
 			for (size_t i = 0; i < vertices.size(); ++i) {
-				//pointsArray[i].X = (vertices[i].first - minX) * scale;
-				//pointsArray[i].Y = height - ((vertices[i].second - minY) * scale);
 				pointsArray[i].X = (vertices[i].first - minX) * scale;
 				pointsArray[i].Y = height - ((vertices[i].second - minY) * scale);
 			}
 			m_dcp.FillPolygon(pointsArray, static_cast<int>(vertices.size()), RGB24(0, 128, 178));
 			delete[] pointsArray;
 		}
-
 	}
 
 	//m_dcp.mp_pen->SetColor(Gdiplus::Color(255, 0, 0));
@@ -181,11 +182,11 @@ void MainWindow::OnPaint(HWND ah_wnd)
 	PAINTSTRUCT ps;
 	HDC hdc = BeginPaint(m_hWnd, &ps);
 
-	m_dcp.FillSolidEllipse(100, 100, 200, 200, RGB24(0, 255, 0));
-	m_dcp.FillSolidEllipse(150, 150, 250, 250);
+	//m_dcp.FillSolidEllipse(100, 100, 200, 200, RGB24(0, 255, 0));
+	//m_dcp.FillSolidEllipse(150, 150, 250, 250);
 
-	m_dcp.DCPText(0, 0, _T("안녕하세오"), RGB24(255,0,0));
-	m_dcp.DCPText(0, 100, _T("hello world!"));
+	//m_dcp.DCPText(0, 0, _T("안녕하세오"), RGB24(255,0,0));
+	//m_dcp.DCPText(0, 100, _T("hello world!"));
 
 	m_dcp.Draw(hdc);
 	EndPaint(m_hWnd, &ps);
