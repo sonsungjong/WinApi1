@@ -133,28 +133,45 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		return 0;
 	}
 
-	WNDCLASS wc;
+	WNDCLASSEXW wcex;
+	wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc = WndProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = g_hInst;
+	wcex.hIcon = NULL;
+	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wcex.hbrBackground = (HBRUSH)NULL;
+	wcex.lpszMenuName = NULL;
+	wcex.lpszClassName = my_class_name;
+	wcex.hIconSm = NULL;
+	RegisterClassExW(&wcex);
 
-	wc.cbClsExtra = NULL;
-	wc.cbWndExtra = 0;
-	wc.hbrBackground = (HBRUSH)NULL;
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wc.hInstance = hInstance;
-	wc.lpfnWndProc = WndProc;
-	wc.lpszClassName = my_class_name;
-	wc.lpszMenuName = NULL;
-	wc.style = CS_HREDRAW | CS_VREDRAW;
-	RegisterClass(&wc);
+	// 화면 중앙 위치 및 크기 계산
+	int windowWidth = 1280;
+	int windowHeight = 960;
+	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+	int posX = (screenWidth - windowWidth) / 2;
+	int posY = (screenHeight - windowHeight) / 2;
 
-	g_hWnd = CreateWindow(my_class_name, _T("로그인 화면"), WS_OVERLAPPEDWINDOW, 50, 50, 600, 600, NULL, NULL, hInstance, NULL);
+	g_hWnd = CreateWindow(my_class_name, _T("로그인 화면"), WS_OVERLAPPEDWINDOW, posX, posY, windowWidth, windowHeight, NULL, NULL, hInstance, NULL);
 	ShowWindow(g_hWnd, SW_SHOW);
 	UpdateWindow(g_hWnd);
 
 	MSG msg = {};
-	while (GetMessage(&msg, NULL, 0, 0)) {
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+	while (msg.message != WM_QUIT) 
+	{
+		if(PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		else {
+			// 렌더링?
+			WndPAINT();
+		}
 	}
 
 	// 라이브러리 해제
