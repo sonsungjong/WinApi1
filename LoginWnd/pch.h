@@ -11,13 +11,14 @@
 #include <thread>
 #include <future>
 #include <mutex>
+#include <chrono>
 #include <condition_variable>
 #include <unordered_map>
 #include <string>
 #include <vector>
 
-//#include <WinSock2.h>
-//#include <WS2tcpip.h>
+#include <WinSock2.h>
+#include <WS2tcpip.h>
 #include "framework.h"
 
 #include <d2d1.h>						// Direct2D 기본 헤더
@@ -25,9 +26,15 @@
 #include <wincodec.h>					 // WIC 헤더 (이미지 로딩을 위한 필수 요소)
 #include <wrl.h>
 
+#include <dwmapi.h>
+#include <imm.h>
+
+
 #pragma comment(lib, "d2d1.lib")						// Direct2D 라이브러리
 #pragma comment(lib, "dwrite.lib")						// DirectWrite 라이브러리
 #pragma comment(lib, "windowscodecs.lib")		 // WIC 라이브러리 (이미지 디코딩 필수)
+#pragma comment(lib, "Dwmapi.lib")
+#pragma comment(lib, "imm32.lib")
 
 
 #endif //PCH_H
