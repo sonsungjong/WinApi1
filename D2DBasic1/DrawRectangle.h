@@ -14,6 +14,7 @@ public:
 	~DemoApp();
 	HRESULT init(HINSTANCE hInstance);
 	void runMessageLoop();
+	HWND m_hWnd;
 
 private:
 	HRESULT createDeviceIndependentResources();
@@ -24,7 +25,6 @@ private:
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
-	HWND m_hWnd;
 	ID2D1Factory* m_pDirect2dFactory;
 	ID2D1HwndRenderTarget* m_pRenderTarget;
 	ID2D1SolidColorBrush* m_pLightSlateGrayBrush;

@@ -145,6 +145,9 @@ LRESULT DemoApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// WM_CREATE 메시지 처리에서 pDemoApp을 설정
 		LPCREATESTRUCT pcs = (LPCREATESTRUCT)lParam;
 		DemoApp* pDemoApp = (DemoApp*)pcs->lpCreateParams;
+		if (pDemoApp->m_hWnd == NULL || pDemoApp->m_hWnd == nullptr) {
+			pDemoApp->m_hWnd = hWnd;
+		}
 		SetWindowLongPtrW(hWnd, GWLP_USERDATA, PtrToUlong(pDemoApp));
 		result = 1;
 	}
