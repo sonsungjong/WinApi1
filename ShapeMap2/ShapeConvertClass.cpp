@@ -23,6 +23,7 @@ ShapeConvertClass::~ShapeConvertClass()
 
 void ShapeConvertClass::readShapeFile(const char* filename)
 {
+    int key = 0;
     SHPHandle hSHP = SHPOpen(filename, "rb");
     if (hSHP == NULL) {
         return;
@@ -47,16 +48,16 @@ void ShapeConvertClass::readShapeFile(const char* filename)
             for (int j = startIndex; j < endIndex; j++) {
                 vecVertices.emplace_back(static_cast<float>(pShape->padfX[j]), static_cast<float>(pShape->padfY[j]));
             }
-
+            key++;
             // 폴리곤 타입에 따라 저장
             if (nShapeType == 1) {
-                m_mapShapePoint.emplace(i, std::move(vecVertices));
+                m_mapShapePoint.emplace(key, std::move(vecVertices));
             }
             else if (nShapeType == 3) {
-                m_mapShapePolyLine.emplace(i, std::move(vecVertices));
+                m_mapShapePolyLine.emplace(key, std::move(vecVertices));
             }
             else if (nShapeType == 5) {
-                m_mapShapePolygon.emplace(i * 1000 + part, std::move(vecVertices)); // 각 파트를 독립적으로 관리하기 위해 고유 키 사용
+                m_mapShapePolygon.emplace(key, std::move(vecVertices)); // 각 파트를 독립적으로 관리하기 위해 고유 키 사용
             }
         }
 

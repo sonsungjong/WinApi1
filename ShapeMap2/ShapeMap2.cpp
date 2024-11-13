@@ -127,10 +127,6 @@ BOOL MainWindow::OnCreate(HWND ah_wnd, LPCREATESTRUCT lpCreateStruct)
 	int k = 0;
 	for (const auto& polygon : polygons) 
 	{
-		k++;
-		if (k != 4) {
-			continue;
-		}
 		const std::vector<std::pair<float, float>>& vertices = polygon.second;
 		if (vertices.size() > 1) {
 			Gdiplus::PointF* pointsArray = new Gdiplus::PointF[vertices.size()];
@@ -143,32 +139,32 @@ BOOL MainWindow::OnCreate(HWND ah_wnd, LPCREATESTRUCT lpCreateStruct)
 		}
 	}
 
-	//m_dcp.mp_pen->SetColor(Gdiplus::Color(255, 0, 0));
-	//// 폴리라인을 그립니다.
-	//for (const auto& polyline : polylines)
-	//{
-	//	const std::vector<std::pair<float, float>>& vertices = polyline.second;
-	//	if (vertices.size() > 1) {
-	//		Gdiplus::PointF* pointsArray = new Gdiplus::PointF[vertices.size()];
-	//		for (size_t i = 0; i < vertices.size(); ++i) {
-	//			pointsArray[i].X = (vertices[i].first - minX) * scale;
-	//			pointsArray[i].Y = height - ((vertices[i].second - minY) * scale);
-	//		}
-	//		m_dcp.mp_graphic->DrawLines(m_dcp.mp_pen,pointsArray, vertices.size());
-	//		delete[] pointsArray;
-	//	}
-	//}
+	m_dcp.mp_pen->SetColor(Gdiplus::Color(255, 0, 0));
+	// 폴리라인을 그립니다.
+	for (const auto& polyline : polylines)
+	{
+		const std::vector<std::pair<float, float>>& vertices = polyline.second;
+		if (vertices.size() > 1) {
+			Gdiplus::PointF* pointsArray = new Gdiplus::PointF[vertices.size()];
+			for (size_t i = 0; i < vertices.size(); ++i) {
+				pointsArray[i].X = (vertices[i].first - minX) * scale;
+				pointsArray[i].Y = height - ((vertices[i].second - minY) * scale);
+			}
+			m_dcp.mp_graphic->DrawLines(m_dcp.mp_pen,pointsArray, vertices.size());
+			delete[] pointsArray;
+		}
+	}
 
-	//for (const auto& point : points)
-	//{
-	//	const std::vector<std::pair<float, float>>& vertices = point.second;
-	//	for (const auto& vertex : vertices) {
-	//		float x = (vertex.first - minX) * scale;
-	//		float y = height - ((vertex.second - minY) * scale);
-	//		// 작은 원으로 점을 그립니다. (반지름 3)
-	//		m_dcp.FillSolidEllipse(static_cast<int>(x) - 3, static_cast<int>(y) - 3, static_cast<int>(x) + 3, static_cast<int>(y) + 3, RGB24(255, 0, 0));
-	//	}
-	//}
+	for (const auto& point : points)
+	{
+		const std::vector<std::pair<float, float>>& vertices = point.second;
+		for (const auto& vertex : vertices) {
+			float x = (vertex.first - minX) * scale;
+			float y = height - ((vertex.second - minY) * scale);
+			// 작은 원으로 점을 그립니다. (반지름 3)
+			m_dcp.FillSolidEllipse(static_cast<int>(x) - 3, static_cast<int>(y) - 3, static_cast<int>(x) + 3, static_cast<int>(y) + 3, RGB24(255, 0, 0));
+		}
+	}
 
 	if (p_shp != nullptr) {
 		delete p_shp;
