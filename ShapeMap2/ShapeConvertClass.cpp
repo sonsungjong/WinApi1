@@ -37,26 +37,35 @@ void ShapeConvertClass::readShapeFile(const char* filename)
             continue;
         }
 
-        std::vector<std::pair<float, float>> vecVertices;
-        vecVertices.resize(pShape->nVertices);
-        for (int j = 0; j < pShape->nVertices; j++) {
-            vecVertices[j] = std::make_pair(static_cast<float>(pShape->padfX[j]), static_cast<float>(pShape->padfY[j]));
+        // 다중 파트를 처리하기 위해 각 파트를 개별적으로 분리
+        for (int part = 0; part < pShape->nParts; part++) {
+            int startIndex = pShape->panPartStart[part];
+            int endIndex = (part == pShape->nParts - 1) ? pShape->nVertices : pShape->panPartStart[part + 1];
+
+            std::vector<std::pair<float, float>> vecVertices;
+            vecVertices.reserve(endIndex - startIndex);
+            for (int j = startIndex; j < endIndex; j++) {
+                vecVertices.emplace_back(static_cast<float>(pShape->padfX[j]), static_cast<float>(pShape->padfY[j]));
+            }
+
+            // 폴리곤 타입에 따라 저장
+            if (nShapeType == 1) {
+                m_mapShapePoint.emplace(i, std::move(vecVertices));
+            }
+            else if (nShapeType == 3) {
+                m_mapShapePolyLine.emplace(i, std::move(vecVertices));
+            }
+            else if (nShapeType == 5) {
+                m_mapShapePolygon.emplace(i * 1000 + part, std::move(vecVertices)); // 각 파트를 독립적으로 관리하기 위해 고유 키 사용
+            }
         }
 
-        if (nShapeType == 1) {
-            m_mapShapePoint.emplace(i, std::move(vecVertices));
-        }
-        else if (nShapeType == 3) {
-            m_mapShapePolyLine.emplace(i, std::move(vecVertices));
-        }
-        else if (nShapeType == 5) {
-            m_mapShapePolygon.emplace(i, std::move(vecVertices));
-        }
         SHPDestroyObject(pShape);
     }
 
     SHPClose(hSHP);
 }
+
 
 void ShapeConvertClass::readDBFFile(const char* filename)
 {
