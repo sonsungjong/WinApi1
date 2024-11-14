@@ -1,13 +1,11 @@
 #pragma once
-class CTemp
-{
-public:
-	void TempInit();
+
+void TempInit();
 	
-	void TempRelease();
+void TempRelease();
 
-	void TempTick();
+void TempTick();
 
-	void TempRender();
-};
+void TempRender();
+
 

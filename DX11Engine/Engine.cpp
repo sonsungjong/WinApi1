@@ -3,6 +3,8 @@
 
 #include "Device.h"
 
+#include "Temp.h"
+
 // 정적 멤버는 별도로 초기화를 해줘야한다
 CEngine* CEngine::g_this = nullptr;
 
@@ -24,6 +26,8 @@ int CEngine::init(HWND _hWnd, POINT _resolution)
 		::MessageBox(m_hWnd, L"Device 초기화 실패", L"엔진 초기화 실패", MB_OK);
 		return E_FAIL;
 	}
+
+	TempInit();
 
 	return S_OK;
 }

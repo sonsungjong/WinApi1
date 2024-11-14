@@ -17,6 +17,9 @@
     <Filter Include="_03_Device">
       <UniqueIdentifier>{0b08b12f-f628-444b-b8b8-d948c2d88db8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module">
+      <UniqueIdentifier>{c0c420d5-f26a-440d-b43c-f3333ae11ba9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -35,6 +38,15 @@
     <ClInclude Include="Device.h">
       <Filter>_03_Device</Filter>
     </ClInclude>
+    <ClInclude Include="SimpleMath.h">
+      <Filter>Module</Filter>
+    </ClInclude>
+    <ClInclude Include="define.h">
+      <Filter>_01_Header</Filter>
+    </ClInclude>
+    <ClInclude Include="struct.h">
+      <Filter>_01_Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">
@@ -50,5 +62,10 @@
     <ClCompile Include="Device.cpp">
       <Filter>_03_Device</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SimpleMath.inl">
+      <Filter>Module</Filter>
+    </None>
   </ItemGroup>
 </Project>
