@@ -14,10 +14,10 @@ private:
 	static CEngine* g_this;
 	// 생성자를 private에 둬서 외부에서 객체생성을 불가능하게
 	CEngine();
-	virtual ~CEngine();
 	CEngine(const CEngine& _origin) = delete;
 	CEngine operator=(const CEngine& _origin) = delete;
-
+public:
+	virtual ~CEngine();
 private:
 	HWND m_hWnd;
 	POINT m_resolution;

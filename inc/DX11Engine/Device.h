@@ -23,6 +23,9 @@ public:
 	void clearTarget(float(&_ArrColor)[4]);				// 배열 4개 짜리를 받는다 (해당 색상으로 지움)
 	void present();
 
+	ID3D11Device* GetDivice() { return m_device; }
+	ID3D11DeviceContext* GetContext() { return m_context; }
+
 private:
 	int createSwapChain();
 	int createView();

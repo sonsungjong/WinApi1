@@ -27,7 +27,10 @@ int CEngine::init(HWND _hWnd, POINT _resolution)
 		return E_FAIL;
 	}
 
-	TempInit();
+	if (FAILED(TempInit())) {
+		MessageBox(m_hWnd, L"Device 초기화 실패", L"Temp Init 초기화 실패", MB_OK);
+		return E_FAIL;
+	}
 
 	return S_OK;
 }
@@ -35,12 +38,17 @@ int CEngine::init(HWND _hWnd, POINT _resolution)
 void CEngine::progress()
 {
 	// Level->tick();								// 한틱에 수행할 행동
+	TempTick();			// 매 프레임마다 호출
 
+	// 화면 클리어
 	float clear_color[4] = { 0.3f, 0.3f, 0.3f, 1.f };
 	CDevice::getInstance()->clearTarget(clear_color);			// 모두 지우고
 
+	// 그린다
 	// Level->render();							// 렌더타겟에 그린다
+	TempRender();
 
+	// 게시한다
 	// SwapChain->Present();				// 윈도우 화면에 보낸다
 	CDevice::getInstance()->present();
 }
@@ -54,4 +62,5 @@ CEngine::CEngine()
 
 CEngine::~CEngine()
 {
+	TempRelease();
 }
