@@ -60,7 +60,7 @@ public:
 
 	// 펜 변경 (선 스타일과 두께)
 	void SetPenStyle(Gdiplus::DashStyle a_style, Gdiplus::REAL a_thickness);
-	void SetPenThickness(float a_thickness = -1.0f);
+	void SetPenThickness(float a_thickness);
 
 	// 텍스트 출력
 	void DCPText(int a_x, int a_y, const TCHAR* ap_str, Gdiplus::ARGB a_text_color = NULL);

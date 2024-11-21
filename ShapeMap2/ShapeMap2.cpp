@@ -68,7 +68,7 @@ BOOL MainWindow::OnCreate(HWND ah_wnd, LPCREATESTRUCT lpCreateStruct)
 	m_dcp.DCPTextSetting(24.0f, _T("맑은 고딕"), RGB24(0, 150, 150));
 	m_dcp.mp_pen->SetColor(Gdiplus::Color(255, 0, 0, 255));
 	m_dcp.SetPenThickness(2);
-	m_dcp.Clear(RGB24(50, 70, 90));
+	m_dcp.Clear(RGB24(166, 206, 253));
 
 	ShapeConvertClass* p_shp = new ShapeConvertClass;
 	std::string strShapeDirectoryPath = "C:\\kmap_20230729";
@@ -136,39 +136,40 @@ BOOL MainWindow::OnCreate(HWND ah_wnd, LPCREATESTRUCT lpCreateStruct)
 				pointsArray[i].X = (vertices[i].first - minX) * scale;
 				pointsArray[i].Y = wnd_height - ((vertices[i].second - minY) * scale);
 			}
-			m_dcp.DrawPolygon(pointsArray.data(), static_cast<int>(vertices.size()), RGB24(128, 128, 178));
-			m_dcp.FillPolygon(pointsArray.data(), static_cast<int>(vertices.size()), RGB24(0, 128, 178));
+			m_dcp.SetPenThickness(1.0f);
+			m_dcp.DrawPolygon(pointsArray.data(), static_cast<int>(vertices.size()), RGB24(128, 128, 128));
+			m_dcp.FillPolygon(pointsArray.data(), static_cast<int>(vertices.size()), RGB24(252, 249, 243));
 		}
 	}
 
 	// 폴리라인을 그립니다.
-	m_dcp.mp_pen->SetColor(Gdiplus::Color(158, 158, 0));				// 노란펜
-	for (const auto& polyline : polylines)
-	{
-		const std::vector<std::pair<float, float>>& vertices = polyline.second;
-		if (vertices.size() > 0) {
-			//Gdiplus::PointF* pointsArray = new Gdiplus::PointF[vertices.size()];					// 동적할당에서 벡터로 변경
-			std::vector<Gdiplus::PointF> pointsArray(vertices.size());
-			for (size_t i = 0; i < vertices.size(); ++i) {
-				//pointsArray[i].X = vertices[i].first;
-				//pointsArray[i].Y = vertices[i].second;
-				pointsArray[i].X = (vertices[i].first - minX) * scale;
-				pointsArray[i].Y = wnd_height - ((vertices[i].second - minY) * scale);
-			}
-			m_dcp.mp_graphic->DrawLines(m_dcp.mp_pen, pointsArray.data(), static_cast<int>(vertices.size()));
-		}
-	}
+	//m_dcp.mp_pen->SetColor(Gdiplus::Color(158, 158, 0));				// 노란펜
+	//for (const auto& polyline : polylines)
+	//{
+	//	const std::vector<std::pair<float, float>>& vertices = polyline.second;
+	//	if (vertices.size() > 0) {
+	//		//Gdiplus::PointF* pointsArray = new Gdiplus::PointF[vertices.size()];					// 동적할당에서 벡터로 변경
+	//		std::vector<Gdiplus::PointF> pointsArray(vertices.size());
+	//		for (size_t i = 0; i < vertices.size(); ++i) {
+	//			//pointsArray[i].X = vertices[i].first;
+	//			//pointsArray[i].Y = vertices[i].second;
+	//			pointsArray[i].X = (vertices[i].first - minX) * scale;
+	//			pointsArray[i].Y = wnd_height - ((vertices[i].second - minY) * scale);
+	//		}
+	//		m_dcp.mp_graphic->DrawLines(m_dcp.mp_pen, pointsArray.data(), static_cast<int>(vertices.size()));
+	//	}
+	//}
 
-	for (const auto& point : points)
-	{
-		const std::vector<std::pair<float, float>>& vertices = point.second;
-		for (const auto& vertex : vertices) {
-			float x = (vertex.first - minX) * scale;
-			float y = wnd_height - ((vertex.second - minY) * scale);
-			// 작은 원으로 점을 그립니다. (반지름 3)
-			m_dcp.FillSolidEllipse(static_cast<int>(x) - 3, static_cast<int>(y) - 3, static_cast<int>(x) + 3, static_cast<int>(y) + 3, RGB24(0, 255, 0));					// 초록점
-		}
-	}
+	//for (const auto& point : points)
+	//{
+	//	const std::vector<std::pair<float, float>>& vertices = point.second;
+	//	for (const auto& vertex : vertices) {
+	//		float x = (vertex.first - minX) * scale;
+	//		float y = wnd_height - ((vertex.second - minY) * scale);
+	//		// 작은 원으로 점을 그립니다. (반지름 3)
+	//		m_dcp.FillSolidEllipse(static_cast<int>(x) - 3, static_cast<int>(y) - 3, static_cast<int>(x) + 3, static_cast<int>(y) + 3, RGB24(0, 255, 0));					// 초록점
+	//	}
+	//}
 
 	if (p_shp != nullptr) {
 		delete p_shp;
@@ -182,11 +183,11 @@ void MainWindow::OnPaint(HWND ah_wnd)
 	PAINTSTRUCT ps;
 	HDC hdc = BeginPaint(m_hWnd, &ps);
 
-	m_dcp.FillSolidEllipse(100, 100, 200, 200, RGB24(0, 255, 0));
-	m_dcp.FillSolidEllipse(150, 150, 250, 250);
+	//m_dcp.FillSolidEllipse(100, 100, 200, 200, RGB24(0, 255, 0));
+	//m_dcp.FillSolidEllipse(150, 150, 250, 250);
 
-	m_dcp.DCPText(0, 0, _T("안녕하세오"), RGB24(0,0,0));
-	m_dcp.DCPText(0, 100, _T("hello world!"));
+	//m_dcp.DCPText(0, 0, _T("안녕하세오"), RGB24(0,0,0));
+	//m_dcp.DCPText(0, 100, _T("hello world!"));
 
 	m_dcp.Draw(hdc);
 	EndPaint(m_hWnd, &ps);
