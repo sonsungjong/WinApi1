@@ -19,6 +19,9 @@ ComPtr<ID3D11VertexShader> g_VS;
 ComPtr<ID3DBlob> g_PSBlob;
 ComPtr<ID3D11PixelShader> g_PS;
 
+// Error Blob
+ComPtr<ID3DBlob> g_ErrBlob;
+
 
 int TempInit()
 {
@@ -50,6 +53,31 @@ int TempInit()
 		return E_FAIL;
 	}
 	// 버텍스 쉐이더
+	wchar_t szBuffer[255] = {};
+	GetCurrentDirectory(255, szBuffer);
+
+	size_t len = wcslen(szBuffer);
+	for (int i = len - 1; i > 0; --i)			// 뒤에서부터 출발
+	{
+		if (szBuffer[i] == '\\') {
+			szBuffer[i] = '\0';
+			break;
+		}
+	}
+	wcscat_s(szBuffer, L"\\content\\shader\\std2d.fx");
+
+	
+	if (FAILED(D3DCompileFromFile(szBuffer, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE
+		, "VS_Std2D", "vs_5_0", D3DCOMPILE_DEBUG, 0, g_VSBlob.GetAddressOf(), g_ErrBlob.GetAddressOf())))
+	{
+		if (nullptr != g_ErrBlob) {
+			::MessageBox(GetActiveWindow(), (wchar_t*)g_ErrBlob->GetBufferPointer(), L"버텍스 쉐이더 컴파일 오류", MB_OK);
+		}
+		else {
+
+		}
+		return E_FAIL;
+	}
 
 	// 정점 구성 Layout 정보 설정
 	D3D11_INPUT_ELEMENT_DESC LayoutDesc[2] = {};				// 위치와 색상
