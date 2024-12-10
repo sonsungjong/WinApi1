@@ -140,7 +140,46 @@ void TempRelease()
 
 void TempTick()
 {
+	// 키보드 입력으로 삼각형을 움직이게 한다
+	if (GetAsyncKeyState('W') & 0x8001) 
+	{
+		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
+		for (int i = 0; i < 3; ++i) {
+			g_arrVtx[i].vPos.y += 0.001f;
+		}
+	}
 
+	if (GetAsyncKeyState('S') & 0x8001)
+	{
+		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
+		for (int i = 0; i < 3; ++i) {
+			g_arrVtx[i].vPos.y -= 0.001f;
+		}
+	}
+
+	if (GetAsyncKeyState('A') & 0x8001)
+	{
+		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
+		for (int i = 0; i < 3; ++i) {
+			g_arrVtx[i].vPos.x -= 0.001f;
+		}
+	}
+
+	if (GetAsyncKeyState('D') & 0x8001)
+	{
+		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
+		for (int i = 0; i < 3; ++i) {
+			g_arrVtx[i].vPos.x += 0.001f;
+		}
+	}
+
+	// System Memory -> GPU
+	D3D11_MAPPED_SUBRESOURCE tSub = {};
+	CONTEXT->Map(g_VB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &tSub);
+
+	memcpy(tSub.pData, g_arrVtx, sizeof(Vtx) * 3);
+
+	CONTEXT->Unmap(g_VB.Get(), 0);
 }
 
 void TempRender()

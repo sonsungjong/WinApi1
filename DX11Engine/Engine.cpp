@@ -3,10 +3,15 @@
 
 #include "Device.h"
 
+#include "TimeMgr.h"
+#include "PathMgr.h"
+#include "KeyMgr.h"
+
 #include "Temp.h"
 
+
 // 정적 멤버는 별도로 초기화를 해줘야한다
-CEngine* CEngine::g_this = nullptr;
+//CEngine* CEngine::g_this = nullptr;
 
 // 윈도우와 해상도
 int CEngine::init(HWND _hWnd, POINT _resolution)
@@ -27,6 +32,10 @@ int CEngine::init(HWND _hWnd, POINT _resolution)
 		return E_FAIL;
 	}
 
+	// Manager Init
+	CTimeMgr::getInstance()->init();
+
+
 	if (FAILED(TempInit())) {
 		MessageBox(m_hWnd, L"Device 초기화 실패", L"Temp Init 초기화 실패", MB_OK);
 		return E_FAIL;
@@ -38,17 +47,19 @@ int CEngine::init(HWND _hWnd, POINT _resolution)
 void CEngine::progress()
 {
 	// Level->tick();								// 한틱에 수행할 행동
-	TempTick();			// 매 프레임마다 호출
+	// Manager Tick
+	CTimeMgr::getInstance()->tick();				// 한프레임당 시간이 얼마나 걸리는지 계산
+	TempTick();			// 매 프레임마다 호출 (Object Tick)
 
-	// 화면 클리어
+	// 화면 클리어 (Target Clear)
 	float clear_color[4] = { 0.3f, 0.3f, 0.3f, 1.f };
 	CDevice::getInstance()->clearTarget(clear_color);			// 모두 지우고
 
-	// 그린다
+	// 그린다 (Object Render)
 	// Level->render();							// 렌더타겟에 그린다
 	TempRender();
 
-	// 게시한다
+	// 게시한다 (Present)
 	// SwapChain->Present();				// 윈도우 화면에 보낸다
 	CDevice::getInstance()->present();
 }

@@ -18,3 +18,5 @@ using namespace DirectX::PackedVector;
 
 #include "define.h"
 #include "struct.h"
+
+#include "singleton.h"

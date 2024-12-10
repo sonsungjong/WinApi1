@@ -26,6 +26,9 @@
     <Filter Include="HLSL\2D">
       <UniqueIdentifier>{e2eed64f-8a83-4ff3-be1c-3eee38a374b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="_04_Manager">
+      <UniqueIdentifier>{8408c251-b91e-4194-ac1c-e8249822b204}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -53,6 +56,18 @@
     <ClInclude Include="struct.h">
       <Filter>_01_Header</Filter>
     </ClInclude>
+    <ClInclude Include="singleton.h">
+      <Filter>Module</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeMgr.h">
+      <Filter>_04_Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="PathMgr.h">
+      <Filter>_04_Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyMgr.h">
+      <Filter>_04_Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">
@@ -67,6 +82,15 @@
     <ClCompile Include="Temp.cpp" />
     <ClCompile Include="Device.cpp">
       <Filter>_03_Device</Filter>
+    </ClCompile>
+    <ClCompile Include="TimeMgr.cpp">
+      <Filter>_04_Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="PathMgr.cpp">
+      <Filter>_04_Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyMgr.cpp">
+      <Filter>_04_Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

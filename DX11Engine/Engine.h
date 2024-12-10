@@ -9,15 +9,9 @@
 
 // 싱글턴패턴으로 엔진 구성
 class CEngine
+	: public CSingleton<CEngine>
 {
-private:
-	static CEngine* g_this;
-	// 생성자를 private에 둬서 외부에서 객체생성을 불가능하게
-	CEngine();
-	CEngine(const CEngine& _origin) = delete;
-	CEngine operator=(const CEngine& _origin) = delete;
-public:
-	virtual ~CEngine();
+	SINGLE(CEngine);
 private:
 	HWND m_hWnd;
 	POINT m_resolution;
@@ -28,23 +22,25 @@ public:
 	// 매 프레임마다 엔진에 들어오는 함수
 	void progress();
 
+	HWND getMainWnd() { return m_hWnd; }
+
 public:
 	// 정적 멤버함수로 만들어서 객체가 없어도 호출 가능하게 만든다
-	static CEngine* getInstance()
-	{
-		if (g_this == nullptr) {
-			g_this = new CEngine;
-		}
-		return g_this;
-	}
+	//static CEngine* getInstance()
+	//{
+	//	if (g_this == nullptr) {
+	//		g_this = new CEngine;
+	//	}
+	//	return g_this;
+	//}
 
-	static void destroy()
-	{
-		if (g_this != nullptr) {
-			delete g_this;
-			g_this = nullptr;			// 삭제 후 nullptr을 대입한다
-		}
-	}
+	//static void destroy()
+	//{
+	//	if (g_this != nullptr) {
+	//		delete g_this;
+	//		g_this = nullptr;			// 삭제 후 nullptr을 대입한다
+	//	}
+	//}
 
 };
 

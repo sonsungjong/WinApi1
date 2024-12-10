@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include <dxgi.h>
 
+#include <DX11Engine/global.h>
 #include <DX11Engine/Engine.h>
 
 #pragma comment(lib, "d3d11.lib")

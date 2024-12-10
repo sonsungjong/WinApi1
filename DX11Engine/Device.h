@@ -1,7 +1,9 @@
 #ifndef DEVICE_H_
 #define DEVICE_H_
 class CDevice
+	: public CSingleton<CDevice>
 {
+	SINGLE(CDevice)
 private:
 	HWND m_hWnd;			// 출력 대상 윈도우
 	POINT m_render_resolution;			// 렌더링 해상도
@@ -30,21 +32,20 @@ private:
 	int createSwapChain();
 	int createView();
 
-public:
+//public:
 	// 간략화버전 싱글턴패턴
-	static CDevice* getInstance()
-	{
-		static CDevice mgr;
-		return &mgr;
-	}
-
-private:
-	CDevice();
-	CDevice(const CDevice& _other) = delete;
-	CDevice operator=(const CDevice& _other) = delete;
-
-public:
-	virtual ~CDevice();
+	//static CDevice* getInstance()
+	//{
+	//	static CDevice mgr;
+	//	return &mgr;
+	//}
+//private:
+//	CDevice();
+//	CDevice(const CDevice& _other) = delete;
+//	CDevice operator=(const CDevice& _other) = delete;
+//
+//public:
+//	virtual ~CDevice();
 
 };
 

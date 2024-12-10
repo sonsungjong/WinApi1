@@ -1,5 +1,12 @@
 #pragma once
 
+#define SINGLE(Type)		private:\
+												Type();\
+												Type(const Type& _origin) = delete;\
+												public:\
+														~Type();\
+													friend class CSingleton<Type>;
+
 #define DEVICE CDevice::getInstance()->GetDivice()
 #define CONTEXT CDevice::getInstance()->GetContext()
 
