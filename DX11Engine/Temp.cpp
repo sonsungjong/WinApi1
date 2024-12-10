@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Temp.h"
 #include "Device.h"
+#include "TimeMgr.h"
+#include "KeyMgr.h"
 
 // 정점 정보 저장 버퍼
 ComPtr<ID3D11Buffer> g_VB;
@@ -140,36 +142,43 @@ void TempRelease()
 
 void TempTick()
 {
+	// 이동속도를 시간동기화 처리 (프레임차이 극복)
+	float DT = CTimeMgr::getInstance()->getDeltaTime();
+
 	// 키보드 입력으로 삼각형을 움직이게 한다
-	if (GetAsyncKeyState('W') & 0x8001) 
+	//if (GetAsyncKeyState('W') & 0x8001) 
+	if(KEY_PRESSED(KEY::W))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
 		for (int i = 0; i < 3; ++i) {
-			g_arrVtx[i].vPos.y += 0.001f;
+			g_arrVtx[i].vPos.y += DT;
 		}
 	}
 
-	if (GetAsyncKeyState('S') & 0x8001)
+	//if (GetAsyncKeyState('S') & 0x8001)
+	if (KEY_PRESSED(KEY::S))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
 		for (int i = 0; i < 3; ++i) {
-			g_arrVtx[i].vPos.y -= 0.001f;
+			g_arrVtx[i].vPos.y -= DT;
 		}
 	}
 
-	if (GetAsyncKeyState('A') & 0x8001)
+	//if (GetAsyncKeyState('A') & 0x8001)
+	if (KEY_PRESSED(KEY::A))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
 		for (int i = 0; i < 3; ++i) {
-			g_arrVtx[i].vPos.x -= 0.001f;
+			g_arrVtx[i].vPos.x -= DT;
 		}
 	}
 
-	if (GetAsyncKeyState('D') & 0x8001)
+	//if (GetAsyncKeyState('D') & 0x8001)
+	if (KEY_PRESSED(KEY::D))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
 		for (int i = 0; i < 3; ++i) {
-			g_arrVtx[i].vPos.x += 0.001f;
+			g_arrVtx[i].vPos.x += DT;
 		}
 	}
 

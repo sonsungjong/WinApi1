@@ -15,6 +15,12 @@ using namespace Microsoft::WRL;
 
 using namespace DirectX;
 using namespace DirectX::PackedVector;
+using namespace DirectX::SimpleMath;
+
+#include <vector>
+#include <list>
+#include <map>
+#include <unordered_map>
 
 #include "define.h"
 #include "struct.h"

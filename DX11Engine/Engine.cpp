@@ -34,6 +34,7 @@ int CEngine::init(HWND _hWnd, POINT _resolution)
 
 	// Manager Init
 	CTimeMgr::getInstance()->init();
+	CKeyMgr::getInstance()->init();
 
 
 	if (FAILED(TempInit())) {
@@ -49,6 +50,8 @@ void CEngine::progress()
 	// Level->tick();								// 한틱에 수행할 행동
 	// Manager Tick
 	CTimeMgr::getInstance()->tick();				// 한프레임당 시간이 얼마나 걸리는지 계산
+	CKeyMgr::getInstance()->tick();
+
 	TempTick();			// 매 프레임마다 호출 (Object Tick)
 
 	// 화면 클리어 (Target Clear)
