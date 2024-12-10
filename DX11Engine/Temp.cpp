@@ -71,11 +71,15 @@ int TempInit()
 		, "VS_Std2D", "vs_5_0", D3DCOMPILE_DEBUG, 0, g_VSBlob.GetAddressOf(), g_ErrBlob.GetAddressOf())))
 	{
 		if (nullptr != g_ErrBlob) {
-			::MessageBox(GetActiveWindow(), (wchar_t*)g_ErrBlob->GetBufferPointer(), L"버텍스 쉐이더 컴파일 오류", MB_OK);
+			::MessageBoxA(GetActiveWindow(), (char*)g_ErrBlob->GetBufferPointer(), "버텍스 쉐이더 컴파일 오류", MB_OK);
 		}
 		else {
-
+			::MessageBox(GetActiveWindow(), L"파일을 찾을 수 없습니다.", L"버텍스 쉐이더 컴파일 오류", MB_OK);
 		}
+		return E_FAIL;
+	}
+
+	if (FAILED(DEVICE->CreateVertexShader(g_VSBlob->GetBufferPointer(), g_VSBlob->GetBufferSize(), nullptr, g_VS.GetAddressOf()))) {
 		return E_FAIL;
 	}
 
@@ -101,9 +105,30 @@ int TempInit()
 	LayoutDesc[1].SemanticIndex = 0;															// COLOR0
 	nOffset += 16U;
 
-	// DEVICE->CreateInputLayout(LayoutDesc, 2, );
+	if (FAILED(DEVICE->CreateInputLayout(LayoutDesc, 2, g_VSBlob->GetBufferPointer(), g_VSBlob->GetBufferSize(), g_layout.GetAddressOf())))
+	{
+		return E_FAIL;
+	 }
 
 	// 픽셀 셰이더
+	if (FAILED(D3DCompileFromFile(szBuffer, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE
+		, "PS_Std2D", "ps_5_0", D3DCOMPILE_DEBUG, 0, g_PSBlob.GetAddressOf(), g_ErrBlob.GetAddressOf())))
+	{
+		if (nullptr != g_ErrBlob) {
+			::MessageBoxA(GetActiveWindow(), (char*)g_ErrBlob->GetBufferPointer(), "픽셀 쉐이더 컴파일 오류", MB_OK);
+		}
+		else {
+			::MessageBox(GetActiveWindow(), L"파일을 찾을 수 없습니다.", L"픽셀 쉐이더 컴파일 오류", MB_OK);
+		}
+		return E_FAIL;
+	}
+
+	if (FAILED(DEVICE->CreatePixelShader(g_PSBlob->GetBufferPointer(), g_PSBlob->GetBufferSize(), nullptr, g_PS.GetAddressOf()))) 
+	{
+		return E_FAIL;
+	}
+
+	
 
 	return S_OK;
 }
@@ -120,5 +145,21 @@ void TempTick()
 
 void TempRender()
 {
+	UINT stride = sizeof(Vtx);
+	UINT nOffset = 0U;
+	CONTEXT->IASetVertexBuffers(0, 1, g_VB.GetAddressOf(), &stride, &nOffset);
+	CONTEXT->IASetInputLayout(g_layout.Get());
+	CONTEXT->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);		// 원시 도형의 위상 구조를 알려준다
 
+	// 버텍스 쉐이더 셋팅
+	CONTEXT->VSSetShader(g_VS.Get(), nullptr, 0);
+
+	// 픽셀 쉐이더 셋팅
+	CONTEXT->PSSetShader(g_PS.Get(), nullptr, 0);
+
+	// Depth Stencil State 는 기본 옵션으로 할거라 명시안함
+
+
+	// Draw를 호출해서 그린다
+	CONTEXT->Draw(3, 0);
 }

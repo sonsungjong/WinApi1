@@ -75,6 +75,8 @@ int CDevice::init(HWND _hWnd, POINT _resolution)
 void CDevice::clearTarget(float(&_ArrColor)[4])
 {
 	m_context->ClearRenderTargetView(m_RTV, _ArrColor);
+
+	m_context->ClearDepthStencilView(m_DSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 }
 
 void CDevice::present()
