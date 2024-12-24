@@ -21,6 +21,7 @@ using namespace DirectX::SimpleMath;
 #include <list>
 #include <map>
 #include <unordered_map>
+#include <string>
 
 #include "define.h"
 #include "struct.h"

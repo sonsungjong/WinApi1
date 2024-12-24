@@ -33,6 +33,7 @@ int CEngine::init(HWND _hWnd, POINT _resolution)
 	}
 
 	// Manager Init
+	CPathMgr::getInstance()->init();
 	CTimeMgr::getInstance()->init();
 	CKeyMgr::getInstance()->init();
 

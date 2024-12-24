@@ -3,13 +3,29 @@
 #include "Device.h"
 #include "TimeMgr.h"
 #include "KeyMgr.h"
+#include "PathMgr.h"
+#include <string>
+
+#define VTX_TRIANGLE_COUNT				3
+#define VTX_RECT_COUNT						6
+#define IDX_RECT_COUNT							4
 
 // 정점 정보 저장 버퍼
 ComPtr<ID3D11Buffer> g_VB;
-ComPtr<ID3D11InputLayout> g_layout;					// 정점 하나를 구성하는 Layout 정보
 
-// 포지션과 컬러 3개
-Vtx g_arrVtx[3] = {};
+// 정점 버퍼 내에서 사용할 정점을 가리키는 인덱스 정보를 저장할 버퍼 (중첩위치 최적화)
+ComPtr<ID3D11Buffer> g_IB;
+
+// 상수버퍼(Constant Buffer) 물체의 위치, 크기, 회전량 정보를 전달 (이동량만 전달)
+ComPtr<ID3D11Buffer> g_CB;
+
+// 정점 하나를 구성하는 Layout 정보
+ComPtr<ID3D11InputLayout> g_layout;					
+
+// 정점(포지션,컬러)
+const int g_vtx_count = VTX_RECT_COUNT;
+const int g_idx_count = IDX_RECT_COUNT;
+Vtx g_arrVtx[g_idx_count] = {};
 
 // HLSL (어셈블리가 아니라 C++과 유사하게 쉐이더 코드를 컴파일해주는 형식) [.fx파일 속성에서.. 셰이더형식 /fx, Shader Model 5.0 설정]
 
@@ -28,19 +44,22 @@ ComPtr<ID3DBlob> g_ErrBlob;
 int TempInit()
 {
 	// 모니터를 -1 ~ 1 까지 중앙을 0,0으로 정규화한다 [NDC좌표]
-	g_arrVtx[0].vPos = Vec3(0.f, 1.f, 0.f);
-	g_arrVtx[0].vColor = Vec4(0.f, 1.f, 0.f, 1.f);			// 정규화해서 255를 0.0f~1.0f 로 (RGBA)
+	g_arrVtx[0].vPos = Vec3(-0.5f, 0.5f, 0.f);
+	g_arrVtx[0].vColor = Vec4(1.f, 0.f, 0.f, 1.f);			// 정규화해서 255를 0.0f~1.0f 로 (RGBA)
 
-	g_arrVtx[1].vPos = Vec3(1.f, -1.f, 0.f);
+	g_arrVtx[1].vPos = Vec3(0.5f, 0.5f, 0.f);
 	g_arrVtx[1].vColor = Vec4(0.f, 1.f, 0.f, 1.f);			// 정규화해서 255를 0.0f~1.0f 로
 
-	g_arrVtx[2].vPos = Vec3(-1.f, -1.f, 0.f);
+	g_arrVtx[2].vPos = Vec3(0.5f, -0.5f, 0.f);
 	g_arrVtx[2].vColor = Vec4(0.f, 0.f, 1.f, 1.f);			// 정규화해서 255를 0.0f~1.0f 로
+
+	g_arrVtx[3].vPos = Vec3(-0.5f, -0.5f, 0.f);
+	g_arrVtx[3].vColor = Vec4(1.f, 0.f, 0.f, 1.f);
 
 	// 정점 버퍼 생성
 	D3D11_BUFFER_DESC VBDesc = {};
 
-	VBDesc.ByteWidth = sizeof(Vtx) * 3;
+	VBDesc.ByteWidth = sizeof(Vtx) * g_idx_count;			// 인덱스로 버텍스를 생성
 	VBDesc.MiscFlags = 0;
 
 	VBDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;						// 용도
@@ -54,22 +73,33 @@ int TempInit()
 	if (FAILED(DEVICE->CreateBuffer(&VBDesc, &SubDesc, g_VB.GetAddressOf()))) {
 		return E_FAIL;
 	}
-	// 버텍스 쉐이더
-	wchar_t szBuffer[255] = {};
-	GetCurrentDirectory(255, szBuffer);
 
-	size_t len = wcslen(szBuffer);
-	for (int i = len - 1; i > 0; --i)			// 뒤에서부터 출발
-	{
-		if (szBuffer[i] == '\\') {
-			szBuffer[i] = '\0';
-			break;
-		}
+	// 인덱스 버퍼 생성
+	UINT arrIdx[g_vtx_count] = {0, 2, 3, 0, 1, 2};
+	D3D11_BUFFER_DESC IBDesc = {};
+	IBDesc.ByteWidth = sizeof(UINT) * g_vtx_count;				// 6개의 점을 인덱스로 매칭
+	IBDesc.MiscFlags = 0;
+
+	IBDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;			// 인덱스 버퍼로 설정
+
+	// 덮어쓰기 가능 설정
+	IBDesc.CPUAccessFlags = 0;			// 인덱스 버퍼는 수정될 일이 없어서 0
+	IBDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	SubDesc = {};
+	SubDesc.pSysMem = arrIdx;
+	if (FAILED(DEVICE->CreateBuffer(&IBDesc, &SubDesc, g_IB.GetAddressOf()))) {
+		return E_FAIL;
 	}
-	wcscat_s(szBuffer, L"\\content\\shader\\std2d.fx");
 
+	// 상수 버퍼 (Constant Buffer)
+
+
+	// 버텍스 쉐이더
+	std::wstring strPath = std::wstring(CPathMgr::getInstance()->getContentPath());
+	strPath += L"shader\\std2d.fx";
 	
-	if (FAILED(D3DCompileFromFile(szBuffer, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE
+	if (FAILED(D3DCompileFromFile(strPath.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE
 		, "VS_Std2D", "vs_5_0", D3DCOMPILE_DEBUG, 0, g_VSBlob.GetAddressOf(), g_ErrBlob.GetAddressOf())))
 	{
 		if (nullptr != g_ErrBlob) {
@@ -113,7 +143,7 @@ int TempInit()
 	 }
 
 	// 픽셀 셰이더
-	if (FAILED(D3DCompileFromFile(szBuffer, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE
+	if (FAILED(D3DCompileFromFile(strPath.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE
 		, "PS_Std2D", "ps_5_0", D3DCOMPILE_DEBUG, 0, g_PSBlob.GetAddressOf(), g_ErrBlob.GetAddressOf())))
 	{
 		if (nullptr != g_ErrBlob) {
@@ -150,7 +180,7 @@ void TempTick()
 	if(KEY_PRESSED(KEY::W))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		for (int i = 0; i < 3; ++i) {
+		for (int i = 0; i < g_idx_count; ++i) {
 			g_arrVtx[i].vPos.y += DT;
 		}
 	}
@@ -159,7 +189,7 @@ void TempTick()
 	if (KEY_PRESSED(KEY::S))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		for (int i = 0; i < 3; ++i) {
+		for (int i = 0; i < g_idx_count; ++i) {
 			g_arrVtx[i].vPos.y -= DT;
 		}
 	}
@@ -168,7 +198,7 @@ void TempTick()
 	if (KEY_PRESSED(KEY::A))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		for (int i = 0; i < 3; ++i) {
+		for (int i = 0; i < g_idx_count; ++i) {
 			g_arrVtx[i].vPos.x -= DT;
 		}
 	}
@@ -177,7 +207,7 @@ void TempTick()
 	if (KEY_PRESSED(KEY::D))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		for (int i = 0; i < 3; ++i) {
+		for (int i = 0; i < g_idx_count; ++i) {
 			g_arrVtx[i].vPos.x += DT;
 		}
 	}
@@ -186,7 +216,7 @@ void TempTick()
 	D3D11_MAPPED_SUBRESOURCE tSub = {};
 	CONTEXT->Map(g_VB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &tSub);
 
-	memcpy(tSub.pData, g_arrVtx, sizeof(Vtx) * 3);
+	memcpy(tSub.pData, g_arrVtx, sizeof(Vtx) * g_idx_count);
 
 	CONTEXT->Unmap(g_VB.Get(), 0);
 }
@@ -196,6 +226,7 @@ void TempRender()
 	UINT stride = sizeof(Vtx);
 	UINT nOffset = 0U;
 	CONTEXT->IASetVertexBuffers(0, 1, g_VB.GetAddressOf(), &stride, &nOffset);
+	CONTEXT->IASetIndexBuffer(g_IB.Get(), DXGI_FORMAT_R32_UINT, 0);		// 인덱스 버퍼를 전달시키고
 	CONTEXT->IASetInputLayout(g_layout.Get());
 	CONTEXT->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);		// 원시 도형의 위상 구조를 알려준다
 
@@ -209,5 +240,8 @@ void TempRender()
 
 
 	// Draw를 호출해서 그린다
-	CONTEXT->Draw(3, 0);
+	//CONTEXT->Draw(g_vtx_count, 0);
+	CONTEXT->DrawIndexed(g_vtx_count, 0, 0);		// 인덱스 버퍼를 통해 6개 점을 그린다
 }
+
+// 인덱스 버퍼 : 사각형정점 6개 -> 4개 (중첩 최적화)
