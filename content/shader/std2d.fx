@@ -1,28 +1,36 @@
 #ifndef _STD2D
 #define _STD2D
 
+cbuffer TRANSFORM : register(b0)
+{
+	float4 g_Position;
+};
+
 struct VS_IN
 {
 	float3 vPos : POSITION0;
+	float4 vColor : COLOR;
 };
 
 struct VS_OUT
 {
 	float4 vPosition : SV_Position;
+	float4 vColor : COLOR;
 };
 
 VS_OUT VS_Std2D(VS_IN _in)
 {
 	VS_OUT output = (VS_OUT)0.0f;
 
-	output.vPosition = float4(_in.vPos, 1.0f);
+	output.vPosition = float4(_in.vPos + g_Position.xyz, 1.0f);
+	output.vColor = _in.vColor;
 
 	return output;
 }
 
 float4 PS_Std2D(VS_OUT _in) : SV_Target
 {
-	return float4(1.0f, 0.0f, 0.0f, 1.0f);
+	return _in.vColor;
 }
 
 #endif

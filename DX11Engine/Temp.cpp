@@ -27,6 +27,9 @@ const int g_vtx_count = VTX_RECT_COUNT;
 const int g_idx_count = IDX_RECT_COUNT;
 Vtx g_arrVtx[g_idx_count] = {};
 
+// 물체의 위치값
+Vec3 g_ObjectPos;
+
 // HLSL (어셈블리가 아니라 C++과 유사하게 쉐이더 코드를 컴파일해주는 형식) [.fx파일 속성에서.. 셰이더형식 /fx, Shader Model 5.0 설정]
 
 // Vertex Shader (정점당)
@@ -93,7 +96,17 @@ int TempInit()
 	}
 
 	// 상수 버퍼 (Constant Buffer)
+	D3D11_BUFFER_DESC CBDesc = {};
+	CBDesc.ByteWidth = sizeof(tTransform);
+	CBDesc.MiscFlags = 0;
+	CBDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	CBDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	CBDesc.Usage = D3D11_USAGE_DYNAMIC;
 
+	if (FAILED(DEVICE->CreateBuffer(&CBDesc, nullptr, g_CB.GetAddressOf())))
+	{
+		return E_FAIL;
+	}
 
 	// 버텍스 쉐이더
 	std::wstring strPath = std::wstring(CPathMgr::getInstance()->getContentPath());
@@ -160,7 +173,7 @@ int TempInit()
 		return E_FAIL;
 	}
 
-	
+	g_ObjectPos = Vec3(0.f, 0.f, 0.f);				// 물체를 처음에 원점에
 
 	return S_OK;
 }
@@ -180,45 +193,43 @@ void TempTick()
 	if(KEY_PRESSED(KEY::W))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		for (int i = 0; i < g_idx_count; ++i) {
-			g_arrVtx[i].vPos.y += DT;
-		}
+		g_ObjectPos.y += DT;
 	}
 
 	//if (GetAsyncKeyState('S') & 0x8001)
 	if (KEY_PRESSED(KEY::S))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		for (int i = 0; i < g_idx_count; ++i) {
-			g_arrVtx[i].vPos.y -= DT;
-		}
+		g_ObjectPos.y -= DT;
 	}
 
 	//if (GetAsyncKeyState('A') & 0x8001)
 	if (KEY_PRESSED(KEY::A))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		for (int i = 0; i < g_idx_count; ++i) {
-			g_arrVtx[i].vPos.x -= DT;
-		}
+		g_ObjectPos.x -= DT;
 	}
 
 	//if (GetAsyncKeyState('D') & 0x8001)
 	if (KEY_PRESSED(KEY::D))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		for (int i = 0; i < g_idx_count; ++i) {
-			g_arrVtx[i].vPos.x += DT;
-		}
+		g_ObjectPos.x += DT;
 	}
 
 	// System Memory -> GPU
 	D3D11_MAPPED_SUBRESOURCE tSub = {};
-	CONTEXT->Map(g_VB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &tSub);
+	CONTEXT->Map(g_CB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &tSub);
 
-	memcpy(tSub.pData, g_arrVtx, sizeof(Vtx) * g_idx_count);
+	tTransform trans = {};
+	trans.Position = g_ObjectPos;
 
-	CONTEXT->Unmap(g_VB.Get(), 0);
+	memcpy(tSub.pData, &trans, sizeof(tTransform));
+
+	CONTEXT->Unmap(g_CB.Get(), 0);
+
+	// B0 에 보낸다
+	CONTEXT->VSSetConstantBuffers(0, 1, g_CB.GetAddressOf());
 }
 
 void TempRender()
