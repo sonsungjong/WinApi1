@@ -59,6 +59,9 @@
     <Filter Include="_07_Asset\Shader">
       <UniqueIdentifier>{e2940d56-2d06-4d88-af9c-15a53cad6f43}</UniqueIdentifier>
     </Filter>
+    <Filter Include="_03_Device\ConstBuffer">
+      <UniqueIdentifier>{c2335537-fcb4-4d24-9634-757860fd8163}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -116,6 +119,12 @@
     <ClInclude Include="Mesh.h">
       <Filter>_07_Asset\Mesh</Filter>
     </ClInclude>
+    <ClInclude Include="ConstBuffer.h">
+      <Filter>_03_Device\ConstBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="func.h">
+      <Filter>_01_Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">
@@ -154,6 +163,9 @@
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>_07_Asset\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="ConstBuffer.cpp">
+      <Filter>_03_Device\ConstBuffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

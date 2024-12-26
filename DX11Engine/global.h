@@ -24,6 +24,7 @@ using namespace DirectX::SimpleMath;
 #include <string>
 
 #include "define.h"
+#include "enum.h"
 #include "struct.h"
-
+#include "func.h"
 #include "singleton.h"
