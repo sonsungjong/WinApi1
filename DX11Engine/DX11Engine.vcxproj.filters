@@ -110,9 +110,11 @@
     <ClInclude Include="Component.h">
       <Filter>_06_Component</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h" />
     <ClInclude Include="enum.h">
       <Filter>_01_Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>_07_Asset\Mesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -150,7 +152,9 @@
     <ClCompile Include="Component.cpp">
       <Filter>_06_Component</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Mesh.cpp">
+      <Filter>_07_Asset\Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleMath.inl">

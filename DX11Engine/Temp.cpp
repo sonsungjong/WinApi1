@@ -4,11 +4,16 @@
 #include "TimeMgr.h"
 #include "KeyMgr.h"
 #include "PathMgr.h"
+#include "Mesh.h"
+
 #include <string>
 
-#define VTX_TRIANGLE_COUNT				3
-#define VTX_RECT_COUNT						6
-#define IDX_RECT_COUNT							4
+#define VTX_TRIANGLE_ARRAY_COUNT					3
+#define VTX_RECT_ARRAY_COUNT							4
+#define IDX_RECT_ARRAY_COUNT							6
+
+CMesh* g_pRectMesh = nullptr;
+CMesh* g_pCircleMesh = nullptr;
 
 // 정점 정보 저장 버퍼
 ComPtr<ID3D11Buffer> g_VB;
@@ -23,9 +28,9 @@ ComPtr<ID3D11Buffer> g_CB;
 ComPtr<ID3D11InputLayout> g_layout;					
 
 // 정점(포지션,컬러)
-const int g_vtx_count = VTX_RECT_COUNT;
-const int g_idx_count = IDX_RECT_COUNT;
-Vtx g_arrVtx[g_idx_count] = {};
+const int g_vtx_array_count = VTX_RECT_ARRAY_COUNT;
+const int g_idx_array_count = IDX_RECT_ARRAY_COUNT;
+Vtx g_arrVtx[g_vtx_array_count] = {};
 
 // 물체의 위치값
 Vec3 g_ObjectPos;
@@ -47,6 +52,7 @@ ComPtr<ID3DBlob> g_ErrBlob;
 int TempInit()
 {
 	// 모니터를 -1 ~ 1 까지 중앙을 0,0으로 정규화한다 [NDC좌표]
+	// [사각형 메시] 정점버퍼 초기화
 	g_arrVtx[0].vPos = Vec3(-0.5f, 0.5f, 0.f);
 	g_arrVtx[0].vColor = Vec4(1.f, 0.f, 0.f, 1.f);			// 정규화해서 255를 0.0f~1.0f 로 (RGBA)
 
@@ -59,41 +65,43 @@ int TempInit()
 	g_arrVtx[3].vPos = Vec3(-0.5f, -0.5f, 0.f);
 	g_arrVtx[3].vColor = Vec4(1.f, 0.f, 0.f, 1.f);
 
-	// 정점 버퍼 생성
-	D3D11_BUFFER_DESC VBDesc = {};
-
-	VBDesc.ByteWidth = sizeof(Vtx) * g_idx_count;			// 인덱스로 버텍스를 생성
-	VBDesc.MiscFlags = 0;
-
-	VBDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;						// 용도
-
-	// 덮어쓰기 가능 설정
-	VBDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	VBDesc.Usage = D3D11_USAGE_DYNAMIC;
-
-	D3D11_SUBRESOURCE_DATA SubDesc = {};
-	SubDesc.pSysMem = g_arrVtx;
-	if (FAILED(DEVICE->CreateBuffer(&VBDesc, &SubDesc, g_VB.GetAddressOf()))) {
-		return E_FAIL;
-	}
-
 	// 인덱스 버퍼 생성
-	UINT arrIdx[g_vtx_count] = {0, 2, 3, 0, 1, 2};
-	D3D11_BUFFER_DESC IBDesc = {};
-	IBDesc.ByteWidth = sizeof(UINT) * g_vtx_count;				// 6개의 점을 인덱스로 매칭
-	IBDesc.MiscFlags = 0;
+	UINT arrIdx[g_idx_array_count] = { 0, 2, 3, 0, 1, 2 };
 
-	IBDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;			// 인덱스 버퍼로 설정
+	g_pRectMesh = new CMesh;
+	g_pRectMesh->create(g_arrVtx, g_vtx_array_count, arrIdx, g_idx_array_count);
 
-	// 덮어쓰기 가능 설정
-	IBDesc.CPUAccessFlags = 0;			// 인덱스 버퍼는 수정될 일이 없어서 0
-	IBDesc.Usage = D3D11_USAGE_DEFAULT;
+	// [원 메시]
+	float fRadius = 0.5f;
+	UINT nSlice = 360U;
+	float fAngleStep = (2 * XM_PI) / nSlice;
 
-	SubDesc = {};
-	SubDesc.pSysMem = arrIdx;
-	if (FAILED(DEVICE->CreateBuffer(&IBDesc, &SubDesc, g_IB.GetAddressOf()))) {
-		return E_FAIL;
+	std::vector<Vtx> vecVtx;
+	std::vector<UINT> vecIdx;
+	// 원점을 먼저 넣어준다
+	Vtx v;
+	v.vPos = Vec3(0.f, 0.f, 0.f);
+	v.vColor = Vec4(1.f, 1.f, 1.f, 1.f);
+	vecVtx.push_back(v);
+	
+	float fAngle = 0.f;
+	for (UINT i = 0U; i <= nSlice; ++i) {
+		v.vPos = Vec3(cosf(fAngle) * fRadius, sinf(fAngle) * fRadius, 0.f);				// x, y, z
+		v.vColor = Vec4(1.f, 1.f, 1.f, 1.f);
+		
+		vecVtx.push_back(v);
+
+		fAngle += fAngleStep;
 	}
+
+	for (UINT i = 0U; i < nSlice; ++i) {
+		vecIdx.push_back(0);
+		vecIdx.push_back(i+2);
+		vecIdx.push_back(i+1);
+	}
+
+	g_pCircleMesh = new CMesh;
+	g_pCircleMesh->create(vecVtx.data(), vecVtx.size(), vecIdx.data(), vecIdx.size());
 
 	// 상수 버퍼 (Constant Buffer)
 	D3D11_BUFFER_DESC CBDesc = {};
@@ -180,7 +188,12 @@ int TempInit()
 
 void TempRelease()
 {
-
+	if (nullptr != g_pRectMesh) {
+		delete g_pRectMesh;
+	}
+	if (nullptr != g_pCircleMesh) {
+		delete g_pCircleMesh;
+	}
 }
 
 void TempTick()
@@ -234,10 +247,7 @@ void TempTick()
 
 void TempRender()
 {
-	UINT stride = sizeof(Vtx);
-	UINT nOffset = 0U;
-	CONTEXT->IASetVertexBuffers(0, 1, g_VB.GetAddressOf(), &stride, &nOffset);
-	CONTEXT->IASetIndexBuffer(g_IB.Get(), DXGI_FORMAT_R32_UINT, 0);		// 인덱스 버퍼를 전달시키고
+
 	CONTEXT->IASetInputLayout(g_layout.Get());
 	CONTEXT->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);		// 원시 도형의 위상 구조를 알려준다
 
@@ -252,7 +262,8 @@ void TempRender()
 
 	// Draw를 호출해서 그린다
 	//CONTEXT->Draw(g_vtx_count, 0);
-	CONTEXT->DrawIndexed(g_vtx_count, 0, 0);		// 인덱스 버퍼를 통해 6개 점을 그린다
+	//g_pRectMesh->render();
+	g_pCircleMesh->render();
 }
 
 // 인덱스 버퍼 : 사각형정점 6개 -> 4개 (중첩 최적화)
