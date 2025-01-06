@@ -4,11 +4,11 @@
 
 int CMesh::create(Vtx* _pVtxSysMem, size_t _nVtxCount, UINT* _pIdxSysMem, size_t _nIdxCount)
 {
-	m_nVtxCount = _nVtxCount;
-	m_nIdxCount = _nIdxCount;
+	m_nVtxCount = (UINT)_nVtxCount;
+	m_nIdxCount = (UINT)_nIdxCount;
 
 	// 정점 버퍼 생성
-	m_descVB.ByteWidth = sizeof(Vtx) * _nVtxCount;
+	m_descVB.ByteWidth = static_cast<UINT>(sizeof(Vtx) * _nVtxCount);
 	m_descVB.MiscFlags = 0;
 
 	m_descVB.BindFlags = D3D11_BIND_VERTEX_BUFFER;						// 용도
@@ -25,7 +25,7 @@ int CMesh::create(Vtx* _pVtxSysMem, size_t _nVtxCount, UINT* _pIdxSysMem, size_t
 	}
 
 	// 인덱스 버퍼 처리
-	m_descIB.ByteWidth = sizeof(UINT) * _nIdxCount;				// 6개의 점을 인덱스로 매칭
+	m_descIB.ByteWidth = static_cast<UINT>(sizeof(UINT) * _nIdxCount);				// 6개의 점을 인덱스로 매칭
 	m_descIB.MiscFlags = 0;
 
 	m_descIB.BindFlags = D3D11_BIND_INDEX_BUFFER;			// 인덱스 버퍼로 설정
@@ -46,6 +46,8 @@ int CMesh::create(Vtx* _pVtxSysMem, size_t _nVtxCount, UINT* _pIdxSysMem, size_t
 
 	m_pIdxSysMem = new UINT[m_nIdxCount];
 	memcpy(m_pIdxSysMem, _pIdxSysMem, sizeof(UINT) * m_nIdxCount);
+
+	return S_OK;
 }
 
 void CMesh::binding()
