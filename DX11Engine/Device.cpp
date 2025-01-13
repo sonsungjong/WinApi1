@@ -14,7 +14,7 @@ CDevice::CDevice()
 	, m_depthStencilTex(nullptr)
 	, m_DSV(nullptr)
 {
-
+	memset(m_CB, 0, sizeof(m_CB));				// 포인터 배열 초기화
 }
 
 CDevice::~CDevice()
