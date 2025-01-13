@@ -6,6 +6,7 @@
 #include "TimeMgr.h"
 #include "PathMgr.h"
 #include "KeyMgr.h"
+#include "AssetMgr.h"
 
 #include "Temp.h"
 
@@ -36,7 +37,7 @@ int CEngine::init(HWND _hWnd, POINT _resolution)
 	CPathMgr::getInstance()->init();
 	CTimeMgr::getInstance()->init();
 	CKeyMgr::getInstance()->init();
-
+	CAssetMgr::getInstance()->init();
 
 	if (FAILED(TempInit())) {
 		MessageBox(m_hWnd, L"Device 초기화 실패", L"Temp Init 초기화 실패", MB_OK);

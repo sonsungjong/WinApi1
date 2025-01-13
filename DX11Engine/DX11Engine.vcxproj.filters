@@ -62,6 +62,24 @@
     <Filter Include="_03_Device\ConstBuffer">
       <UniqueIdentifier>{c2335537-fcb4-4d24-9634-757860fd8163}</UniqueIdentifier>
     </Filter>
+    <Filter Include="_07_Asset\Shader\GraphicShader">
+      <UniqueIdentifier>{0d37634f-8da0-4d70-a0ae-9f3958afb413}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_07_Asset\Shader\ComputeShader">
+      <UniqueIdentifier>{5ce9c7c5-6e68-415e-98f9-33715cd3ef24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_04_Manager\_01_TimeMgr">
+      <UniqueIdentifier>{5486b2ec-dc5e-4670-8554-6d8cd1721b66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_04_Manager\_02_PathMgr">
+      <UniqueIdentifier>{da821012-3f1e-4552-8262-18372d449161}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_04_Manager\_03_KeyMgr">
+      <UniqueIdentifier>{21dd3bd4-a5e1-441e-ae0e-7200090ffa1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_04_Manager\_04_AssetMgr">
+      <UniqueIdentifier>{95962db9-2134-4516-8714-2896eb8453f9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -92,15 +110,6 @@
     <ClInclude Include="singleton.h">
       <Filter>Module</Filter>
     </ClInclude>
-    <ClInclude Include="TimeMgr.h">
-      <Filter>_04_Manager</Filter>
-    </ClInclude>
-    <ClInclude Include="PathMgr.h">
-      <Filter>_04_Manager</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyMgr.h">
-      <Filter>_04_Manager</Filter>
-    </ClInclude>
     <ClInclude Include="Entity.h">
       <Filter>Module</Filter>
     </ClInclude>
@@ -125,6 +134,30 @@
     <ClInclude Include="func.h">
       <Filter>_01_Header</Filter>
     </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>_07_Asset\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicShader.h">
+      <Filter>_07_Asset\Shader\GraphicShader</Filter>
+    </ClInclude>
+    <ClInclude Include="ComputeShader.h">
+      <Filter>_07_Asset\Shader\ComputeShader</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeMgr.h">
+      <Filter>_04_Manager\_01_TimeMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyMgr.h">
+      <Filter>_04_Manager\_03_KeyMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="PathMgr.h">
+      <Filter>_04_Manager\_02_PathMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetMgr.h">
+      <Filter>_04_Manager\_04_AssetMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="ptr.h">
+      <Filter>_07_Asset</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">
@@ -139,15 +172,6 @@
     <ClCompile Include="Temp.cpp" />
     <ClCompile Include="Device.cpp">
       <Filter>_03_Device</Filter>
-    </ClCompile>
-    <ClCompile Include="TimeMgr.cpp">
-      <Filter>_04_Manager</Filter>
-    </ClCompile>
-    <ClCompile Include="PathMgr.cpp">
-      <Filter>_04_Manager</Filter>
-    </ClCompile>
-    <ClCompile Include="KeyMgr.cpp">
-      <Filter>_04_Manager</Filter>
     </ClCompile>
     <ClCompile Include="Entity.cpp">
       <Filter>Module</Filter>
@@ -166,6 +190,30 @@
     </ClCompile>
     <ClCompile Include="ConstBuffer.cpp">
       <Filter>_03_Device\ConstBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>_07_Asset\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicShader.cpp">
+      <Filter>_07_Asset\Shader\GraphicShader</Filter>
+    </ClCompile>
+    <ClCompile Include="ComputeShader.cpp">
+      <Filter>_07_Asset\Shader\ComputeShader</Filter>
+    </ClCompile>
+    <ClCompile Include="TimeMgr.cpp">
+      <Filter>_04_Manager\_01_TimeMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyMgr.cpp">
+      <Filter>_04_Manager\_03_KeyMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="PathMgr.cpp">
+      <Filter>_04_Manager\_02_PathMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetMgr.cpp">
+      <Filter>_04_Manager\_04_AssetMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetMgr_Init.cpp">
+      <Filter>_04_Manager\_04_AssetMgr</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
