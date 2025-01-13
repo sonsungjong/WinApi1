@@ -1,5 +1,9 @@
 #ifndef DEVICE_H_
 #define DEVICE_H_
+
+// 전방선언
+class CConstBuffer;
+
 class CDevice
 	: public CSingleton<CDevice>
 {
@@ -20,6 +24,15 @@ private:
 	ID3D11Texture2D* m_depthStencilTex;
 	ID3D11DepthStencilView* m_DSV;
 
+	CConstBuffer* m_CB[(UINT)CB_TYPE::END];
+
+private:
+	int createSwapChain();
+	int createView();
+
+	// 상수버퍼 초기화
+	int createConstBuffer();
+
 public:
 	int init(HWND _hWnd, POINT _resolution);
 	void clearTarget(float(&_ArrColor)[4]);				// 배열 4개 짜리를 받는다 (해당 색상으로 지움)
@@ -28,9 +41,7 @@ public:
 	ID3D11Device* GetDivice() { return m_device; }
 	ID3D11DeviceContext* GetContext() { return m_context; }
 
-private:
-	int createSwapChain();
-	int createView();
+	CConstBuffer* getConstBuffer(CB_TYPE _type) { return m_CB[(UINT)_type]; }
 
 //public:
 	// 간략화버전 싱글턴패턴

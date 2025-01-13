@@ -6,6 +6,8 @@
 #include "PathMgr.h"
 #include "Mesh.h"
 
+#include "ConstBuffer.h"
+
 #include <string>
 
 #define VTX_TRIANGLE_ARRAY_COUNT					3
@@ -22,7 +24,7 @@ ComPtr<ID3D11Buffer> g_VB;
 ComPtr<ID3D11Buffer> g_IB;
 
 // 상수버퍼(Constant Buffer) 물체의 위치, 크기, 회전량 정보를 전달 (이동량만 전달)
-ComPtr<ID3D11Buffer> g_CB;
+//ComPtr<ID3D11Buffer> g_CB;
 
 // 정점 하나를 구성하는 Layout 정보
 ComPtr<ID3D11InputLayout> g_layout;					
@@ -32,8 +34,9 @@ const int g_vtx_array_count = VTX_RECT_ARRAY_COUNT;
 const int g_idx_array_count = IDX_RECT_ARRAY_COUNT;
 Vtx g_arrVtx[g_vtx_array_count] = {};
 
-// 물체의 위치값
-Vec3 g_ObjectPos;
+// 물체의 위치값 + 크기, 회전
+//Vec3 g_ObjectPos;
+tTransform g_Trans = {};
 
 // HLSL (어셈블리가 아니라 C++과 유사하게 쉐이더 코드를 컴파일해주는 형식) [.fx파일 속성에서.. 셰이더형식 /fx, Shader Model 5.0 설정]
 
@@ -104,17 +107,17 @@ int TempInit()
 	g_pCircleMesh->create(vecVtx.data(), vecVtx.size(), vecIdx.data(), vecIdx.size());
 
 	// 상수 버퍼 (Constant Buffer)
-	D3D11_BUFFER_DESC CBDesc = {};
-	CBDesc.ByteWidth = sizeof(tTransform);
-	CBDesc.MiscFlags = 0;
-	CBDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	CBDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	CBDesc.Usage = D3D11_USAGE_DYNAMIC;
+	//D3D11_BUFFER_DESC CBDesc = {};
+	//CBDesc.ByteWidth = sizeof(tTransform);
+	//CBDesc.MiscFlags = 0;
+	//CBDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	//CBDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	//CBDesc.Usage = D3D11_USAGE_DYNAMIC;
 
-	if (FAILED(DEVICE->CreateBuffer(&CBDesc, nullptr, g_CB.GetAddressOf())))
-	{
-		return E_FAIL;
-	}
+	//if (FAILED(DEVICE->CreateBuffer(&CBDesc, nullptr, g_CB.GetAddressOf())))
+	//{
+	//	return E_FAIL;
+	//}
 
 	// 버텍스 쉐이더
 	std::wstring strPath = std::wstring(CPathMgr::getInstance()->getContentPath());
@@ -181,7 +184,7 @@ int TempInit()
 		return E_FAIL;
 	}
 
-	g_ObjectPos = Vec3(0.f, 0.f, 0.f);				// 물체를 처음에 원점에
+	//g_ObjectPos = Vec3(0.f, 0.f, 0.f);				// 물체를 처음에 원점에
 
 	return S_OK;
 }
@@ -206,43 +209,44 @@ void TempTick()
 	if(KEY_PRESSED(KEY::W))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		g_ObjectPos.y += DT;
+		g_Trans.Position.y += DT;
 	}
 
 	//if (GetAsyncKeyState('S') & 0x8001)
 	if (KEY_PRESSED(KEY::S))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		g_ObjectPos.y -= DT;
+		g_Trans.Position.y -= DT;
 	}
 
 	//if (GetAsyncKeyState('A') & 0x8001)
 	if (KEY_PRESSED(KEY::A))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		g_ObjectPos.x -= DT;
+		g_Trans.Position.x -= DT;
 	}
 
 	//if (GetAsyncKeyState('D') & 0x8001)
 	if (KEY_PRESSED(KEY::D))
 	{
 		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		g_ObjectPos.x += DT;
+		g_Trans.Position.x += DT;
 	}
 
 	// System Memory -> GPU
-	D3D11_MAPPED_SUBRESOURCE tSub = {};
-	CONTEXT->Map(g_CB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &tSub);
+	CConstBuffer* pCB = CDevice::getInstance()->getConstBuffer(CB_TYPE::TRANSFORM);			// b0 로 생성
+	pCB->setData(&g_Trans);
 
-	tTransform trans = {};
-	trans.Position = g_ObjectPos;
+	//D3D11_MAPPED_SUBRESOURCE tSub = {};
+	//CONTEXT->Map(g_CB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &tSub);
+	//tTransform trans = {};
+	//trans.Position = g_ObjectPos;
+	//memcpy(tSub.pData, &trans, sizeof(tTransform));
+	//CONTEXT->Unmap(g_CB.Get(), 0);
 
-	memcpy(tSub.pData, &trans, sizeof(tTransform));
-
-	CONTEXT->Unmap(g_CB.Get(), 0);
-
-	// B0 에 보낸다
-	CONTEXT->VSSetConstantBuffers(0, 1, g_CB.GetAddressOf());
+	pCB->binding();						// 멤버에 저장해놓은 CB_TYPE::TRANSFORM로 바인딩 b0
+	// B0 에 보낸다 (바인딩)
+	//CONTEXT->VSSetConstantBuffers(0, 1, g_CB.GetAddressOf());
 }
 
 void TempRender()

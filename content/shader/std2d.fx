@@ -4,6 +4,7 @@
 cbuffer TRANSFORM : register(b0)
 {
 	float4 g_Position;
+	float4 g_Scale;
 };
 
 struct VS_IN

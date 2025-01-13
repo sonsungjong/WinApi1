@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Device.h"
 
+#include "ConstBuffer.h"
+
 CDevice::CDevice()
 	: m_hWnd(nullptr)
 	, m_render_resolution{}
@@ -17,6 +19,8 @@ CDevice::CDevice()
 
 CDevice::~CDevice()
 {
+	SafeDelArray(m_CB);						// SafeDelArray<CConstBuffer, 4>(m_CB); 함수템플릿을 통해 함수가 만들어져서 동작
+
 	m_device->Release();
 	m_context->Release();
 	m_swapChain->Release();
@@ -68,6 +72,13 @@ int CDevice::init(HWND _hWnd, POINT _resolution)
 	viewport.MaxDepth = 1;
 	// ViewPort 정보 세팅
 	m_context->RSSetViewports(1, &viewport);
+
+	// 필요한 상수버퍼 미리 생성
+	if (!(SUCCEEDED(createConstBuffer())))
+	{
+
+		return E_FAIL;
+	}
 
 	return S_OK;
 }
@@ -155,6 +166,14 @@ int CDevice::createView()
 
 	// RenderTarget과 DepthStencilTarget을 출력으로 지정
 	m_context->OMSetRenderTargets(1, &m_RTV, m_DSV);
+
+	return S_OK;
+}
+
+int CDevice::createConstBuffer()
+{
+	m_CB[(UINT)CB_TYPE::TRANSFORM] = new CConstBuffer;
+	m_CB[(UINT)CB_TYPE::TRANSFORM]->create(sizeof(tTransform), CB_TYPE::TRANSFORM);
 
 	return S_OK;
 }
