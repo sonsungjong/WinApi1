@@ -35,6 +35,6 @@ public:
     template<typename T>
     friend class Ptr;
 
-    friend class CAssetMgr;
+    friend class CAssetMgr;                 // CAssetMgr 에게는 private 멤버도 허용을 한다
 };
 

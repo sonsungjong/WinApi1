@@ -206,12 +206,17 @@
     <ClInclude Include="ptr.h">
       <Filter>_07_Asset</Filter>
     </ClInclude>
-    <ClInclude Include="assets.h" />
     <ClInclude Include="RenderComponent.h">
       <Filter>_06_Component\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Transform.h">
       <Filter>_06_Component\_01_Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="assets.h">
+      <Filter>_01_Header</Filter>
+    </ClInclude>
+    <ClInclude Include="components.h">
+      <Filter>_01_Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

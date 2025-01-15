@@ -19,14 +19,15 @@ public:
 
 public:
     template<typename T>
-    Ptr<T> FindAsset(const std::wstring& _strKey);
+    Ptr<T> FindAsset(const std::wstring& _strKey);                                  // 검색하고
     
     template<typename T>
-    void AddAsset(const std::wstring& _strKey, Ptr<T> pAsset);
+    void AddAsset(const std::wstring& _strKey, Ptr<T> pAsset);              // 없으면 추가
 };
 
-// 변수 템플릿
 // std::is_same_v
+// 변수 템플릿 (타입을 정해줘야 변수가 생성됨... 특수화가 가능[특정 타입일 경우 변칙을 줄 수 있음])
+// constexpr : 엄격한 상수화 (컴파일 타임에 상수화 보장)
 //template<typename T1, typename T2>
 //constexpr bool mybool = false;
 //template<typename T1>
@@ -35,6 +36,30 @@ public:
 template<typename T>
 ASSET_TYPE getAssetType()
 {
+    // Run Time Type Information (RTTI) : 실시간 타입을 알아내는 정보 (상속과 가상함수가 존재해야 가능)
+    //const type_info& info = typeid(T);
+    //if (info.hash_code() == typeid(CMesh).hash_code()) { return ASSET_TYPE::MESH; }                   // T의 타입 해시코드     (if는 런타임 시간을 소요함)
+    //else if (info.hash_code() == typeid(CGraphicShader).hash_code()) {
+    //    return ASSET_TYPE::GRAPHICS_SHADER;
+    //}
+    //else if (info.hash_code() == typeid(CComputeShader).hash_code()) {
+    //    return ASSET_TYPE::COMPUTE_SHADER;
+    //}
+
+    //if constexpr (mybool<T, CMesh>)
+    //{
+    //    return ASSET_TYPE::MESH;
+    //}
+    //if constexpr (mybool<T, CGraphicShader>)
+    //{
+    //    return ASSET_TYPE::GRAPHICS_SHADER;
+    //}
+    //if constexpr (mybool<T, CComputeShader>)
+    //{
+    //    return ASSET_TYPE::COMPUTE_SHADER;
+    //}
+
+    // if constexpr : 컴파일 타임에서 제거함
     if constexpr (std::is_same_v<T, CMesh>)
     {
         return ASSET_TYPE::MESH;
@@ -61,20 +86,17 @@ inline Ptr<T> CAssetMgr::FindAsset(const std::wstring& _strKey)
         return nullptr;
     }
 
-#ifdef _DEBUG
-    T* pAsset = dynamic_cast<T*>(iter->second.Get());
+    T* pAsset = dynamic_cast<T*>(iter->second.Get());               // 다운캐스팅으로 정확한 자료형이 들어왔는지 체크한다
     return pAsset;
-#else
-    return (T*)iter->second;
-#endif
+
 }
 
 template<typename T>
 inline void CAssetMgr::AddAsset(const std::wstring& _strKey, Ptr<T> _pAsset)
 {
-    Ptr<T> pFindAsset = FindAsset<T>(_strKey);
+    Ptr<T> pFindAsset = FindAsset<T>(_strKey);          // 잘못된 키인지 검사한다.
 
-    assert(pFindAsset.Get() == nullptr);
+    assert(pFindAsset.Get() == nullptr);                // 0 에 반응하는 assert
 
     ASSET_TYPE type = getAssetType<T>();
 

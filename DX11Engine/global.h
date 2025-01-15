@@ -22,6 +22,7 @@ using namespace DirectX::SimpleMath;
 #include <map>
 #include <unordered_map>
 #include <string>
+#include <typeinfo>
 
 #include "define.h"
 #include "enum.h"

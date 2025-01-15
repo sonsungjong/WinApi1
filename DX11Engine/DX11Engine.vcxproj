@@ -162,6 +162,7 @@ call Copy.bat</Command>
     <ClInclude Include="AssetMgr.h" />
     <ClInclude Include="assets.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="components.h" />
     <ClInclude Include="ComputeShader.h" />
     <ClInclude Include="ConstBuffer.h" />
     <ClInclude Include="define.h" />
