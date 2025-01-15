@@ -160,6 +160,7 @@ call Copy.bat</Command>
   <ItemGroup>
     <ClInclude Include="Asset.h" />
     <ClInclude Include="AssetMgr.h" />
+    <ClInclude Include="assets.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComputeShader.h" />
     <ClInclude Include="ConstBuffer.h" />

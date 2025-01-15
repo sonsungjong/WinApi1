@@ -7,12 +7,10 @@ private:
 	T* m_asset;
 
 public:
-	Ptr()
-		: m_asset(nullptr)
-	{
+	T* Get() { return m_asset; }
+	T** GetAddressOf() { return &m_asset; }
 
-	}
-
+public:
 	// = 연산자 구현 (대입연산자)
 	void operator= (T* _asset)
 	{
@@ -45,6 +43,13 @@ public:
 	T* operator->()
 	{
 		return m_asset;
+	}
+
+public:
+	Ptr()
+		: m_asset(nullptr)
+	{
+
 	}
 
 	Ptr(T* _asset)

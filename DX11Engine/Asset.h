@@ -14,6 +14,7 @@ private:
     const ASSET_TYPE m_type;                // Asset의 타입
 
     int m_nRefCount;                                // 참조 카운트
+
     void addRef() { m_nRefCount++; }
     void release() { 
         m_nRefCount--;
@@ -33,5 +34,7 @@ public:
 
     template<typename T>
     friend class Ptr;
+
+    friend class CAssetMgr;
 };
 

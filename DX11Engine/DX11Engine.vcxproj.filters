@@ -158,6 +158,7 @@
     <ClInclude Include="ptr.h">
       <Filter>_07_Asset</Filter>
     </ClInclude>
+    <ClInclude Include="assets.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">

@@ -4,19 +4,15 @@
 #include "TimeMgr.h"
 #include "KeyMgr.h"
 #include "PathMgr.h"
+#include "AssetMgr.h"
+
 #include "Mesh.h"
 
 #include "ConstBuffer.h"
 #include "GraphicShader.h"
 
-#include <string>
-
-#define VTX_TRIANGLE_ARRAY_COUNT					3
-#define VTX_RECT_ARRAY_COUNT							4
-#define IDX_RECT_ARRAY_COUNT							6
-
-Ptr<CMesh> g_pRectMesh = nullptr;
-Ptr<CMesh> g_pCircleMesh = nullptr;
+//Ptr<CMesh> g_pRectMesh = nullptr;
+//Ptr<CMesh> g_pCircleMesh = nullptr;
 
 // 정점 정보 저장 버퍼
 //ComPtr<ID3D11Buffer> g_VB;
@@ -31,16 +27,16 @@ Ptr<CMesh> g_pCircleMesh = nullptr;
 //ComPtr<ID3D11InputLayout> g_layout;					
 
 // 정점(포지션,컬러)
-const int g_vtx_array_count = VTX_RECT_ARRAY_COUNT;
-const int g_idx_array_count = IDX_RECT_ARRAY_COUNT;
-Vtx g_arrVtx[g_vtx_array_count] = {};
+//const int g_vtx_array_count = VTX_RECT_ARRAY_COUNT;
+//const int g_idx_array_count = IDX_RECT_ARRAY_COUNT;
+//Vtx g_arrVtx[g_vtx_array_count] = {};
 
 // 물체의 위치값 + 크기, 회전
 //Vec3 g_ObjectPos;
 tTransform g_Trans = {};
 
 // HLSL (어셈블리가 아니라 C++과 유사하게 쉐이더 코드를 컴파일해주는 형식) [.fx파일 속성에서.. 셰이더형식 /fx, Shader Model 5.0 설정]
-Ptr<CGraphicShader> g_shader = nullptr;
+//Ptr<CGraphicShader> g_shader = nullptr;
 
 // Vertex Shader (정점당)
 //ComPtr<ID3DBlob> g_VSBlob;					// 컴파일한 쉐이더 코드를 저장
@@ -58,55 +54,55 @@ int TempInit()
 {
 	// 모니터를 -1 ~ 1 까지 중앙을 0,0으로 정규화한다 [NDC좌표]
 	// [사각형 메시] 정점버퍼 초기화
-	g_arrVtx[0].vPos = Vec3(-0.5f, 0.5f, 0.f);
-	g_arrVtx[0].vColor = Vec4(1.f, 0.f, 0.f, 1.f);			// 정규화해서 255를 0.0f~1.0f 로 (RGBA)
+	//g_arrVtx[0].vPos = Vec3(-0.5f, 0.5f, 0.f);
+	//g_arrVtx[0].vColor = Vec4(1.f, 0.f, 0.f, 1.f);			// 정규화해서 255를 0.0f~1.0f 로 (RGBA)
 
-	g_arrVtx[1].vPos = Vec3(0.5f, 0.5f, 0.f);
-	g_arrVtx[1].vColor = Vec4(0.f, 1.f, 0.f, 1.f);			// 정규화해서 255를 0.0f~1.0f 로
+	//g_arrVtx[1].vPos = Vec3(0.5f, 0.5f, 0.f);
+	//g_arrVtx[1].vColor = Vec4(0.f, 1.f, 0.f, 1.f);			// 정규화해서 255를 0.0f~1.0f 로
 
-	g_arrVtx[2].vPos = Vec3(0.5f, -0.5f, 0.f);
-	g_arrVtx[2].vColor = Vec4(0.f, 0.f, 1.f, 1.f);			// 정규화해서 255를 0.0f~1.0f 로
+	//g_arrVtx[2].vPos = Vec3(0.5f, -0.5f, 0.f);
+	//g_arrVtx[2].vColor = Vec4(0.f, 0.f, 1.f, 1.f);			// 정규화해서 255를 0.0f~1.0f 로
 
-	g_arrVtx[3].vPos = Vec3(-0.5f, -0.5f, 0.f);
-	g_arrVtx[3].vColor = Vec4(1.f, 0.f, 0.f, 1.f);
+	//g_arrVtx[3].vPos = Vec3(-0.5f, -0.5f, 0.f);
+	//g_arrVtx[3].vColor = Vec4(1.f, 0.f, 0.f, 1.f);
 
-	// 인덱스 버퍼 생성
-	UINT arrIdx[g_idx_array_count] = { 0, 2, 3, 0, 1, 2 };
+	//// 인덱스 버퍼 생성
+	//UINT arrIdx[g_idx_array_count] = { 0, 2, 3, 0, 1, 2 };
 
-	g_pRectMesh = new CMesh;
-	g_pRectMesh->create(g_arrVtx, g_vtx_array_count, arrIdx, g_idx_array_count);
+	//g_pRectMesh = new CMesh;
+	//g_pRectMesh->create(g_arrVtx, g_vtx_array_count, arrIdx, g_idx_array_count);
 
-	// [원 메시]
-	float fRadius = 0.5f;
-	UINT nSlice = 360U;
-	float fAngleStep = (2 * XM_PI) / nSlice;
+	//// [원 메시]
+	//float fRadius = 0.5f;
+	//UINT nSlice = 360U;
+	//float fAngleStep = (2 * XM_PI) / nSlice;
 
-	std::vector<Vtx> vecVtx;
-	std::vector<UINT> vecIdx;
-	// 원점을 먼저 넣어준다
-	Vtx v;
-	v.vPos = Vec3(0.f, 0.f, 0.f);
-	v.vColor = Vec4(1.f, 1.f, 1.f, 1.f);
-	vecVtx.push_back(v);
-	
-	float fAngle = 0.f;
-	for (UINT i = 0U; i <= nSlice; ++i) {
-		v.vPos = Vec3(cosf(fAngle) * fRadius, sinf(fAngle) * fRadius, 0.f);				// x, y, z
-		v.vColor = Vec4(1.f, 1.f, 1.f, 1.f);
-		
-		vecVtx.push_back(v);
+	//std::vector<Vtx> vecVtx;
+	//std::vector<UINT> vecIdx;
+	//// 원점을 먼저 넣어준다
+	//Vtx v;
+	//v.vPos = Vec3(0.f, 0.f, 0.f);
+	//v.vColor = Vec4(1.f, 1.f, 1.f, 1.f);
+	//vecVtx.push_back(v);
+	//
+	//float fAngle = 0.f;
+	//for (UINT i = 0U; i <= nSlice; ++i) {
+	//	v.vPos = Vec3(cosf(fAngle) * fRadius, sinf(fAngle) * fRadius, 0.f);				// x, y, z
+	//	v.vColor = Vec4(1.f, 1.f, 1.f, 1.f);
+	//	
+	//	vecVtx.push_back(v);
 
-		fAngle += fAngleStep;
-	}
+	//	fAngle += fAngleStep;
+	//}
 
-	for (UINT i = 0U; i < nSlice; ++i) {
-		vecIdx.push_back(0);
-		vecIdx.push_back(i+2);
-		vecIdx.push_back(i+1);
-	}
+	//for (UINT i = 0U; i < nSlice; ++i) {
+	//	vecIdx.push_back(0);
+	//	vecIdx.push_back(i+2);
+	//	vecIdx.push_back(i+1);
+	//}
 
-	g_pCircleMesh = new CMesh;
-	g_pCircleMesh->create(vecVtx.data(), vecVtx.size(), vecIdx.data(), vecIdx.size());
+	//g_pCircleMesh = new CMesh;
+	//g_pCircleMesh->create(vecVtx.data(), vecVtx.size(), vecIdx.data(), vecIdx.size());
 
 	// 상수 버퍼 (Constant Buffer)
 	//D3D11_BUFFER_DESC CBDesc = {};
@@ -122,12 +118,12 @@ int TempInit()
 	//}
 
 	// 쉐이더 생성
-	std::wstring strPath = std::wstring(CPathMgr::getInstance()->getContentPath());
-	strPath += L"shader\\std2d.fx";
+	//std::wstring strPath = std::wstring(CPathMgr::getInstance()->getContentPath());
+	//strPath += L"shader\\std2d.fx";
 
-	g_shader = new CGraphicShader;
-	g_shader->createVertexShader(strPath, "VS_Std2D");
-	g_shader->createPixelShader(strPath, "PS_Std2D");
+	//g_shader = new CGraphicShader;
+	//g_shader->createVertexShader(strPath, "VS_Std2D");
+	//g_shader->createPixelShader(strPath, "PS_Std2D");
 
 	// 버텍스 쉐이더
 	//if (FAILED(D3DCompileFromFile(strPath.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE
@@ -270,7 +266,9 @@ void TempRender()
 
 	// 픽셀 쉐이더 셋팅
 	//CONTEXT->PSSetShader(g_PS.Get(), nullptr, 0);
-	g_shader->binding();			// 버텍스 쉐이더와 픽셀 쉐이더를 셋팅
+	//g_shader->binding();			// 버텍스 쉐이더와 픽셀 쉐이더를 셋팅
+	Ptr<CGraphicShader> pShader = CAssetMgr::getInstance()->FindAsset<CGraphicShader>(L"Std2DShader");
+	pShader->binding();
 
 	// Depth Stencil State 는 기본 옵션으로 할거라 명시안함
 
@@ -278,7 +276,8 @@ void TempRender()
 	// Draw를 호출해서 그린다
 	//CONTEXT->Draw(g_vtx_count, 0);
 	//g_pRectMesh->render();
-	g_pCircleMesh->render();
+	Ptr<CMesh> pRectMesh = CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh");
+	pRectMesh->render();
 }
 
 // 인덱스 버퍼 : 사각형정점 6개 -> 4개 (중첩 최적화)
