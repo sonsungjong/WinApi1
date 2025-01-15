@@ -18,6 +18,6 @@ public:
 public:
 	CEntity();
 	CEntity(const CEntity& _origin);			// 복사생성자 정의(아이디 복제 방지)
-	~CEntity();
+	virtual ~CEntity();
 };
 

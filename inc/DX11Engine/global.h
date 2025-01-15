@@ -28,3 +28,4 @@ using namespace DirectX::SimpleMath;
 #include "struct.h"
 #include "func.h"
 #include "singleton.h"
+#include "ptr.h"

@@ -13,6 +13,15 @@ private:
 
     const ASSET_TYPE m_type;                // Asset의 타입
 
+    int m_nRefCount;                                // 참조 카운트
+    void addRef() { m_nRefCount++; }
+    void release() { 
+        m_nRefCount--;
+        if (m_nRefCount <= 0) {
+            delete this;                // 스스로를 삭제 (소멸자 호출)
+        }
+    }
+
 public:
     const std::wstring& getKey() { return m_key; }
     const std::wstring& getRelativePath() { return m_relativePath; }
@@ -20,5 +29,9 @@ public:
 
     CAsset(ASSET_TYPE _type);
     ~CAsset();
+    CAsset(const CAsset& _origin) = delete;             // 복사 생성자 삭제
+
+    template<typename T>
+    friend class Ptr;
 };
 

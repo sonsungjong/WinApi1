@@ -15,8 +15,8 @@
 #define VTX_RECT_ARRAY_COUNT							4
 #define IDX_RECT_ARRAY_COUNT							6
 
-CMesh* g_pRectMesh = nullptr;
-CMesh* g_pCircleMesh = nullptr;
+Ptr<CMesh> g_pRectMesh = nullptr;
+Ptr<CMesh> g_pCircleMesh = nullptr;
 
 // 정점 정보 저장 버퍼
 //ComPtr<ID3D11Buffer> g_VB;
@@ -40,7 +40,7 @@ Vtx g_arrVtx[g_vtx_array_count] = {};
 tTransform g_Trans = {};
 
 // HLSL (어셈블리가 아니라 C++과 유사하게 쉐이더 코드를 컴파일해주는 형식) [.fx파일 속성에서.. 셰이더형식 /fx, Shader Model 5.0 설정]
-CGraphicShader* g_shader = nullptr;
+Ptr<CGraphicShader> g_shader = nullptr;
 
 // Vertex Shader (정점당)
 //ComPtr<ID3DBlob> g_VSBlob;					// 컴파일한 쉐이더 코드를 저장
@@ -198,15 +198,15 @@ int TempInit()
 
 void TempRelease()
 {
-	if (nullptr != g_pRectMesh) {
-		delete g_pRectMesh;
-	}
-	if (nullptr != g_pCircleMesh) {
-		delete g_pCircleMesh;
-	}
-	if (nullptr != g_shader) {
-		delete g_shader;
-	}
+	//if (nullptr != g_pRectMesh) {
+	//	delete g_pRectMesh;
+	//}
+	//if (nullptr != g_pCircleMesh) {
+	//	delete g_pCircleMesh;
+	//}
+	//if (nullptr != g_shader) {
+	//	delete g_shader;
+	//}
 }
 
 void TempTick()

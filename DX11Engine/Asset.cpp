@@ -3,6 +3,7 @@
 
 CAsset::CAsset(ASSET_TYPE _type)
 	: m_type(_type)
+	, m_nRefCount(0)
 {
 }
 
