@@ -80,6 +80,54 @@
     <Filter Include="_04_Manager\_04_AssetMgr">
       <UniqueIdentifier>{95962db9-2134-4516-8714-2896eb8453f9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="_06_Component\_01_Transform">
+      <UniqueIdentifier>{84ee59e6-769a-4936-9a42-28061629a8c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\_02_Camera">
+      <UniqueIdentifier>{f864e0b8-6506-46b9-b515-32af13504a87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\_03_Collider2D">
+      <UniqueIdentifier>{5630a656-7789-4d96-8e5e-2c0033ea6f92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\_04_Collider3D">
+      <UniqueIdentifier>{d558a948-e1ed-4023-b134-7ad0391c2353}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\_05_Animator2D">
+      <UniqueIdentifier>{0229223c-68f4-4b79-9df6-b7a3b9c40475}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\_06_Animator3D">
+      <UniqueIdentifier>{1a373782-6e4d-4727-b3bf-1de69edc798e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\Rendering">
+      <UniqueIdentifier>{3933b5f1-c337-4a9a-bb2d-d889ca0c9621}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\Rendering\MeshRender">
+      <UniqueIdentifier>{283217d6-fe74-4bf2-b1ea-b6462b1acd13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\Rendering\TileMap">
+      <UniqueIdentifier>{89a31764-4ee7-4db3-adb6-29d0754adacd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\Rendering\ParticleSystem">
+      <UniqueIdentifier>{0a94caf8-dd9a-4fa2-af48-0d0494484737}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\_07_Light2D">
+      <UniqueIdentifier>{e5ed7ed1-9a48-49c6-adcd-15b8475d0146}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\_08_Light3D">
+      <UniqueIdentifier>{9ad60b6d-0815-4bb5-800f-c327792228c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\Rendering\SkyBox">
+      <UniqueIdentifier>{0f5f084e-7b15-4497-a230-6849de7df2f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\Rendering\Decal">
+      <UniqueIdentifier>{2594d671-bd0d-476c-b198-d5bcc92bd305}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\Rendering\LandScape">
+      <UniqueIdentifier>{d9d77ce4-b20a-4dc0-be94-0b7640166f1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\Script">
+      <UniqueIdentifier>{0f85e996-783f-4eaa-9f2e-c71c4d448477}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -159,6 +207,12 @@
       <Filter>_07_Asset</Filter>
     </ClInclude>
     <ClInclude Include="assets.h" />
+    <ClInclude Include="RenderComponent.h">
+      <Filter>_06_Component\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>_06_Component\_01_Transform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">
@@ -215,6 +269,12 @@
     </ClCompile>
     <ClCompile Include="AssetMgr_Init.cpp">
       <Filter>_04_Manager\_04_AssetMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderComponent.cpp">
+      <Filter>_06_Component\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>_06_Component\_01_Transform</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

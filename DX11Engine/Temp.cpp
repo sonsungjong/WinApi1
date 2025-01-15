@@ -31,10 +31,6 @@
 //const int g_idx_array_count = IDX_RECT_ARRAY_COUNT;
 //Vtx g_arrVtx[g_vtx_array_count] = {};
 
-// 물체의 위치값 + 크기, 회전
-//Vec3 g_ObjectPos;
-tTransform g_Trans = {};
-
 // HLSL (어셈블리가 아니라 C++과 유사하게 쉐이더 코드를 컴파일해주는 형식) [.fx파일 속성에서.. 셰이더형식 /fx, Shader Model 5.0 설정]
 //Ptr<CGraphicShader> g_shader = nullptr;
 
@@ -48,6 +44,10 @@ tTransform g_Trans = {};
 
 // Error Blob
 //ComPtr<ID3DBlob> g_ErrBlob;
+
+// 물체의 위치값 + 크기, 회전
+//Vec3 g_ObjectPos;
+tTransform g_Trans = {};
 
 
 int TempInit()
