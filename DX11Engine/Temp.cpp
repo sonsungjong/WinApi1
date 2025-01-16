@@ -11,6 +11,10 @@
 #include "ConstBuffer.h"
 #include "GraphicShader.h"
 
+#include "GameObject.h"
+#include "Transform.h"
+#include "MeshRender.h"
+
 //Ptr<CMesh> g_pRectMesh = nullptr;
 //Ptr<CMesh> g_pCircleMesh = nullptr;
 
@@ -47,7 +51,9 @@
 
 // 물체의 위치값 + 크기, 회전
 //Vec3 g_ObjectPos;
-tTransform g_Trans = {};
+//tTransform g_Trans = {};
+
+CGameObject* pObject = nullptr;
 
 
 int TempInit()
@@ -189,6 +195,14 @@ int TempInit()
 
 	//g_ObjectPos = Vec3(0.f, 0.f, 0.f);				// 물체를 처음에 원점에
 
+	pObject = new CGameObject;
+	pObject->addComponent(new CTransform);
+	pObject->addComponent(new CMeshRender);
+
+	// (CMesh*)pObject->getComponent(COMPONENT_TYPE::MESHRENDER)->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
+	pObject->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
+	pObject->getMeshRender()->setShader(CAssetMgr::getInstance()->FindAsset<CGraphicShader>(L"Std2DShader"));
+
 	return S_OK;
 }
 
@@ -203,6 +217,11 @@ void TempRelease()
 	//if (nullptr != g_shader) {
 	//	delete g_shader;
 	//}
+
+	if (pObject) {
+		delete pObject;
+		pObject = nullptr;
+	}
 }
 
 void TempTick()
@@ -212,36 +231,36 @@ void TempTick()
 
 	// 키보드 입력으로 삼각형을 움직이게 한다
 	//if (GetAsyncKeyState('W') & 0x8001) 
-	if(KEY_PRESSED(KEY::W))
-	{
-		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		g_Trans.Position.y += DT;
-	}
+	//if(KEY_PRESSED(KEY::W))
+	//{
+	//	// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
+	//	g_Trans.Position.y += DT;
+	//}
 
-	//if (GetAsyncKeyState('S') & 0x8001)
-	if (KEY_PRESSED(KEY::S))
-	{
-		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		g_Trans.Position.y -= DT;
-	}
+	////if (GetAsyncKeyState('S') & 0x8001)
+	//if (KEY_PRESSED(KEY::S))
+	//{
+	//	// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
+	//	g_Trans.Position.y -= DT;
+	//}
 
-	//if (GetAsyncKeyState('A') & 0x8001)
-	if (KEY_PRESSED(KEY::A))
-	{
-		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		g_Trans.Position.x -= DT;
-	}
+	////if (GetAsyncKeyState('A') & 0x8001)
+	//if (KEY_PRESSED(KEY::A))
+	//{
+	//	// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
+	//	g_Trans.Position.x -= DT;
+	//}
 
-	//if (GetAsyncKeyState('D') & 0x8001)
-	if (KEY_PRESSED(KEY::D))
-	{
-		// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
-		g_Trans.Position.x += DT;
-	}
+	////if (GetAsyncKeyState('D') & 0x8001)
+	//if (KEY_PRESSED(KEY::D))
+	//{
+	//	// 이전에 눌린적이 있거나 눌려있으면 배열값을 수정한다
+	//	g_Trans.Position.x += DT;
+	//}
 
-	// System Memory -> GPU
-	CConstBuffer* pCB = CDevice::getInstance()->getConstBuffer(CB_TYPE::TRANSFORM);			// b0 로 생성
-	pCB->setData(&g_Trans);
+	//// System Memory -> GPU
+	//CConstBuffer* pCB = CDevice::getInstance()->getConstBuffer(CB_TYPE::TRANSFORM);			// b0 로 생성
+	//pCB->setData(&g_Trans);
 
 	//D3D11_MAPPED_SUBRESOURCE tSub = {};
 	//CONTEXT->Map(g_CB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &tSub);
@@ -250,9 +269,13 @@ void TempTick()
 	//memcpy(tSub.pData, &trans, sizeof(tTransform));
 	//CONTEXT->Unmap(g_CB.Get(), 0);
 
-	pCB->binding();						// 멤버에 저장해놓은 CB_TYPE::TRANSFORM로 바인딩 b0
 	// B0 에 보낸다 (바인딩)
 	//CONTEXT->VSSetConstantBuffers(0, 1, g_CB.GetAddressOf());
+	//pCB->binding();						// 멤버에 저장해놓은 CB_TYPE::TRANSFORM로 바인딩 b0
+
+	pObject->tick();
+
+	pObject->finaltick();
 }
 
 void TempRender()
@@ -267,8 +290,8 @@ void TempRender()
 	// 픽셀 쉐이더 셋팅
 	//CONTEXT->PSSetShader(g_PS.Get(), nullptr, 0);
 	//g_shader->binding();			// 버텍스 쉐이더와 픽셀 쉐이더를 셋팅
-	Ptr<CGraphicShader> pShader = CAssetMgr::getInstance()->FindAsset<CGraphicShader>(L"Std2DShader");
-	pShader->binding();
+	//Ptr<CGraphicShader> pShader = CAssetMgr::getInstance()->FindAsset<CGraphicShader>(L"Std2DShader");
+	//pShader->binding();
 
 	// Depth Stencil State 는 기본 옵션으로 할거라 명시안함
 
@@ -276,8 +299,10 @@ void TempRender()
 	// Draw를 호출해서 그린다
 	//CONTEXT->Draw(g_vtx_count, 0);
 	//g_pRectMesh->render();
-	Ptr<CMesh> pRectMesh = CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh");
-	pRectMesh->render();
+	//Ptr<CMesh> pRectMesh = CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh");
+	//pRectMesh->render();
+
+	pObject->render();
 }
 
 // 인덱스 버퍼 : 사각형정점 6개 -> 4개 (중첩 최적화)

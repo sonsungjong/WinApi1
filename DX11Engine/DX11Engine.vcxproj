@@ -177,6 +177,7 @@ call Copy.bat</Command>
     <ClInclude Include="GraphicShader.h" />
     <ClInclude Include="KeyMgr.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshRender.h" />
     <ClInclude Include="PathMgr.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ptr.h" />
@@ -204,6 +205,7 @@ call Copy.bat</Command>
     <ClCompile Include="GraphicShader.cpp" />
     <ClCompile Include="KeyMgr.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshRender.cpp" />
     <ClCompile Include="PathMgr.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

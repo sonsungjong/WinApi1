@@ -101,9 +101,6 @@
     <Filter Include="_06_Component\Rendering">
       <UniqueIdentifier>{3933b5f1-c337-4a9a-bb2d-d889ca0c9621}</UniqueIdentifier>
     </Filter>
-    <Filter Include="_06_Component\Rendering\MeshRender">
-      <UniqueIdentifier>{283217d6-fe74-4bf2-b1ea-b6462b1acd13}</UniqueIdentifier>
-    </Filter>
     <Filter Include="_06_Component\Rendering\TileMap">
       <UniqueIdentifier>{89a31764-4ee7-4db3-adb6-29d0754adacd}</UniqueIdentifier>
     </Filter>
@@ -127,6 +124,9 @@
     </Filter>
     <Filter Include="_06_Component\Script">
       <UniqueIdentifier>{0f85e996-783f-4eaa-9f2e-c71c4d448477}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_06_Component\Rendering\_01_MeshRender">
+      <UniqueIdentifier>{283217d6-fe74-4bf2-b1ea-b6462b1acd13}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -218,6 +218,9 @@
     <ClInclude Include="components.h">
       <Filter>_01_Header</Filter>
     </ClInclude>
+    <ClInclude Include="MeshRender.h">
+      <Filter>_06_Component\Rendering\_01_MeshRender</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">
@@ -280,6 +283,9 @@
     </ClCompile>
     <ClCompile Include="Transform.cpp">
       <Filter>_06_Component\_01_Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshRender.cpp">
+      <Filter>_06_Component\Rendering\_01_MeshRender</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
