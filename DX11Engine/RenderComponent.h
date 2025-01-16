@@ -17,7 +17,8 @@ public:
     void setShader(Ptr<CGraphicShader> _shader) { m_shader = _shader; }
 
     // 자식에서 접근할 수 있게 get함수 만든다
-    
+    Ptr<CMesh> getMesh() { return m_mesh; }
+    Ptr<CGraphicShader> getShader() { return m_shader; }
 
     CRenderComponent(COMPONENT_TYPE _type);
     virtual ~CRenderComponent();

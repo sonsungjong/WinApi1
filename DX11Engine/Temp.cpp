@@ -14,6 +14,7 @@
 #include "GameObject.h"
 #include "Transform.h"
 #include "MeshRender.h"
+#include "PlayerScript.h"
 
 //Ptr<CMesh> g_pRectMesh = nullptr;
 //Ptr<CMesh> g_pCircleMesh = nullptr;
@@ -198,6 +199,7 @@ int TempInit()
 	pObject = new CGameObject;
 	pObject->addComponent(new CTransform);
 	pObject->addComponent(new CMeshRender);
+	pObject->addComponent(new CPlayerScript);
 
 	// (CMesh*)pObject->getComponent(COMPONENT_TYPE::MESHRENDER)->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
 	pObject->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
@@ -227,7 +229,7 @@ void TempRelease()
 void TempTick()
 {
 	// 이동속도를 시간동기화 처리 (프레임차이 극복)
-	float DT = CTimeMgr::getInstance()->getDeltaTime();
+	//float DT = CTimeMgr::getInstance()->getDeltaTime();
 
 	// 키보드 입력으로 삼각형을 움직이게 한다
 	//if (GetAsyncKeyState('W') & 0x8001) 

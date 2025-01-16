@@ -16,6 +16,8 @@
 #define KEY_RELEASE(Key)		KEY_CHECK(Key, KEY_STATE::RELEASE)
 #define KEY_NONE(Key)				KEY_CHECK(Key, KEY_STATE::NONE)
 
+#define DT					CTimeMgr::getInstance()->getDeltaTime()
+
 typedef SimpleMath::Vector2 Vec2;
 typedef SimpleMath::Vector3 Vec3;
 typedef SimpleMath::Vector4 Vec4;

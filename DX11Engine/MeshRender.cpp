@@ -16,4 +16,7 @@ void CMeshRender::finaltick()
 
 void CMeshRender::render()
 {
+	getShader()->binding();
+
+	getMesh()->render();
 }

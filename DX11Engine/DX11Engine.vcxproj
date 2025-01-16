@@ -180,8 +180,10 @@ call Copy.bat</Command>
     <ClInclude Include="MeshRender.h" />
     <ClInclude Include="PathMgr.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PlayerScript.h" />
     <ClInclude Include="ptr.h" />
     <ClInclude Include="RenderComponent.h" />
+    <ClInclude Include="Script.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SimpleMath.h" />
     <ClInclude Include="singleton.h" />
@@ -213,7 +215,9 @@ call Copy.bat</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PlayerScript.cpp" />
     <ClCompile Include="RenderComponent.cpp" />
+    <ClCompile Include="Script.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Temp.cpp" />
     <ClCompile Include="TimeMgr.cpp" />

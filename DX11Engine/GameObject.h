@@ -7,12 +7,17 @@ class CRenderComponent;
 class CTransform;
 class CMeshRender;
 
+class CScript;
+
 class CGameObject :
     public CEntity
 {
 private:
     CComponent* m_arrCom[(UINT)COMPONENT_TYPE::END];
     CRenderComponent* m_RenderCom;
+
+    // 스크립트 컴포넌트는 배열이 아니라 무수히 많이 추가할 수 있게 벡터로 관리
+    std::vector< CScript*> m_vecScripts;
 
 public:
     void begin();               // 레벨이 시작될 때, 레벨에 합류할 때 호출되는 함수

@@ -128,6 +128,9 @@
     <Filter Include="_06_Component\Rendering\_01_MeshRender">
       <UniqueIdentifier>{283217d6-fe74-4bf2-b1ea-b6462b1acd13}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts">
+      <UniqueIdentifier>{0f507a53-39c3-4d74-809a-5ab128c3ff11}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -221,6 +224,12 @@
     <ClInclude Include="MeshRender.h">
       <Filter>_06_Component\Rendering\_01_MeshRender</Filter>
     </ClInclude>
+    <ClInclude Include="Script.h">
+      <Filter>_06_Component\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerScript.h">
+      <Filter>Scripts</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">
@@ -286,6 +295,12 @@
     </ClCompile>
     <ClCompile Include="MeshRender.cpp">
       <Filter>_06_Component\Rendering\_01_MeshRender</Filter>
+    </ClCompile>
+    <ClCompile Include="Script.cpp">
+      <Filter>_06_Component\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerScript.cpp">
+      <Filter>Scripts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
