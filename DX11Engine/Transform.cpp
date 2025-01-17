@@ -16,7 +16,7 @@ CTransform::~CTransform()
 
 void CTransform::finaltick()
 {
-	binding();
+	
 }
 
 // 들고있는 데이터를 GPU로 보낸다

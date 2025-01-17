@@ -54,7 +54,8 @@
 //Vec3 g_ObjectPos;
 //tTransform g_Trans = {};
 
-CGameObject* pObject = nullptr;
+CGameObject* pObject1 = nullptr;
+CGameObject* pObject2 = nullptr;
 
 
 int TempInit()
@@ -196,14 +197,24 @@ int TempInit()
 
 	//g_ObjectPos = Vec3(0.f, 0.f, 0.f);				// 물체를 처음에 원점에
 
-	pObject = new CGameObject;
-	pObject->addComponent(new CTransform);
-	pObject->addComponent(new CMeshRender);
-	pObject->addComponent(new CPlayerScript);
+	pObject1 = new CGameObject;
+	pObject1->addComponent(new CTransform);
+	pObject1->addComponent(new CMeshRender);
+	pObject1->addComponent(new CPlayerScript);
 
-	// (CMesh*)pObject->getComponent(COMPONENT_TYPE::MESHRENDER)->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
-	pObject->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
-	pObject->getMeshRender()->setShader(CAssetMgr::getInstance()->FindAsset<CGraphicShader>(L"Std2DShader"));
+	// ((CMeshRender*)pObject->getComponent(COMPONENT_TYPE::MESHRENDER))->setMesh();
+	pObject1->getTransform()->setRelativeScale(0.2f, 0.2f, 0.2f);
+	pObject1->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
+	pObject1->getMeshRender()->setShader(CAssetMgr::getInstance()->FindAsset<CGraphicShader>(L"Std2DShader"));
+
+
+	pObject2 = new CGameObject;
+	pObject2->addComponent(new CTransform);
+	pObject2->addComponent(new CMeshRender);
+	
+	pObject2->getTransform()->setRelativeScale(0.4f, 0.4f, 0.4f);
+	pObject2->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
+	pObject2->getMeshRender()->setShader(CAssetMgr::getInstance()->FindAsset<CGraphicShader>(L"Std2DShader"));
 
 	return S_OK;
 }
@@ -220,9 +231,14 @@ void TempRelease()
 	//	delete g_shader;
 	//}
 
-	if (pObject) {
-		delete pObject;
-		pObject = nullptr;
+	if (pObject1) {
+		delete pObject1;
+		pObject1 = nullptr;
+	}
+
+	if (pObject2) {
+		delete pObject2;
+		pObject2 = nullptr;
 	}
 }
 
@@ -275,9 +291,11 @@ void TempTick()
 	//CONTEXT->VSSetConstantBuffers(0, 1, g_CB.GetAddressOf());
 	//pCB->binding();						// 멤버에 저장해놓은 CB_TYPE::TRANSFORM로 바인딩 b0
 
-	pObject->tick();
+	pObject1->tick();
+	pObject2->tick();
 
-	pObject->finaltick();
+	pObject1->finaltick();
+	pObject2->finaltick();
 }
 
 void TempRender()
@@ -304,7 +322,8 @@ void TempRender()
 	//Ptr<CMesh> pRectMesh = CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh");
 	//pRectMesh->render();
 
-	pObject->render();
+	pObject1->render();
+	pObject2->render();
 }
 
 // 인덱스 버퍼 : 사각형정점 6개 -> 4개 (중첩 최적화)

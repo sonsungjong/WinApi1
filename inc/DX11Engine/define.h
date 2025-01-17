@@ -18,6 +18,8 @@
 
 #define DT					CTimeMgr::getInstance()->getDeltaTime()
 
+#define MAX_LAYER			32
+
 typedef SimpleMath::Vector2 Vec2;
 typedef SimpleMath::Vector3 Vec3;
 typedef SimpleMath::Vector4 Vec4;
