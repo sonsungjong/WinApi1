@@ -2,12 +2,11 @@
 #include "Engine.h"
 
 #include "Device.h"
-
 #include "TimeMgr.h"
 #include "PathMgr.h"
 #include "KeyMgr.h"
 #include "AssetMgr.h"
-
+#include "LevelMgr.h"
 #include "Temp.h"
 
 
@@ -38,11 +37,12 @@ int CEngine::init(HWND _hWnd, POINT _resolution)
 	CTimeMgr::getInstance()->init();
 	CKeyMgr::getInstance()->init();
 	CAssetMgr::getInstance()->init();
+	CLevelMgr::getInstance()->init();
 
-	if (FAILED(TempInit())) {
-		MessageBox(m_hWnd, L"Device 초기화 실패", L"Temp Init 초기화 실패", MB_OK);
-		return E_FAIL;
-	}
+	//if (FAILED(TempInit())) {
+	//	MessageBox(m_hWnd, L"Device 초기화 실패", L"Temp Init 초기화 실패", MB_OK);
+	//	return E_FAIL;
+	//}
 
 	return S_OK;
 }
@@ -53,8 +53,9 @@ void CEngine::progress()
 	// Manager Tick
 	CTimeMgr::getInstance()->tick();				// 한프레임당 시간이 얼마나 걸리는지 계산
 	CKeyMgr::getInstance()->tick();
+	CLevelMgr::getInstance()->tick();
+	//TempTick();			// 매 프레임마다 호출 (Object Tick)
 
-	TempTick();			// 매 프레임마다 호출 (Object Tick)
 
 	// 화면 클리어 (Target Clear)
 	float clear_color[4] = { 0.3f, 0.3f, 0.3f, 1.f };
@@ -62,7 +63,8 @@ void CEngine::progress()
 
 	// 그린다 (Object Render)
 	// Level->render();							// 렌더타겟에 그린다
-	TempRender();
+	//TempRender();
+	CLevelMgr::getInstance()->render();
 
 	// 게시한다 (Present)
 	// SwapChain->Present();				// 윈도우 화면에 보낸다
@@ -78,5 +80,5 @@ CEngine::CEngine()
 
 CEngine::~CEngine()
 {
-	TempRelease();
+	//TempRelease();
 }

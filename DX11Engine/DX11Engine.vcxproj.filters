@@ -242,7 +242,9 @@
     <ClInclude Include="Layer.h">
       <Filter>_05_Level</Filter>
     </ClInclude>
-    <ClInclude Include="LevelMgr.h" />
+    <ClInclude Include="LevelMgr.h">
+      <Filter>_04_Manager\_05_LevelMgr</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">
@@ -321,7 +323,9 @@
     <ClCompile Include="Layer.cpp">
       <Filter>_05_Level</Filter>
     </ClCompile>
-    <ClCompile Include="LevelMgr.cpp" />
+    <ClCompile Include="LevelMgr.cpp">
+      <Filter>_04_Manager\_05_LevelMgr</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleMath.inl">

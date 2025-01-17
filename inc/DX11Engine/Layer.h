@@ -13,5 +13,12 @@ private:
 public:
     CLayer();
     virtual ~CLayer();
+
+    void begin();
+    void tick();
+    void finaltick();
+    void render();
+
+    void addObject(CGameObject* _Object) { m_vecObject.push_back(_Object); }
 };
 

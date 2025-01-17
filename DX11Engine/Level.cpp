@@ -16,3 +16,38 @@ CLevel::~CLevel()
 {
 	SafeDelArray(m_arrLayer);				// 배열 일괄 해제
 }
+
+void CLevel::begin()
+{
+	for (UINT i = 0U; i < MAX_LAYER; ++i) {
+		m_arrLayer[i]->begin();
+	}
+}
+
+void CLevel::tick()
+{
+	for (UINT i = 0U; i < MAX_LAYER; ++i) {
+		m_arrLayer[i]->tick();
+	}
+}
+
+void CLevel::finaltick()
+{
+	for (UINT i = 0U; i < MAX_LAYER; ++i) {
+		m_arrLayer[i]->finaltick();
+	}
+}
+
+void CLevel::render()
+{
+	for (UINT i = 0U; i < MAX_LAYER; ++i) {
+		m_arrLayer[i]->render();
+	}
+}
+
+void CLevel::addObject(UINT _LayerIdx, CGameObject* _Object)
+{
+	
+	m_arrLayer[_LayerIdx]->addObject(_Object);
+	
+}
