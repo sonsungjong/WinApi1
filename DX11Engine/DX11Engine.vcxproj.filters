@@ -151,7 +151,6 @@
     <ClInclude Include="global.h">
       <Filter>_01_Header</Filter>
     </ClInclude>
-    <ClInclude Include="Temp.h" />
     <ClInclude Include="Device.h">
       <Filter>_03_Device</Filter>
     </ClInclude>
@@ -245,6 +244,9 @@
     <ClInclude Include="LevelMgr.h">
       <Filter>_04_Manager\_05_LevelMgr</Filter>
     </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>_08_Asset\Texture</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">
@@ -256,7 +258,6 @@
     <ClCompile Include="Engine.cpp">
       <Filter>_02_Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Temp.cpp" />
     <ClCompile Include="Device.cpp">
       <Filter>_03_Device</Filter>
     </ClCompile>
@@ -325,6 +326,9 @@
     </ClCompile>
     <ClCompile Include="LevelMgr.cpp">
       <Filter>_04_Manager\_05_LevelMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>_08_Asset\Texture</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

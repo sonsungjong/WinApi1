@@ -12,6 +12,9 @@ protected:
 public:
 	virtual void binding() = 0;				// 순수 가상 함수 (실제 사용할 상속받은 자식 클래스에서 꼭 구현해줘야하는 함수 명시)
 
+	virtual int load(const std::wstring& _strFilePath) override { return S_OK; }
+	virtual int save(const std::wstring& _strFilePath) override { return S_OK; }
+
 public:
 	CShader(ASSET_TYPE _type);
 	~CShader();

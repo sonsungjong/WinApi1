@@ -5,10 +5,10 @@ class CPathMgr
 {
 	SINGLE(CPathMgr)
 private:
-	wchar_t m_szContentPath[255];
+	wchar_t m_szResourcePath[255];
 
 public:
 	void init();
-	const wchar_t* getContentPath() { return m_szContentPath; }
+	const wchar_t* getResPath() { return m_szResourcePath; }
 };
 

@@ -23,6 +23,9 @@ private:
         }
     }
 
+    virtual int load(const std::wstring& _strFilePath) = 0;
+    virtual int save(const std::wstring& _strFilePath) = 0;
+
 public:
     const std::wstring& getKey() { return m_key; }
     const std::wstring& getRelativePath() { return m_relativePath; }
@@ -31,6 +34,7 @@ public:
     CAsset(ASSET_TYPE _type);
     ~CAsset();
     CAsset(const CAsset& _origin) = delete;             // 복사 생성자 삭제
+
 
     template<typename T>
     friend class Ptr;

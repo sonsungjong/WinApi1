@@ -94,6 +94,8 @@ void CAssetMgr::createDefaultMesh()
 
 void CAssetMgr::createDefaultTexture()
 {
+	// 텍스처 로딩 (키값, 경로값)
+	Ptr<CTexture> pTex = load<CTexture>(L"texture\\Character.png", L"texture\\Character.png");
 }
 
 void CAssetMgr::createDefaultMaterial()
@@ -103,7 +105,7 @@ void CAssetMgr::createDefaultMaterial()
 void CAssetMgr::createDefaultGraphicShader()
 {
 	Ptr<CGraphicShader> pShader = nullptr;
-	std::wstring strPath = std::wstring(CPathMgr::getInstance()->getContentPath());
+	std::wstring strPath = std::wstring(CPathMgr::getInstance()->getResPath());
 
 	pShader = new CGraphicShader;
 	pShader->createVertexShader(strPath + L"shader\\std2d.fx", "VS_Std2D");

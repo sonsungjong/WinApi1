@@ -1,5 +1,7 @@
 #pragma once
 #include "singleton.h"
+
+#include "PathMgr.h"
 #include "assets.h"
 
 class CAssetMgr :
@@ -18,6 +20,9 @@ public:
     void createDefaultComputeShader();
 
 public:
+    template<typename T>
+    Ptr<T> load(const std::wstring& _strKey, const std::wstring& _strRelativePath);
+
     template<typename T>
     Ptr<T> FindAsset(const std::wstring& _strKey);                                  // 검색하고
     
@@ -72,6 +77,34 @@ ASSET_TYPE getAssetType()
     {
         return ASSET_TYPE::COMPUTE_SHADER;
     }
+    if constexpr (std::is_same_v<T, CTexture>)
+    {
+        return ASSET_TYPE::TEXTURE;
+    }
+}
+
+template<typename T>
+inline Ptr<T> CAssetMgr::load(const std::wstring& _strKey, const std::wstring& _strRelativePath)
+{
+    Ptr<CAsset> pAsset = FindAsset<T>(_strKey).Get();
+
+    // 등록되어 있었다면
+    if (nullptr != pAsset.Get()) {
+        return (T*)pAsset.Get();
+    }
+
+    std::wstring strFullPath = CPathMgr::getInstance()->getResPath();
+    strFullPath += _strRelativePath;
+
+    // 등록된 적이 없다면
+    pAsset = new T;
+    if (FAILED(pAsset->load(strFullPath)))
+    {
+        MessageBox(NULL, strFullPath.c_str(), L"에셋 로딩 실패", MB_OK);
+        return nullptr;
+    }
+
+    return (T*)pAsset.Get();
 }
 
 template<typename T>

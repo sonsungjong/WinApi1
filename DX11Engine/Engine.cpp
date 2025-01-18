@@ -7,7 +7,6 @@
 #include "KeyMgr.h"
 #include "AssetMgr.h"
 #include "LevelMgr.h"
-#include "Temp.h"
 
 
 // 정적 멤버는 별도로 초기화를 해줘야한다

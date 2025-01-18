@@ -16,6 +16,8 @@ private:
 
 private:
     void binding();
+    virtual int load(const std::wstring& _strFilePath) override { return S_OK; }
+    virtual int save(const std::wstring& _strFilePath) override { return S_OK; }
 
 public:
     int create(Vtx* _pVtxSysMem, size_t _nVtxCount, UINT* _pIdxSysMem, size_t _nIdxCount);
