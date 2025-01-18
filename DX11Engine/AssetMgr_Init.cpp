@@ -27,19 +27,23 @@ void CAssetMgr::createDefaultMesh()
 	// 3 -- 2
 	v.vPos = Vec3(-0.5, 0.5f, 0.f);
 	v.vColor = Vec4(1.f, 0.f, 0.f, 1.f);
-	vecVtx.push_back(v);
+	v.vUV = Vec2(0.f, 0.f);
+	vecVtx.push_back(v);				// 0¹øÂ° ÁÂÇ¥ Á¤Á¡
 
 	v.vPos = Vec3(0.5f, 0.5f, 0.f);
 	v.vColor = Vec4(0.f, 1.f, 0.f, 1.f);
-	vecVtx.push_back(v);
+	v.vUV = Vec2(1.f, 0.f);
+	vecVtx.push_back(v);				// 1¹øÂ° ÁÂÇ¥ Á¤Á¡
 
 	v.vPos = Vec3(0.5f, -0.5f, 0.f);
 	v.vColor = Vec4(0.f, 0.f, 1.f, 1.f);
-	vecVtx.push_back(v);
+	v.vUV = Vec2(1.f, 1.f);
+	vecVtx.push_back(v);				// 2¹øÂ° ÁÂÇ¥ Á¤Á¡
 
 	v.vPos = Vec3(-0.5, -0.5f, 0.f);
 	v.vColor = Vec4(0.f, 1.f, 0.f, 1.f);
-	vecVtx.push_back(v);
+	v.vUV = Vec2(0.f, 1.f);
+	vecVtx.push_back(v);				// 3¹øÂ° ÁÂÇ¥ Á¤Á¡
 
 	// Index Buffer
 	vecIdx.push_back(0);

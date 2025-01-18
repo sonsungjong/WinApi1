@@ -33,7 +33,7 @@ int CGraphicShader::createVertexShader(const std::wstring& _wstrFilePath, const 
 	}
 
 	// 정점을 구성하는 Layout 정보 생성
-	D3D11_INPUT_ELEMENT_DESC LayoutDesc[2] = {};				// 위치와 색상
+	D3D11_INPUT_ELEMENT_DESC LayoutDesc[3] = {};				// 정점 하나의 정보
 	unsigned int nOffset = 0U;
 
 	LayoutDesc[0].AlignedByteOffset = nOffset;
@@ -54,7 +54,16 @@ int CGraphicShader::createVertexShader(const std::wstring& _wstrFilePath, const 
 	LayoutDesc[1].SemanticIndex = 0;															// COLOR0
 	nOffset += 16U;
 
-	if (FAILED(DEVICE->CreateInputLayout(LayoutDesc, 2, m_pVertexShaderBlob->GetBufferPointer(), m_pVertexShaderBlob->GetBufferSize(), m_pLayout.GetAddressOf())))
+	LayoutDesc[2].AlignedByteOffset = nOffset;
+	LayoutDesc[2].Format = DXGI_FORMAT_R32G32_FLOAT;				// VEC2 (8byte, float2)
+	LayoutDesc[2].InputSlot = 0;
+	LayoutDesc[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+	LayoutDesc[2].InstanceDataStepRate = 0;
+	LayoutDesc[2].SemanticName = "TEXCOORD";
+	LayoutDesc[2].SemanticIndex = 0;															// 텍스처
+	nOffset += 8U;
+
+	if (FAILED(DEVICE->CreateInputLayout(LayoutDesc, 3, m_pVertexShaderBlob->GetBufferPointer(), m_pVertexShaderBlob->GetBufferSize(), m_pLayout.GetAddressOf())))
 	{
 		return E_FAIL;
 	}

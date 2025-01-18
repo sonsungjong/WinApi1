@@ -104,6 +104,9 @@ inline Ptr<T> CAssetMgr::load(const std::wstring& _strKey, const std::wstring& _
         return nullptr;
     }
 
+    // 로딩하고 맵에 넣는다
+    AddAsset<T>(_strKey, (T*)pAsset.Get());
+
     return (T*)pAsset.Get();
 }
 

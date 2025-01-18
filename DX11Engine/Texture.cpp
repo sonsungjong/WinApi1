@@ -12,6 +12,11 @@ CTexture::~CTexture()
 {
 }
 
+void CTexture::binding(int _registerNum)
+{
+    CONTEXT->PSSetShaderResources(_registerNum, 1, m_SRV.GetAddressOf());
+}
+
 int CTexture::load(const std::wstring& _strFilePath)
 {
     // 확장자에 따라서 분기처리를 한다

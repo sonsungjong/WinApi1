@@ -14,6 +14,9 @@ public:
     CTexture();
     virtual ~CTexture();
 
+    void binding(int _registerNum);
+
+private:
     virtual int load(const std::wstring& _strFilePath) override;
     virtual int save(const std::wstring& _strFilePath) override;
 

@@ -24,6 +24,9 @@ void CMeshRender::render()
 	// 사용할 쉐이더 바인딩
 	getShader()->binding();
 
+	// 사용할 텍스쳐 바인딩
+	getTexture()->binding(0);			// t0 에 바인딩
+
 	// 메시 바인딩 및 렌더링
 	getMesh()->render();
 }

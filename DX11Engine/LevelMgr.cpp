@@ -32,9 +32,10 @@ void CLevelMgr::init()
 	pObject->addComponent(new CMeshRender);
 	pObject->addComponent(new CPlayerScript);
 
-	pObject->getTransform()->setRelativeScale(0.2f, 0.2f, 0.2f);
+	pObject->getTransform()->setRelativeScale(0.66f, 1.0f, 1.0f);
 	pObject->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
 	pObject->getMeshRender()->setShader(CAssetMgr::getInstance()->FindAsset<CGraphicShader>(L"Std2DShader"));
+	pObject->getMeshRender()->setTexture(CAssetMgr::getInstance()->FindAsset<CTexture>(L"texture\\Character.png"));
 
 	UINT nLayerIdx = 0U;
 	m_curLevel->addObject(nLayerIdx, pObject);
