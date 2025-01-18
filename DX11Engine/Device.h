@@ -24,14 +24,17 @@ private:
 	ID3D11Texture2D* m_depthStencilTex;
 	ID3D11DepthStencilView* m_DSV;
 
+	ComPtr<ID3D11SamplerState> m_arrSamplerState[2];
+	//ComPtr<ID3D11RasterizerState> m_RS[];
+	//ComPtr<ID3D11BlendState> m_BS[];
+	//ComPtr<ID3D11DepthStencilState> m_DS[];
 	CConstBuffer* m_CB[(UINT)CB_TYPE::END];
 
 private:
 	int createSwapChain();
 	int createView();
-
-	// 상수버퍼 초기화
-	int createConstBuffer();
+	int createConstBuffer();				// 상수버퍼 초기화
+	int createSamplerState();
 
 public:
 	int init(HWND _hWnd, POINT _resolution);

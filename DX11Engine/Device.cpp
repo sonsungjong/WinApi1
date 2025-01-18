@@ -6,6 +6,7 @@
 CDevice::CDevice()
 	: m_hWnd(nullptr)
 	, m_render_resolution{}
+	, m_arrSamplerState{}
 	, m_device(nullptr)
 	, m_context(nullptr)
 	, m_swapChain(nullptr)
@@ -76,7 +77,10 @@ int CDevice::init(HWND _hWnd, POINT _resolution)
 	// 필요한 상수버퍼 미리 생성
 	if (!(SUCCEEDED(createConstBuffer())))
 	{
+		return E_FAIL;
+	}
 
+	if (!(SUCCEEDED(createSamplerState()))) {
 		return E_FAIL;
 	}
 
@@ -176,4 +180,25 @@ int CDevice::createConstBuffer()
 	m_CB[(UINT)CB_TYPE::TRANSFORM]->create(sizeof(tTransform), CB_TYPE::TRANSFORM);
 
 	return S_OK;
+}
+
+int CDevice::createSamplerState()
+{
+	D3D11_SAMPLER_DESC desc[2] = {};
+
+	desc[0].AddressU = D3D11_TEXTURE_ADDRESS_WRAP;				// 초과하면 반복패턴으로 출력
+	desc[0].AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	desc[0].AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	desc[0].Filter = D3D11_FILTER_ANISOTROPIC;
+	DEVICE->CreateSamplerState(desc, m_arrSamplerState[0].GetAddressOf());
+	CONTEXT->PSSetSamplers(0, 1, m_arrSamplerState[0].GetAddressOf());						// s0
+
+	desc[1].AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	desc[1].AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	desc[1].AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	desc[1].Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;					// 색상을 변형없이 그대로 (저해상도 이미지 출력할 때 평균보정이 아니라 그대로 배수해서 출력)
+	DEVICE->CreateSamplerState(desc + 1, m_arrSamplerState[1].GetAddressOf());
+	CONTEXT->PSSetSamplers(1, 1, m_arrSamplerState[1].GetAddressOf());						// s1
+
+	return 0;
 }

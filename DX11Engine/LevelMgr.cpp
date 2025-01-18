@@ -32,7 +32,8 @@ void CLevelMgr::init()
 	pObject->addComponent(new CMeshRender);
 	pObject->addComponent(new CPlayerScript);
 
-	pObject->getTransform()->setRelativeScale(0.66f, 1.0f, 1.0f);
+	pObject->getTransform()->setRelativeScale(0.66f, 1.0f, 1.0f);					// 이미지를 출력할 비율
+
 	pObject->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
 	pObject->getMeshRender()->setShader(CAssetMgr::getInstance()->FindAsset<CGraphicShader>(L"Std2DShader"));
 	pObject->getMeshRender()->setTexture(CAssetMgr::getInstance()->FindAsset<CTexture>(L"texture\\Character.png"));

@@ -99,7 +99,8 @@ void CAssetMgr::createDefaultMesh()
 void CAssetMgr::createDefaultTexture()
 {
 	// 텍스처 로딩 (키값, 경로값)
-	Ptr<CTexture> pTex = load<CTexture>(L"texture\\Character.png", L"texture\\Character.png");
+	load<CTexture>(L"texture\\Character.png", L"texture\\Character.png");
+	load<CTexture>(L"texture\\Fighter.bmp", L"texture\\Fighter.bmp");
 }
 
 void CAssetMgr::createDefaultMaterial()
