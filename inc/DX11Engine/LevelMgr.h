@@ -15,5 +15,7 @@ public:
     void init();
     void tick();
     void render();
+
+    CLevel* getCurrentLevel() { return m_curLevel; }
 };
 

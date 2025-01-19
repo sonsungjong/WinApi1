@@ -22,5 +22,6 @@ public:
     void render();
 
     void addObject(UINT _LayerIdx, CGameObject* _Object);
+    CLayer* getLayer(int _iLayerIdx) { return m_arrLayer[_iLayerIdx]; }
 };
 

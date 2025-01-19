@@ -7,6 +7,7 @@
 #include "KeyMgr.h"
 #include "AssetMgr.h"
 #include "LevelMgr.h"
+#include "RenderMgr.h"
 
 
 // 정적 멤버는 별도로 초기화를 해줘야한다
@@ -37,6 +38,7 @@ int CEngine::init(HWND _hWnd, POINT _resolution)
 	CKeyMgr::getInstance()->init();
 	CAssetMgr::getInstance()->init();
 	CLevelMgr::getInstance()->init();
+	CRenderMgr::getInstance()->init();
 
 	//if (FAILED(TempInit())) {
 	//	MessageBox(m_hWnd, L"Device 초기화 실패", L"Temp Init 초기화 실패", MB_OK);
@@ -57,17 +59,19 @@ void CEngine::progress()
 
 
 	// 화면 클리어 (Target Clear)
-	float clear_color[4] = { 0.3f, 0.3f, 0.3f, 1.f };
-	CDevice::getInstance()->clearTarget(clear_color);			// 모두 지우고
+	//float clear_color[4] = { 0.3f, 0.3f, 0.3f, 1.f };
+	//CDevice::getInstance()->clearTarget(clear_color);			// 모두 지우고
 
 	// 그린다 (Object Render)
 	// Level->render();							// 렌더타겟에 그린다
 	//TempRender();
-	CLevelMgr::getInstance()->render();
+	//CLevelMgr::getInstance()->render();
 
 	// 게시한다 (Present)
 	// SwapChain->Present();				// 윈도우 화면에 보낸다
-	CDevice::getInstance()->present();
+	//CDevice::getInstance()->present();
+
+	CRenderMgr::getInstance()->render();
 }
 
 CEngine::CEngine()

@@ -137,6 +137,9 @@
     <Filter Include="_04_Manager\_05_LevelMgr">
       <UniqueIdentifier>{d4aacb84-32cd-4bdd-9cee-70ffcef5e330}</UniqueIdentifier>
     </Filter>
+    <Filter Include="_04_Manager\_06_RenderMgr">
+      <UniqueIdentifier>{9e6b1c9f-7b99-410f-98ac-265c3e88cf0e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -250,6 +253,9 @@
     <ClInclude Include="Camera.h">
       <Filter>_07_Component\_02_Camera</Filter>
     </ClInclude>
+    <ClInclude Include="RenderMgr.h">
+      <Filter>_04_Manager\_06_RenderMgr</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">
@@ -335,6 +341,9 @@
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>_07_Component\_02_Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderMgr.cpp">
+      <Filter>_04_Manager\_06_RenderMgr</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

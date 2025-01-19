@@ -191,6 +191,7 @@ call Copy.bat</Command>
     <ClInclude Include="PlayerScript.h" />
     <ClInclude Include="ptr.h" />
     <ClInclude Include="RenderComponent.h" />
+    <ClInclude Include="RenderMgr.h" />
     <ClInclude Include="Script.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SimpleMath.h" />
@@ -229,6 +230,7 @@ call Copy.bat</Command>
     </ClCompile>
     <ClCompile Include="PlayerScript.cpp" />
     <ClCompile Include="RenderComponent.cpp" />
+    <ClCompile Include="RenderMgr.cpp" />
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture.cpp" />

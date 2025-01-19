@@ -1,18 +1,17 @@
 #include "pch.h"
 #include "LevelMgr.h"
 
+#include "AssetMgr.h"
+
 #include "Level.h"
 #include "GameObject.h"
+#include "components.h"
 
-#include "Transform.h"
-#include "MeshRender.h"
 #include "PlayerScript.h"
-#include "AssetMgr.h"
 
 CLevelMgr::CLevelMgr()
 	: m_curLevel(nullptr)
 {
-
 }
 
 CLevelMgr::~CLevelMgr()
@@ -26,20 +25,31 @@ CLevelMgr::~CLevelMgr()
 void CLevelMgr::init()
 {
 	m_curLevel = new CLevel;
+	UINT nLayerIdx = 0U;
 
+	// Camera Object 생성
+	CGameObject* pCamObj = new CGameObject;
+	pCamObj->setName(L"MainCamera");
+	pCamObj->addComponent(new CTransform);
+	pCamObj->addComponent(new CCamera);
+	pCamObj->getCamera()->setCameraPriority(0);				// 메인카메라(0)
+
+	m_curLevel->addObject(nLayerIdx, pCamObj);
+
+	// Player Object 생성
 	CGameObject* pObject = new CGameObject;
-	pObject->addComponent(new CTransform);
-	pObject->addComponent(new CMeshRender);
-	pObject->addComponent(new CPlayerScript);
+	pObject->setName(L"Player");
+	pObject->addComponent(new CTransform);					// 이동 관련
+	pObject->addComponent(new CMeshRender);				// 랜더링 해줌
+	pObject->addComponent(new CPlayerScript);				// 플레이어 기능
 
-	//pObject->getTransform()->setRelativeScale(0.66f, 1.0f, 1.0f);					// 이미지를 출력할 비율
-	pObject->getTransform()->setRelativeScale(0.33f, 0.5f, 0.5f);					// 이미지를 출력할 비율
+	pObject->getTransform()->setRelativeScale(0.66f, 1.0f, 1.0f);					// 이미지를 출력할 비율
+	//pObject->getTransform()->setRelativeScale(0.33f, 0.5f, 0.5f);					// 이미지를 출력할 비율
 
 	pObject->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
 	pObject->getMeshRender()->setShader(CAssetMgr::getInstance()->FindAsset<CGraphicShader>(L"Std2DShader"));
 	pObject->getMeshRender()->setTexture(CAssetMgr::getInstance()->FindAsset<CTexture>(L"texture\\Character.png"));
 
-	UINT nLayerIdx = 0U;
 	m_curLevel->addObject(nLayerIdx, pObject);
 }
 
