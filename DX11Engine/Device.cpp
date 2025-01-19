@@ -5,7 +5,6 @@
 
 CDevice::CDevice()
 	: m_hWnd(nullptr)
-	, m_render_resolution{}
 	, m_arrSamplerState{}
 	, m_device(nullptr)
 	, m_context(nullptr)
@@ -31,7 +30,7 @@ CDevice::~CDevice()
 	m_DSV->Release();
 }
 
-int CDevice::init(HWND _hWnd, POINT _resolution)
+int CDevice::init(HWND _hWnd, Vec2 _resolution)
 {
 	m_hWnd = _hWnd;
 	m_render_resolution = _resolution;

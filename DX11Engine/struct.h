@@ -15,10 +15,7 @@ struct tTransform
 {
 	Matrix matWorld;
 	Matrix matView;
+	Matrix matProj;
 };
 
-//struct tTransform
-//{
-//	Vec4 Position;			// x,y,z만 담을거긴한데 GPU가 16바이트 기반이라 Vec4로 선언
-//	Vec4 Scale;
-//};
+extern tTransform g_Trans;				// 이러한 자료형과 변수가 어딘가에 있을 것이다라는 선언 (extern) -> 모든 파일이 접근 가능한 유일한 전역변수

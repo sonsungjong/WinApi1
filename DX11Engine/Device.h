@@ -10,7 +10,7 @@ class CDevice
 	SINGLE(CDevice)
 private:
 	HWND m_hWnd;			// 출력 대상 윈도우
-	POINT m_render_resolution;			// 렌더링 해상도
+	Vec2 m_render_resolution;			// 렌더링 해상도
 
 	//ComPtr<ID3D11Device> 로 사용하면 초기화 및 Release를 안해줘도 됨
 	ID3D11Device* m_device;							// GPU 메모리 할당, DX11 관련 객체 생성
@@ -38,9 +38,11 @@ private:
 	int createRasterizerState();
 
 public:
-	int init(HWND _hWnd, POINT _resolution);
+	int init(HWND _hWnd, Vec2 _resolution);
 	void clearTarget(float(&_ArrColor)[4]);				// 배열 4개 짜리를 받는다 (해당 색상으로 지움)
 	void present();
+
+	Vec2 getRenderResolution() { return m_render_resolution; }
 
 	ID3D11Device* GetDivice() { return m_device; }
 	ID3D11DeviceContext* GetContext() { return m_context; }

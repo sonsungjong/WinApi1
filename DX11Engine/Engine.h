@@ -13,10 +13,10 @@ class CEngine
 	SINGLE(CEngine);
 private:
 	HWND m_hWnd;
-	POINT m_resolution;
+	Vec2 m_resolution;
 
 public:
-	int init(HWND _hWnd, POINT _resolution);
+	int init(HWND _hWnd, Vec2 _resolution);
 
 	// 매 프레임마다 엔진에 들어오는 함수
 	void progress();

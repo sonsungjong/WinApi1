@@ -95,7 +95,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UpdateWindow(g_hWnd);
 
     // DirectX 엔진 초기화
-    if (!SUCCEEDED(CEngine::getInstance()->init(g_hWnd, POINT{1280, 768})))
+    if (!SUCCEEDED(CEngine::getInstance()->init(g_hWnd, Vec2(1280, 768))))
     {
         ::MessageBox(g_hWnd, L"엔진 초기화 실패", L"엔진 초기화 실패", MB_OK);
         return 0;

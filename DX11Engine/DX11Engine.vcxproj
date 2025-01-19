@@ -166,6 +166,7 @@ call Copy.bat</Command>
     <ClInclude Include="AssetMgr.h" />
     <ClInclude Include="assets.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="CameraMoveScript.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="components.h" />
     <ClInclude Include="ComputeShader.h" />
@@ -206,6 +207,7 @@ call Copy.bat</Command>
     <ClCompile Include="AssetMgr.cpp" />
     <ClCompile Include="AssetMgr_Init.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CameraMoveScript.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComputeShader.cpp" />
     <ClCompile Include="ConstBuffer.cpp" />
@@ -213,6 +215,7 @@ call Copy.bat</Command>
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="DX11Engine.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="extern.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GraphicShader.cpp" />
     <ClCompile Include="KeyMgr.cpp" />

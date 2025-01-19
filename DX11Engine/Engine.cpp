@@ -14,7 +14,7 @@
 //CEngine* CEngine::g_this = nullptr;
 
 // 윈도우와 해상도
-int CEngine::init(HWND _hWnd, POINT _resolution)
+int CEngine::init(HWND _hWnd, Vec2 _resolution)
 {
 	m_hWnd = _hWnd;							// 대상윈도우
 	m_resolution = _resolution;				// 해상도

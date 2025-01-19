@@ -8,6 +8,7 @@
 #include "components.h"
 
 #include "PlayerScript.h"
+#include "CameraMoveScript.h"
 
 CLevelMgr::CLevelMgr()
 	: m_curLevel(nullptr)
@@ -32,6 +33,8 @@ void CLevelMgr::init()
 	pCamObj->setName(L"MainCamera");
 	pCamObj->addComponent(new CTransform);
 	pCamObj->addComponent(new CCamera);
+	pCamObj->addComponent(new CCameraMoveScript);
+
 	pCamObj->getCamera()->setCameraPriority(0);				// 메인카메라(0)
 
 	m_curLevel->addObject(nLayerIdx, pCamObj);
@@ -43,8 +46,8 @@ void CLevelMgr::init()
 	pObject->addComponent(new CMeshRender);				// 랜더링 해줌
 	pObject->addComponent(new CPlayerScript);				// 플레이어 기능
 
-	pObject->getTransform()->setRelativeScale(0.66f, 1.0f, 1.0f);					// 이미지를 출력할 비율
-	//pObject->getTransform()->setRelativeScale(0.33f, 0.5f, 0.5f);					// 이미지를 출력할 비율
+	pObject->getTransform()->setRelativePos(Vec3(0.f, 0.f, 100.f));
+	pObject->getTransform()->setRelativeScale(100.f, 100.f, 0.5f);					// 이미지를 출력할 비율
 
 	pObject->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
 	pObject->getMeshRender()->setShader(CAssetMgr::getInstance()->FindAsset<CGraphicShader>(L"Std2DShader"));

@@ -5,6 +5,7 @@ cbuffer TRANSFORM : register(b0)
 {
     row_major matrix g_matWorld;
     row_major matrix g_matView;
+    row_major matrix g_matProj;
 };
 
 SamplerState g_sam_0 : register(s0);
@@ -30,8 +31,11 @@ VS_OUT VS_Std2D(VS_IN _in)
 {
 	VS_OUT output = (VS_OUT)0.0f;
 	
-	// 행렬을 곱할 때 3차원 좌표를 4차원으로 확장 (동차좌표)
-    output.vPosition = mul(float4(_in.vPos, 1.f), g_matWorld);
+    float4 vWorldPos = mul(float4(_in.vPos, 1.f), g_matWorld);			// 행렬을 곱할 때 3차원 좌표를 4차원으로 확장 (동차좌표)
+    float4 vViewPos = mul(vWorldPos, g_matView);							// 카메라 원점인 뷰스페이스
+    float4 vProjPos = mul(vViewPos, g_matProj);								// 투영행렬 반영
+	
+    output.vPosition = vProjPos;
 	output.vColor = _in.vColor;
 	output.vUV = _in.vUV;
 

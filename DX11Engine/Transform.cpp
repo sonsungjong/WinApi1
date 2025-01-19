@@ -38,9 +38,9 @@ void CTransform::binding()
 	// SysMem -> GPU
 	CConstBuffer* pCB = CDevice::getInstance()->getConstBuffer(CB_TYPE::TRANSFORM);
 
-	tTransform trans = {};
-	trans.matWorld = m_matWorld;
+	//g_Trans.matView;			// 카메라의 뷰 행렬
+	g_Trans.matWorld = m_matWorld;
 
-	pCB->setData(&trans);
+	pCB->setData(&g_Trans);
 	pCB->binding();				// b0 상수 레지스터에 전달
 }

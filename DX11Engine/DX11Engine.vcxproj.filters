@@ -256,6 +256,9 @@
     <ClInclude Include="RenderMgr.h">
       <Filter>_04_Manager\_06_RenderMgr</Filter>
     </ClInclude>
+    <ClInclude Include="CameraMoveScript.h">
+      <Filter>Scripts</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">
@@ -344,6 +347,12 @@
     </ClCompile>
     <ClCompile Include="RenderMgr.cpp">
       <Filter>_04_Manager\_06_RenderMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="extern.cpp">
+      <Filter>_01_Header</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraMoveScript.cpp">
+      <Filter>Scripts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
