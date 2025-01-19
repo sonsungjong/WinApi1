@@ -12,6 +12,7 @@ UINT g_KeyValue[(UINT)KEY::KEY_END] =
 	'X',
 	'C',
 	'V',
+	'Y',
 	'_0',
 	'_1',
 	'_2',

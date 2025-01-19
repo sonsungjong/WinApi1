@@ -30,6 +30,19 @@ void CTransform::finaltick()
 	Matrix matTranslation = XMMatrixTranslation(m_RelativePos.x, m_RelativePos.y, m_RelativePos.z);
 
 	m_matWorld = matScale * matRotation * matTranslation;				// 스케일 x 회전 x 이동
+
+	// 오브젝트의 방향정보 계산
+	m_RelativeDirection[(UINT)DIR_TYPE::RIGHT] = XAxis;
+	m_RelativeDirection[(UINT)DIR_TYPE::UP] = YAxis;
+	m_RelativeDirection[(UINT)DIR_TYPE::FRONT] = ZAxis;
+
+	m_RelativeDirection[(UINT)DIR_TYPE::RIGHT]  = XMVector3TransformNormal(m_RelativeDirection[(UINT)DIR_TYPE::RIGHT], matRotation);
+	m_RelativeDirection[(UINT)DIR_TYPE::RIGHT].Normalize();
+	m_RelativeDirection[(UINT)DIR_TYPE::UP]  = XMVector3TransformNormal(m_RelativeDirection[(UINT)DIR_TYPE::UP], matRotation);
+	m_RelativeDirection[(UINT)DIR_TYPE::UP].Normalize();
+	m_RelativeDirection[(UINT)DIR_TYPE::FRONT]  = XMVector3TransformNormal(m_RelativeDirection[(UINT)DIR_TYPE::FRONT], matRotation);
+	m_RelativeDirection[(UINT)DIR_TYPE::FRONT].Normalize();
+	
 }
 
 // 들고있는 데이터를 GPU로 보낸다

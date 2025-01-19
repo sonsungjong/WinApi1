@@ -14,6 +14,7 @@ enum class KEY
 	X,
 	C,
 	V,
+	Y,
 	_0,
 	_1,
 	_2,

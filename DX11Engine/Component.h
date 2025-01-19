@@ -18,10 +18,11 @@ public:
     virtual void tick() {};                 // 가상 함수
     virtual void finaltick() = 0;           // 순수 가상 함수
 
-    COMPONENT_TYPE getComponentType() {
-        return m_type;
-    }
+    COMPONENT_TYPE getComponentType() { return m_type; }
     CGameObject* getOwner() { return m_owner; }
+    CTransform* getTransform() { return m_owner->getTransform(); }
+    CMeshRender* getMeshRender() { return m_owner->getMeshRender(); }
+    CCamera* getCamera() { return m_owner->getCamera(); }
 
     friend class CGameObject;               // CGameObject 에게만 private을 열어줌
 

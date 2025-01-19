@@ -13,23 +13,33 @@ CCameraMoveScript::~CCameraMoveScript()
 void CCameraMoveScript::tick()
 {
 	// 키 입력에 따른 위치이동
-	Vec3 vCurPos = getOwner()->getTransform()->getRelativePos();
+	Vec3 vCurPos = getTransform()->getRelativePos();
+
+	Vec3 vFront = getTransform()->getRelativeDirection(DIR_TYPE::FRONT);
+	Vec3 vRight = getTransform()->getRelativeDirection(DIR_TYPE::RIGHT);
 
 	if (KEY_PRESSED(KEY::W))
 	{
-		vCurPos.y += DT * m_speed;
+		vCurPos += vFront * m_speed * DT;
 	}
 	if (KEY_PRESSED(KEY::S))
 	{
-		vCurPos.y -= DT * m_speed;
+		vCurPos += -vFront * m_speed * DT;
 	}
 	if (KEY_PRESSED(KEY::A))
 	{
-		vCurPos.x -= DT * m_speed;
+		vCurPos += -vRight * m_speed * DT;
 	}
 	if (KEY_PRESSED(KEY::D))
 	{
-		vCurPos.x += DT * m_speed;
+		vCurPos += vRight * m_speed * DT;
+	}
+
+	if (KEY_PRESSED(KEY::Y))
+	{
+		Vec3 vRotation = getTransform()->getRelativeRotation();
+		vRotation.y += DT * XM_PI;
+		getTransform()->setRelativeRotation(vRotation);
 	}
 
 	getOwner()->getTransform()->setRelativePos(vCurPos);
