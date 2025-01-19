@@ -4,6 +4,7 @@
 cbuffer TRANSFORM : register(b0)
 {
     row_major matrix g_matWorld;
+    row_major matrix g_matView;
 };
 
 SamplerState g_sam_0 : register(s0);

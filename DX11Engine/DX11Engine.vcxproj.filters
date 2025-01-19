@@ -247,7 +247,9 @@
     <ClInclude Include="Texture.h">
       <Filter>_08_Asset\Texture</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h" />
+    <ClInclude Include="Camera.h">
+      <Filter>_07_Component\_02_Camera</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">
@@ -331,7 +333,9 @@
     <ClCompile Include="Texture.cpp">
       <Filter>_08_Asset\Texture</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Camera.cpp">
+      <Filter>_07_Component\_02_Camera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleMath.inl">

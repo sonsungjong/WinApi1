@@ -19,7 +19,7 @@ public:
 
     Vec3 getRelativePos() { return m_RelativePos; }
     Vec3 getRelativeScale() { return m_RelativeScale; }
-    Vec3 getRelativeRelativeRotation() { return m_RelativeRotation; }
+    Vec3 getRelativeRotation() { return m_RelativeRotation; }
 
     void setRelativePos(const Vec3& _vPos) { m_RelativePos = _vPos; }
     void setRelativeScale(const Vec3& _vScale) { m_RelativeScale = _vScale; }

@@ -14,6 +14,7 @@ struct Vtx
 struct tTransform
 {
 	Matrix matWorld;
+	Matrix matView;
 };
 
 //struct tTransform

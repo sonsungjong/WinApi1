@@ -1,6 +1,5 @@
 #ifndef ENGINE_H_
 #define ENGINE_H_
-
 // 디자인패턴 : 설계유형
 
 // 데이터 영역 메모리 : 전역 변수
