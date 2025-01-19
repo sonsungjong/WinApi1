@@ -247,6 +247,7 @@
     <ClInclude Include="Texture.h">
       <Filter>_08_Asset\Texture</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">
@@ -330,6 +331,7 @@
     <ClCompile Include="Texture.cpp">
       <Filter>_08_Asset\Texture</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleMath.inl">

@@ -4,9 +4,11 @@ class CTransform :
     public CComponent
 {
 private:
-    Vec3 m_RelativePos;
-    Vec3 m_RelativeScale;           // 물체 크기 배율
-    Vec3 m_RelativeRotation;
+    Vec3 m_RelativePos;                     // 위치
+    Vec3 m_RelativeScale;                   // 크기 배율
+    Vec3 m_RelativeRotation;                // 회전
+
+    Matrix m_matWorld;                  // 월드 행렬 (4x4)
 
 public:
     CTransform();

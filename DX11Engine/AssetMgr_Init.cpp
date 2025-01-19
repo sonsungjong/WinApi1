@@ -45,7 +45,7 @@ void CAssetMgr::createDefaultMesh()
 	v.vUV = Vec2(0.f, 1.f);
 	vecVtx.push_back(v);				// 3번째 좌표 정점
 
-	// Index Buffer
+	// Index Buffer (CULL_BACK(반시계방향제거) 옵션일때는 시계방향순서로 push_back 할 것, CULL_FRONT(시계방향제거) 옵션일때는 반시계방향순서로 push_back 할 것)
 	vecIdx.push_back(0);
 	vecIdx.push_back(2);
 	vecIdx.push_back(3);
@@ -115,6 +115,9 @@ void CAssetMgr::createDefaultGraphicShader()
 	pShader = new CGraphicShader;
 	pShader->createVertexShader(strPath + L"shader\\std2d.fx", "VS_Std2D");
 	pShader->createPixelShader(strPath + L"shader\\std2d.fx", "PS_Std2D");
+
+	// 2D는 컬링을 하지 않는다 (반대편에서도 이미지가 나오게)
+	pShader->setRasterizerStateType(RS_TYPE::CULL_NONE);
 
 	// 등록한다
 	AddAsset<CGraphicShader>(L"Std2DShader", pShader);

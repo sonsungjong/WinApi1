@@ -165,6 +165,7 @@ call Copy.bat</Command>
     <ClInclude Include="Asset.h" />
     <ClInclude Include="AssetMgr.h" />
     <ClInclude Include="assets.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="components.h" />
     <ClInclude Include="ComputeShader.h" />
@@ -203,6 +204,7 @@ call Copy.bat</Command>
     <ClCompile Include="Asset.cpp" />
     <ClCompile Include="AssetMgr.cpp" />
     <ClCompile Include="AssetMgr_Init.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComputeShader.cpp" />
     <ClCompile Include="ConstBuffer.cpp" />

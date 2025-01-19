@@ -21,12 +21,16 @@ private:
     ComPtr<ID3D11InputLayout> m_pLayout;
 
     // 정점 몇개가 면인지 식별하는 위상구조
-    D3D11_PRIMITIVE_TOPOLOGY m_enumTopology;
+    D3D11_PRIMITIVE_TOPOLOGY m_Topology;
+
+    RS_TYPE m_enumRasterizerType;
 
 public:
     int createVertexShader(const std::wstring& _wstrFilePath, const std::string& _strVSFuncName);
     int createPixelShader(const std::wstring& _wstrFilePath, const std::string& _strPSFuncName);
-    void setTopology(D3D11_PRIMITIVE_TOPOLOGY _enumTopology) { m_enumTopology = _enumTopology; }
+    void setTopology(D3D11_PRIMITIVE_TOPOLOGY _Topology) { m_Topology = _Topology; }
+    void setRasterizerStateType(RS_TYPE _type) { m_enumRasterizerType = _type; }
+
     virtual void binding() override;
 
 public:

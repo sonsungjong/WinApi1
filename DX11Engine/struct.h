@@ -13,6 +13,11 @@ struct Vtx
 // 상수버퍼 관련 구조체
 struct tTransform
 {
-	Vec4 Position;			// x,y,z만 담을거긴한데 GPU가 16바이트 기반이라 Vec4로 선언
-	Vec4 Scale;
+	Matrix matWorld;
 };
+
+//struct tTransform
+//{
+//	Vec4 Position;			// x,y,z만 담을거긴한데 GPU가 16바이트 기반이라 Vec4로 선언
+//	Vec4 Scale;
+//};

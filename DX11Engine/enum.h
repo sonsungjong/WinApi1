@@ -48,3 +48,14 @@ enum class CB_TYPE
 
 	END
 };
+
+// Rasterizer State
+enum class RS_TYPE
+{
+	CULL_BACK,						// 아무것도 설정하지 않을 때 기본값
+	CULL_FRONT,
+	CULL_NONE,
+	WIRE_FRAME,
+
+	END
+};

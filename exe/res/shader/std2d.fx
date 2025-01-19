@@ -3,8 +3,7 @@
 
 cbuffer TRANSFORM : register(b0)
 {
-	float4 g_Position;
-	float4 g_Scale;
+    row_major matrix g_matWorld;
 };
 
 SamplerState g_sam_0 : register(s0);
@@ -30,7 +29,8 @@ VS_OUT VS_Std2D(VS_IN _in)
 {
 	VS_OUT output = (VS_OUT)0.0f;
 	
-    output.vPosition = float4((_in.vPos * g_Scale.xyz) + g_Position.xyz, 1.0f);
+	// 행렬을 곱할 때 3차원 좌표를 4차원으로 확장 (동차좌표)
+    output.vPosition = mul(float4(_in.vPos, 1.f), g_matWorld);
 	output.vColor = _in.vColor;
 	output.vUV = _in.vUV;
 

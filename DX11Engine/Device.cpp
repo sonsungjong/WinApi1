@@ -80,7 +80,14 @@ int CDevice::init(HWND _hWnd, POINT _resolution)
 		return E_FAIL;
 	}
 
-	if (!(SUCCEEDED(createSamplerState()))) {
+	if (!(SUCCEEDED(createSamplerState()))) 
+	{
+		return E_FAIL;
+	}
+
+	// Rasterizer State 생성
+	if (!(SUCCEEDED(createRasterizerState()))) 
+	{
 		return E_FAIL;
 	}
 
@@ -201,4 +208,30 @@ int CDevice::createSamplerState()
 	CONTEXT->PSSetSamplers(1, 1, m_arrSamplerState[1].GetAddressOf());						// s1
 
 	return 0;
+}
+
+int CDevice::createRasterizerState()
+{
+	// 관련 구조체를 채우고 create 시킨다
+	D3D11_RASTERIZER_DESC desc = {};
+
+	// [0] CULL_BACK 기능은 Default 옵션이기 때문에, nullptr 로 둔다 (BACK(반시계방향)으로 구성된 면은 걸러낸다)
+	m_arrRasterizerState[(UINT)RS_TYPE::CULL_BACK] = nullptr;
+
+	// [1] CULL_FRONT
+	desc.CullMode = D3D11_CULL_FRONT;					// FRONT(시계방향) 로 구성된 면은 걸러낸다
+	desc.FillMode = D3D11_FILL_SOLID;
+	DEVICE->CreateRasterizerState(&desc, m_arrRasterizerState[(UINT)RS_TYPE::CULL_FRONT].GetAddressOf());
+	
+	// [2] CULL_NONE
+	desc.CullMode = D3D11_CULL_NONE;
+	desc.FillMode = D3D11_FILL_SOLID;
+	DEVICE->CreateRasterizerState(&desc, m_arrRasterizerState[(UINT)RS_TYPE::CULL_NONE].GetAddressOf());
+
+	// [3] WIRE_FRAME
+	desc.CullMode = D3D11_CULL_NONE;
+	desc.FillMode = D3D11_FILL_WIREFRAME;
+	DEVICE->CreateRasterizerState(&desc, m_arrRasterizerState[(UINT)RS_TYPE::WIRE_FRAME].GetAddressOf());
+
+	return S_OK;
 }

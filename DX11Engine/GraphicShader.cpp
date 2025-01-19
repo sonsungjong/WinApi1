@@ -5,7 +5,8 @@
 
 CGraphicShader::CGraphicShader()
 	: CShader(ASSET_TYPE::GRAPHICS_SHADER)						// 해당 클래스가 그래픽 쉐이더 임을 부모생성자에 알려줌
-	, m_enumTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	, m_Topology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	, m_enumRasterizerType(RS_TYPE::CULL_BACK)
 {
 }
 
@@ -96,11 +97,15 @@ int CGraphicShader::createPixelShader(const std::wstring& _wstrFilePath, const s
 
 void CGraphicShader::binding()
 {
-	CONTEXT->IASetInputLayout(m_pLayout.Get());					// 각 정점의 정보
-	CONTEXT->IASetPrimitiveTopology(m_enumTopology);
+	// 각 정점 정보
+	CONTEXT->IASetInputLayout(m_pLayout.Get());
+	CONTEXT->IASetPrimitiveTopology(m_Topology);
 
 	// 버텍스 쉐이더 셋팅
 	CONTEXT->VSSetShader(m_pVertexShader.Get(), nullptr, 0);
+
+	// 레스터라이저 스테이트 셋팅
+	CONTEXT->RSSetState(CDevice::getInstance()->getRasterizerState(m_enumRasterizerType).Get());
 
 	// 픽셀 쉐이더 셋팅
 	CONTEXT->PSSetShader(m_pPixelShader.Get(), nullptr, 0);
