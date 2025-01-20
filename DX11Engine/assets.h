@@ -1,6 +1,6 @@
 #include "Mesh.h"
 //#include "MeshData.h"
-//#include "Material.h"
+#include "Material.h"
 #include "Texture.h"
 //#include "Sound.h"
 #include "GraphicShader.h"

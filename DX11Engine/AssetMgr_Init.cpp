@@ -6,9 +6,10 @@ void CAssetMgr::init()
 {
 	createDefaultMesh();
 	createDefaultTexture();
-	createDefaultMaterial();
 	createDefaultGraphicShader();
 	createDefaultComputeShader();
+
+	createDefaultMaterial();
 }
 
 void CAssetMgr::createDefaultMesh()
@@ -105,6 +106,13 @@ void CAssetMgr::createDefaultTexture()
 
 void CAssetMgr::createDefaultMaterial()
 {
+	Ptr<CMaterial> pMaterial = nullptr;
+
+	pMaterial = new CMaterial;
+	pMaterial->setName(L"Std2DMtrl");
+	pMaterial->setShader(FindAsset<CGraphicShader>(L"Std2DShader"));
+
+	AddAsset<CMaterial>(pMaterial->getName(), pMaterial);
 }
 
 void CAssetMgr::createDefaultGraphicShader()

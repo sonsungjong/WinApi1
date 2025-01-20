@@ -19,3 +19,14 @@ struct tTransform
 };
 
 extern tTransform g_Trans;				// 이러한 자료형과 변수가 어딘가에 있을 것이다라는 선언 (extern) -> 모든 파일이 접근 가능한 유일한 전역변수
+
+// 재질이 전달할 수 있는 상수값들
+struct tMtrlConst
+{
+	// 상수버퍼이기 때문에 고정된 배열로 만들 것 (4096 바이트 이하, 16 배수)
+	int iArr[4];
+	float fArr[4];
+	Vec2 v2Arr[4];
+	Vec4 v4Arr[4];
+	Matrix matArr[4];
+};

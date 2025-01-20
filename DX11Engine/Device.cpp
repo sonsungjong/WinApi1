@@ -185,6 +185,9 @@ int CDevice::createConstBuffer()
 	m_CB[(UINT)CB_TYPE::TRANSFORM] = new CConstBuffer;
 	m_CB[(UINT)CB_TYPE::TRANSFORM]->create(sizeof(tTransform), CB_TYPE::TRANSFORM);
 
+	m_CB[(UINT)CB_TYPE::MATERIAL] = new CConstBuffer;
+	m_CB[(UINT)CB_TYPE::MATERIAL]->create(sizeof(tMtrlConst), CB_TYPE::MATERIAL);
+
 	return S_OK;
 }
 

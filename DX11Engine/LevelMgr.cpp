@@ -50,8 +50,7 @@ void CLevelMgr::init()
 	pObject->getTransform()->setRelativeScale(100.f, 100.f, 0.5f);					// 이미지를 출력할 비율
 
 	pObject->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
-	pObject->getMeshRender()->setShader(CAssetMgr::getInstance()->FindAsset<CGraphicShader>(L"Std2DShader"));
-	pObject->getMeshRender()->setTexture(CAssetMgr::getInstance()->FindAsset<CTexture>(L"texture\\Character.png"));
+	pObject->getMeshRender()->setMaterial(CAssetMgr::getInstance()->FindAsset<CMaterial>(L"Std2DMtrl"));
 
 	m_curLevel->addObject(nLayerIdx, pObject);
 }

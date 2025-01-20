@@ -46,6 +46,10 @@ void CConstBuffer::binding()
 {
 	// B0 에 보낸다
 	CONTEXT->VSSetConstantBuffers((UINT)m_type, 1, m_pCB.GetAddressOf());		// m_type == 0 (CB_TYPE::TRANSFORM)
+	CONTEXT->DSSetConstantBuffers((UINT)m_type, 1, m_pCB.GetAddressOf());		// m_type == 0 (CB_TYPE::TRANSFORM)
+	CONTEXT->HSSetConstantBuffers((UINT)m_type, 1, m_pCB.GetAddressOf());		// m_type == 0 (CB_TYPE::TRANSFORM)
+	CONTEXT->GSSetConstantBuffers((UINT)m_type, 1, m_pCB.GetAddressOf());		// m_type == 0 (CB_TYPE::TRANSFORM)
+	CONTEXT->PSSetConstantBuffers((UINT)m_type, 1, m_pCB.GetAddressOf());		// m_type == 0 (CB_TYPE::TRANSFORM)
 }
 
 

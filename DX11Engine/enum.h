@@ -73,3 +73,25 @@ enum class DIR_TYPE
 extern Vec3 XAxis;				// 전역변수를 미리 extern으로 선언만 해놓는다.
 extern Vec3 YAxis;				// 전역변수를 미리 extern으로 선언만 해놓는다.
 extern Vec3 ZAxis;				// 전역변수를 미리 extern으로 선언만 해놓는다. (실제 구현 부분은 다른 곳에 꼭 있어야함)
+
+enum TEX_PARAM
+{
+	TEX_0,
+	TEX_1,
+	TEX_2,
+	TEX_3,
+	TEX_4,
+	TEX_5,
+
+	TEX_CUBE_0,
+	TEX_CUBE_1,
+	TEX_CUBE_2,
+	TEX_CUBE_3,
+
+	TEX_ARR_0,
+	TEX_ARR_1,
+	TEX_ARR_2,
+	TEX_ARR_3,
+
+	END
+};

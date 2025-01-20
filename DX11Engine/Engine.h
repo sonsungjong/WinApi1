@@ -1,5 +1,9 @@
 #ifndef ENGINE_H_
 #define ENGINE_H_
+
+// FBX Autodesk FBX SDK) : FBX 파일 전용 SDK [.FBX : 게임 및 애니메이션]
+// Assimp (Open Asset Import Library) : OBJ, FBX, DAE 등을 DX11과 함께 사용 가능 [.OBJ : 정적 모델]
+
 // 디자인패턴 : 설계유형
 
 // 데이터 영역 메모리 : 전역 변수
