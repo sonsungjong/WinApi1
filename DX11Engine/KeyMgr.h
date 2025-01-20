@@ -29,6 +29,8 @@ enum class KEY
 	RIGHT,
 	UP,
 	DOWN,
+	LBTN,
+	RBTN,
 	ENTER,
 	ESC,
 	SPACE,
@@ -60,6 +62,9 @@ class CKeyMgr
 
 private:
 	std::vector<STKeyInfo> m_vecKey;			// 벡터 인덱스는 키의 enum값으로
+	Vec2 m_CurMousePos;								// 현재 프레임 마우스 위치
+	Vec2 m_PrevMousePos;							// 이전 프레임 마우스 위치
+	Vec2 m_DragDirection;
 
 public:
 	void init();
@@ -67,5 +72,9 @@ public:
 
 public:
 	KEY_STATE getKeyState(KEY _Key) { return m_vecKey[(UINT)_Key].State; }
+
+	Vec2 getMousePos() { return m_CurMousePos; }
+	Vec2 getPrevMousePos() { return m_PrevMousePos; }
+	Vec2 getMouseDrag() { return m_DragDirection; }
 };
 

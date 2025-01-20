@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "KeyMgr.h"
 
+#include "Engine.h"
+
 // enum과 실제 키보드 아스키값을 매칭시켜줄 전역 배열
 UINT g_KeyValue[(UINT)KEY::KEY_END] =
 {
@@ -27,6 +29,8 @@ UINT g_KeyValue[(UINT)KEY::KEY_END] =
 	VK_RIGHT,
 	VK_UP,
 	VK_DOWN,
+	VK_LBUTTON,
+	VK_RBUTTON,
 	VK_RETURN,			// 엔터 키
 	VK_ESCAPE,			// ECS 키
 	VK_SPACE,
@@ -92,4 +96,16 @@ void CKeyMgr::tick()
 			m_vecKey[i].PrevPressed = false;
 		}
 	}
+
+	// 마우스 좌표 갱신
+	m_PrevMousePos = m_CurMousePos;										// 이전 마우스 좌표로 옮기고
+	POINT ptMouse = {};
+	GetCursorPos(&ptMouse);				// 윈도우 기준 좌표
+	ScreenToClient(CEngine::getInstance()->getMainWnd(), &ptMouse);				// 윈도우 기준 좌표 -> 애플리케이션 클라이언트 좌표로 변환
+	m_CurMousePos = Vec2((float)ptMouse.x, (float)ptMouse.y);			// 좌표 계산
+
+	// 마우스 이동값 계산
+	m_DragDirection = m_CurMousePos - m_PrevMousePos;				// 방향정보를 구하기 위해 이동값을 구한다
+	m_DragDirection.y *= -1.f;					// 눈에 보이는 방향으로 변경해서 작업
+	m_DragDirection.Normalize();				// 단위값으로 바꾼다
 }

@@ -12,6 +12,13 @@ CCameraMoveScript::~CCameraMoveScript()
 
 void CCameraMoveScript::tick()
 {
+	// Shift 속도 배율
+	float speed = m_speed;
+	if (KEY_PRESSED(KEY::LSHIFT))
+	{
+		speed *= 4.f;
+	}
+
 	// 키 입력에 따른 위치이동
 	Vec3 vCurPos = getTransform()->getRelativePos();
 
@@ -20,25 +27,29 @@ void CCameraMoveScript::tick()
 
 	if (KEY_PRESSED(KEY::W))
 	{
-		vCurPos += vFront * m_speed * DT;
+		vCurPos += vFront * speed * DT;
 	}
 	if (KEY_PRESSED(KEY::S))
 	{
-		vCurPos += -vFront * m_speed * DT;
+		vCurPos += -vFront * speed * DT;
 	}
 	if (KEY_PRESSED(KEY::A))
 	{
-		vCurPos += -vRight * m_speed * DT;
+		vCurPos += -vRight * speed * DT;
 	}
 	if (KEY_PRESSED(KEY::D))
 	{
-		vCurPos += vRight * m_speed * DT;
+		vCurPos += vRight * speed * DT;
 	}
 
-	if (KEY_PRESSED(KEY::Y))
+	if (KEY_PRESSED(KEY::RBTN)) 
 	{
+		Vec2 vDrag = CKeyMgr::getInstance()->getMouseDrag();
+
 		Vec3 vRotation = getTransform()->getRelativeRotation();
-		vRotation.y += DT * XM_PI;
+		vRotation.y += vDrag.x * DT * XM_PI * 20.f;
+		vRotation.x -= vDrag.y * DT * XM_PI * 20.f;
+
 		getTransform()->setRelativeRotation(vRotation);
 	}
 
