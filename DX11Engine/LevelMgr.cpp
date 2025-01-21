@@ -51,6 +51,7 @@ void CLevelMgr::init()
 
 	pObject->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
 	pObject->getMeshRender()->setMaterial(CAssetMgr::getInstance()->FindAsset<CMaterial>(L"Std2DMtrl"));
+	pObject->getMeshRender()->getMaterial()->setScalarParam<int>(SCALAR_PARAM::INT_0, 2);				// INT_0 자리에 2를 전달해라 (fx파일의 2번 재질 선택)
 
 	m_curLevel->addObject(nLayerIdx, pObject);
 }

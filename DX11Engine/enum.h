@@ -74,7 +74,37 @@ extern Vec3 XAxis;				// 전역변수를 미리 extern으로 선언만 해놓는다.
 extern Vec3 YAxis;				// 전역변수를 미리 extern으로 선언만 해놓는다.
 extern Vec3 ZAxis;				// 전역변수를 미리 extern으로 선언만 해놓는다. (실제 구현 부분은 다른 곳에 꼭 있어야함)
 
-enum TEX_PARAM
+enum class SCALAR_PARAM
+{
+	INT_0,
+	INT_1,
+	INT_2,
+	INT_3,
+
+	FLOAT_0,
+	FLOAT_1,
+	FLOAT_2,
+	FLOAT_3,
+
+	VEC2_0,
+	VEC2_1,
+	VEC2_2,
+	VEC2_3,
+
+	VEC4_0,
+	VEC4_1,
+	VEC4_2,
+	VEC4_3,
+
+	MAT_0,
+	MAT_1,
+	MAT_2,
+	MAT_3,
+
+	END
+};
+
+enum class TEX_PARAM
 {
 	TEX_0,
 	TEX_1,

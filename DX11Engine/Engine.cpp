@@ -19,7 +19,7 @@ int CEngine::init(HWND _hWnd, Vec2 _resolution)
 	m_hWnd = _hWnd;							// 대상윈도우
 	m_resolution = _resolution;				// 해상도
 
-	::RECT rt = { 0, 0, m_resolution.x, m_resolution.y };
+	::RECT rt = { 0, 0, static_cast<LONG>(m_resolution.x), static_cast<LONG>(m_resolution.y) };
 
 	// 윈도우 크기 설정
 	AdjustWindowRect(&rt, WS_OVERLAPPEDWINDOW, false);								// 메뉴는 false

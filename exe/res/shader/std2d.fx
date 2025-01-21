@@ -48,7 +48,7 @@ float4 PS_Std2D(VS_OUT _in) : SV_Target
     }
     else if (g_int_0 == 2)
     {
-        vColor = float4(0.f, 1.f, 1.f, 1.f);				
+        vColor = float4(0.f, 1.f, 1.f, 1.f);
     }
 
 	return vColor;

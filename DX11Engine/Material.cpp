@@ -7,7 +7,7 @@
 CMaterial::CMaterial()
 	: CAsset(ASSET_TYPE::MATERIAL)
 {
-	//m_const.iArr[0] = 2;					// 분기처리로 제어하면 재질을 빨간색으로 만들어 피격 효과를 줄 수 있음
+	
 }
 
 CMaterial::~CMaterial()
