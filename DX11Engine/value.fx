@@ -34,15 +34,30 @@ cbuffer MATERIAL_CONST : register(b1)
     float4 g_vec4_2;
     float4 g_vec4_3;
     
-    Matrix g_mat_0;
-    Matrix g_mat_1;
-    Matrix g_mat_2;
-    Matrix g_mat_3;
+    row_major matrix g_mat_0;
+    row_major matrix g_mat_1;
+    row_major matrix g_mat_2;
+    row_major matrix g_mat_3;
 }
 
 SamplerState g_sam_0 : register(s0);
 SamplerState g_sam_1 : register(s1);
 
-Texture2D g_tex : register(t0);
+Texture2D g_tex_0 : register(t0);
+Texture2D g_tex_1 : register(t1);
+Texture2D g_tex_2 : register(t2);
+Texture2D g_tex_3 : register(t3);
+Texture2D g_tex_4 : register(t4);
+Texture2D g_tex_5 : register(t5);
+
+TextureCube g_texcube_0 : register(t6);
+TextureCube g_texcube_1 : register(t7);
+TextureCube g_texcube_2 : register(t8);
+TextureCube g_texcube_3 : register(t9);
+
+Texture2DArray g_texarr_0 : register(t10);
+Texture2DArray g_texarr_1 : register(t11);
+Texture2DArray g_texarr_2 : register(t12);
+Texture2DArray g_texarr_3 : register(t13);
 
 #endif

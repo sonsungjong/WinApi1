@@ -7,10 +7,43 @@ private:
 	T* m_asset;
 
 public:
-	T* Get() { return m_asset; }
-	T** GetAddressOf() { return &m_asset; }
+	T* Get() const { return m_asset; }
+	T** GetAddressOf() const { return &m_asset; }
 
 public:
+	// 비교 연산자 구현
+	bool operator== (T* _asset) const
+	{
+		if (m_asset == _asset) {
+			return true;
+		}
+		return false;
+	}
+
+	bool operator!= (T* _asset) const
+	{
+		if (m_asset != _asset) {
+			return true;
+		}
+		return false;
+	}
+
+	bool operator== (const Ptr<T>& _asset) const
+	{
+		if (m_asset == _asset.m_asset) {
+			return true;
+		}
+		return false;
+	}
+
+	bool operator!= (const Ptr<T>& _asset) const
+	{
+		if (m_asset != _asset.m_asset) {
+			return true;
+		}
+		return false;
+	}
+
 	// = 연산자 구현 (대입연산자)
 	void operator= (T* _asset)
 	{
@@ -75,3 +108,22 @@ public:
 		}
 	}
 };
+
+// 전역함수
+template<typename T>
+bool operator== (void* _asset, const Ptr<T>& _ptr)
+{
+	if (_asset == _ptr.Get()) {
+		return true;
+	}
+	return false;
+}
+
+template<typename T>
+bool operator!= (void* _asset, const Ptr<T>& _ptr)
+{
+	if (_asset != _ptr.Get()) {
+		return true;
+	}
+	return false;
+}

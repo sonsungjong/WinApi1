@@ -22,6 +22,8 @@ public:
     template<typename T>
     void setScalarParam(SCALAR_PARAM _paramType, const T& _value);
 
+    void setTexParam(TEX_PARAM _param, Ptr<CTexture> _tex);
+
     void binding();
 
     virtual int load(const std::wstring& _strFilePath) { return S_OK; }

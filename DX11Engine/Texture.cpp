@@ -17,6 +17,12 @@ void CTexture::binding(int _registerNum)
     CONTEXT->PSSetShaderResources(_registerNum, 1, m_SRV.GetAddressOf());
 }
 
+void CTexture::clear(int _registerNum)
+{
+    ID3D11ShaderResourceView* pSRV = nullptr;
+    CONTEXT->PSSetShaderResources(_registerNum, 1, &pSRV);
+}
+
 int CTexture::load(const std::wstring& _strFilePath)
 {
     // 확장자에 따라서 분기처리를 한다

@@ -40,15 +40,15 @@ float4 PS_Std2D(VS_OUT _in) : SV_Target
 	
 	if(g_int_0 == 0)
     {
-        vColor = g_tex.Sample(g_sam_0, _in.vUV);
+        vColor = g_tex_0.Sample(g_sam_0, _in.vUV);
     }
-	else if(g_int_0 == 1)
+	else if(g_vec4_3.y == 3.14f)
     {
         vColor = float4(1.f, 1.f, 0.f, 1.f);				// 노란색
     }
-    else if (g_int_0 == 2)
+    else if (g_mat_1[0][0] == 2.1f)
     {
-        vColor = float4(0.f, 1.f, 1.f, 1.f);
+        vColor = float4(0.f, 1.f, 1.f, 1.f);				// 청록색
     }
 
 	return vColor;

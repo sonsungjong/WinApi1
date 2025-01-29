@@ -51,7 +51,12 @@ void CLevelMgr::init()
 
 	pObject->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
 	pObject->getMeshRender()->setMaterial(CAssetMgr::getInstance()->FindAsset<CMaterial>(L"Std2DMtrl"));
-	pObject->getMeshRender()->getMaterial()->setScalarParam<int>(SCALAR_PARAM::INT_0, 2);				// INT_0 자리에 2를 전달해라 (fx파일의 2번 재질 선택)
+	pObject->getMeshRender()->getMaterial()->setScalarParam(SCALAR_PARAM::INT_0, 1);				// INT_0 자리에 1를 전달해라 (fx파일의 0번 재질 선택)
+	//pObject->getMeshRender()->getMaterial()->setScalarParam(SCALAR_PARAM::VEC4_3, Vec4(0.f, 3.14f, 0.f, 0.f));
+	Matrix mat;
+	mat._11 = 2.1f;			// 1행1열 (인덱스로는 0,0 )
+	pObject->getMeshRender()->getMaterial()->setScalarParam(SCALAR_PARAM::MAT_1, mat);
+	pObject->getMeshRender()->getMaterial()->setTexParam(TEX_PARAM::TEX_0, CAssetMgr::getInstance()->FindAsset<CTexture>(L"texture\\Fighter.bmp"));
 
 	m_curLevel->addObject(nLayerIdx, pObject);
 }
