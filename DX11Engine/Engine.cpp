@@ -14,6 +14,18 @@
 // 정적 멤버는 별도로 초기화를 해줘야한다
 //CEngine* CEngine::g_this = nullptr;
 
+CEngine::CEngine()
+	: m_hWnd(nullptr)
+	, m_resolution{}
+{
+
+}
+
+CEngine::~CEngine()
+{
+	//TempRelease();
+}
+
 // 윈도우와 해상도
 int CEngine::init(HWND _hWnd, Vec2 _resolution)
 {
@@ -74,21 +86,11 @@ void CEngine::progress()
 	// SwapChain->Present();				// 윈도우 화면에 보낸다
 	//CDevice::getInstance()->present();
 
-	CDbgRenderMgr::getInstance()->render();
-	CRenderMgr::getInstance()->render();
+	CRenderMgr::getInstance()->render();				// 첫번째
+	CDbgRenderMgr::getInstance()->render();			// 그다음 두번째
 
 	// Present
-	CDevice::getInstance()->present();
+	CDevice::getInstance()->present();					// 최종적으로 제출
 }
 
-CEngine::CEngine()
-	: m_hWnd(nullptr)
-	, m_resolution{}
-{
 
-}
-
-CEngine::~CEngine()
-{
-	//TempRelease();
-}
