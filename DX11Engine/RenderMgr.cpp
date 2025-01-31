@@ -35,7 +35,7 @@ void CRenderMgr::render()
 	}
 
 	// 게시한다 (Present)
-	CDevice::getInstance()->present();
+	//CDevice::getInstance()->present();
 }
 
 void CRenderMgr::registerCamera(CCamera* _Cam, int _priority)

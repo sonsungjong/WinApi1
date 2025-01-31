@@ -46,7 +46,7 @@ float4 PS_Std2D(VS_OUT _in) : SV_Target
     {
         vColor = float4(1.f, 1.f, 0.f, 1.f);				// 노란색
     }
-    else if (g_mat_1[0][0] == 2.1f)
+    else if (g_mat_1[3][0] == 2.1f)
     {
         vColor = float4(0.f, 1.f, 1.f, 1.f);				// 청록색
     }

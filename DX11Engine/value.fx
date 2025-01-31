@@ -53,11 +53,11 @@ Texture2D g_tex_5 : register(t5);
 TextureCube g_texcube_0 : register(t6);
 TextureCube g_texcube_1 : register(t7);
 TextureCube g_texcube_2 : register(t8);
-TextureCube g_texcube_3 : register(t9);
+TextureCube g_texcube_4 : register(t9);
 
 Texture2DArray g_texarr_0 : register(t10);
 Texture2DArray g_texarr_1 : register(t11);
 Texture2DArray g_texarr_2 : register(t12);
-Texture2DArray g_texarr_3 : register(t13);
+Texture2DArray g_texarr_4 : register(t13);
 
 #endif

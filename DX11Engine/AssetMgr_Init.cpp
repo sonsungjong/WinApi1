@@ -59,6 +59,17 @@ void CAssetMgr::createDefaultMesh()
 	pMesh->create(vecVtx.data(), (UINT)vecVtx.size(), vecIdx.data(), (UINT)vecIdx.size());
 	AddAsset<CMesh>(L"RectMesh", pMesh);
 
+	vecIdx.clear();
+	vecIdx.push_back(0);
+	vecIdx.push_back(1);
+	vecIdx.push_back(2);
+	vecIdx.push_back(3);
+	vecIdx.push_back(0);
+
+	pMesh = new CMesh;
+	pMesh->create(vecVtx.data(), (UINT)vecVtx.size(), vecIdx.data(), (UINT)vecIdx.size());
+	AddAsset<CMesh>(L"RectMesh_Debug", pMesh);
+
 	vecVtx.clear();
 	vecIdx.clear();
 
@@ -141,7 +152,8 @@ void CAssetMgr::createDefaultGraphicShader()
 	pShader = new CGraphicShader;
 	pShader->createVertexShader(strPath + L"shader\\debug_shape.fx", "VS_DebugShape");
 	pShader->createPixelShader(strPath + L"shader\\debug_shape.fx", "PS_DebugShape");
-	pShader->setRasterizerStateType(RS_TYPE::CULL_NONE);			// 컬링을 하지 않는다 (반대편도 나오게)
+	pShader->setRasterizerStateType(RS_TYPE::CULL_NONE);				// 컬링을 하지 않는다 (반대편도 나오게)
+	pShader->setTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);						// 선만
 	AddAsset<CGraphicShader>(L"DebugShapeShader", pShader);				// 등록한다
 }
 

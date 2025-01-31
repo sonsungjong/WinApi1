@@ -76,6 +76,9 @@ void CEngine::progress()
 
 	CDbgRenderMgr::getInstance()->render();
 	CRenderMgr::getInstance()->render();
+
+	// Present
+	CDevice::getInstance()->present();
 }
 
 CEngine::CEngine()

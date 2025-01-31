@@ -30,13 +30,13 @@ void CMaterial::binding()
 			CTexture::clear(i);
 			continue;
 		}
-		else {
-			m_arrTex[i]->binding(i);
-		}
+		
+		m_arrTex[i]->binding(i);
+		
 	}
 
 	// 상수 데이터 바인딩
-	if (m_shader.Get())
+	if (m_shader.Get() != nullptr)
 	{
 		m_shader->binding();
 	}

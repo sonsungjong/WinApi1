@@ -59,10 +59,10 @@ void CDbgRenderMgr::render()
 		switch (iter->Shape)
 		{
 		case DEBUG_SHAPE::RECT:
-			m_DebugRenderObj->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
+			m_DebugRenderObj->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh_Debug"));
 			break;
 		case DEBUG_SHAPE::CIRCLE:
-			m_DebugRenderObj->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"CircleMesh"));
+			m_DebugRenderObj->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"CircleMesh_Debug"));
 			break;
 		case DEBUG_SHAPE::LINE:
 			m_DebugRenderObj->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"LineMesh"));
@@ -77,6 +77,8 @@ void CDbgRenderMgr::render()
 			break;
 		}
 		
+		m_DebugRenderObj->getMeshRender()->getMaterial()->setScalarParam(SCALAR_PARAM::VEC4_0, iter->Color);
+
 		// 재질 (선택해놓은 재질로 오브젝트 랜더링)
 		m_DebugRenderObj->render();
 
