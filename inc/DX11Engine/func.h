@@ -25,3 +25,9 @@ void SafeDelVector(std::vector<T*>& _vec)
 
 	_vec.clear();
 }
+
+void DrawDebugRect(Vec3 _WorldPos, Vec3 _WorldScale, Vec3 _WorldRotation, Vec4 _vColor, float _Duration);
+void DrawDebugCircle();
+void DrawDebugLine();
+
+void DrawDebugRect(Matrix _matWorld, Vec4 _vColor, float _Duration);

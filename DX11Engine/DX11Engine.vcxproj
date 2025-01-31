@@ -167,6 +167,7 @@ call Copy.bat</Command>
     <ClInclude Include="assets.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraMoveScript.h" />
+    <ClInclude Include="CDbgRenderMgr.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="components.h" />
     <ClInclude Include="ComputeShader.h" />
@@ -209,6 +210,7 @@ call Copy.bat</Command>
     <ClCompile Include="AssetMgr_Init.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraMoveScript.cpp" />
+    <ClCompile Include="CDbgRenderMgr.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComputeShader.cpp" />
     <ClCompile Include="ConstBuffer.cpp" />
@@ -217,6 +219,7 @@ call Copy.bat</Command>
     <ClCompile Include="DX11Engine.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="extern.cpp" />
+    <ClCompile Include="func.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GraphicShader.cpp" />
     <ClCompile Include="KeyMgr.cpp" />
@@ -246,6 +249,12 @@ call Copy.bat</Command>
     <None Include="SimpleMath.inl" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="debug_shape.fx">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="std2d.fx">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>

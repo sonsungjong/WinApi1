@@ -140,6 +140,9 @@
     <Filter Include="_04_Manager\_06_RenderMgr">
       <UniqueIdentifier>{9e6b1c9f-7b99-410f-98ac-265c3e88cf0e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="_04_Manager\_07_DebugRenderMgr">
+      <UniqueIdentifier>{8ef9aaf1-70de-40ab-8aff-d3d961dc2dff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -262,6 +265,9 @@
     <ClInclude Include="Material.h">
       <Filter>_08_Asset\Material</Filter>
     </ClInclude>
+    <ClInclude Include="CDbgRenderMgr.h">
+      <Filter>_04_Manager\_07_DebugRenderMgr</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11Engine.cpp">
@@ -360,6 +366,12 @@
     <ClCompile Include="Material.cpp">
       <Filter>_08_Asset\Material</Filter>
     </ClCompile>
+    <ClCompile Include="CDbgRenderMgr.cpp">
+      <Filter>_04_Manager\_07_DebugRenderMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="func.cpp">
+      <Filter>_01_Header</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleMath.inl">
@@ -371,6 +383,9 @@
       <Filter>HLSL\2D</Filter>
     </FxCompile>
     <FxCompile Include="value.fx">
+      <Filter>HLSL\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="debug_shape.fx">
       <Filter>HLSL\2D</Filter>
     </FxCompile>
   </ItemGroup>

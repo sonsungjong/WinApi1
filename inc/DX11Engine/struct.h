@@ -10,6 +10,19 @@ struct Vtx
 	Vec2 vUV;
 };
 
+// 디버그 렌더 요청 정보
+struct tDebugShapeInfo
+{
+	DEBUG_SHAPE Shape;				// 도형 종류
+	Vec3 Position;							// 위치값
+	Vec3 Scale;								// 크기
+	Vec3 Rotation;							// 회전
+	Matrix matWorld;						// 매트릭스로 정리
+	Vec4 Color;								// 색상
+	float Duration;							// 유지 시간
+	float Age;									// 현재 시간 (도형이 화면에 존재한 시간)
+};
+
 // 상수버퍼 관련 구조체
 struct tTransform
 {

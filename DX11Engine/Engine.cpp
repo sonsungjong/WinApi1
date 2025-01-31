@@ -9,6 +9,7 @@
 #include "LevelMgr.h"
 #include "RenderMgr.h"
 
+#include "CDbgRenderMgr.h"
 
 // 정적 멤버는 별도로 초기화를 해줘야한다
 //CEngine* CEngine::g_this = nullptr;
@@ -54,9 +55,11 @@ void CEngine::progress()
 	// Manager Tick
 	CTimeMgr::getInstance()->tick();				// 한프레임당 시간이 얼마나 걸리는지 계산
 	CKeyMgr::getInstance()->tick();
-	CLevelMgr::getInstance()->tick();
-	//TempTick();			// 매 프레임마다 호출 (Object Tick)
 
+	// Object Tick
+	CLevelMgr::getInstance()->tick();
+
+	//TempTick();			// 매 프레임마다 호출 (Object Tick)
 
 	// 화면 클리어 (Target Clear)
 	//float clear_color[4] = { 0.3f, 0.3f, 0.3f, 1.f };
@@ -71,6 +74,7 @@ void CEngine::progress()
 	// SwapChain->Present();				// 윈도우 화면에 보낸다
 	//CDevice::getInstance()->present();
 
+	CDbgRenderMgr::getInstance()->render();
 	CRenderMgr::getInstance()->render();
 }
 

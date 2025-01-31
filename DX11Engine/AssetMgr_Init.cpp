@@ -108,27 +108,41 @@ void CAssetMgr::createDefaultMaterial()
 {
 	Ptr<CMaterial> pMaterial = nullptr;
 
+	// Std2D Material
 	pMaterial = new CMaterial;
 	pMaterial->setName(L"Std2DMtrl");
 	pMaterial->setShader(FindAsset<CGraphicShader>(L"Std2DShader"));
+	AddAsset<CMaterial>(pMaterial->getName(), pMaterial);
 
+	// DebugShape Material
+	pMaterial = new CMaterial;
+	pMaterial->setName(L"DebugShapeMtrl");
+	pMaterial->setShader(FindAsset<CGraphicShader>(L"DebugShapeShader"));
 	AddAsset<CMaterial>(pMaterial->getName(), pMaterial);
 }
 
 void CAssetMgr::createDefaultGraphicShader()
 {
-	Ptr<CGraphicShader> pShader = nullptr;
 	std::wstring strPath = std::wstring(CPathMgr::getInstance()->getResPath());
+	Ptr<CGraphicShader> pShader = nullptr;
 
+	/*
+		Std2DShader
+	*/
 	pShader = new CGraphicShader;
 	pShader->createVertexShader(strPath + L"shader\\std2d.fx", "VS_Std2D");
 	pShader->createPixelShader(strPath + L"shader\\std2d.fx", "PS_Std2D");
+	pShader->setRasterizerStateType(RS_TYPE::CULL_NONE);			// 컬링을 하지 않는다 (반대편도 나오게)
+	AddAsset<CGraphicShader>(L"Std2DShader", pShader);				// 등록한다
 
-	// 2D는 컬링을 하지 않는다 (반대편에서도 이미지가 나오게)
-	pShader->setRasterizerStateType(RS_TYPE::CULL_NONE);
-
-	// 등록한다
-	AddAsset<CGraphicShader>(L"Std2DShader", pShader);
+	/*
+		DebugShapeShader
+	*/
+	pShader = new CGraphicShader;
+	pShader->createVertexShader(strPath + L"shader\\debug_shape.fx", "VS_DebugShape");
+	pShader->createPixelShader(strPath + L"shader\\debug_shape.fx", "PS_DebugShape");
+	pShader->setRasterizerStateType(RS_TYPE::CULL_NONE);			// 컬링을 하지 않는다 (반대편도 나오게)
+	AddAsset<CGraphicShader>(L"DebugShapeShader", pShader);				// 등록한다
 }
 
 void CAssetMgr::createDefaultComputeShader()

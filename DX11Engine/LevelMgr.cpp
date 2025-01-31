@@ -59,6 +59,8 @@ void CLevelMgr::init()
 	pObject->getMeshRender()->getMaterial()->setTexParam(TEX_PARAM::TEX_0, CAssetMgr::getInstance()->FindAsset<CTexture>(L"texture\\Fighter.bmp"));
 
 	m_curLevel->addObject(nLayerIdx, pObject);
+
+	DrawDebugRect(Vec3(0.f, 0.f, 500.f), Vec3(100.f, 100.f, 1.f), Vec3(0.f, 0.f, 0.f), Vec4(0.f, 1.f, 0.f, 1.f), 5.f);
 }
 
 void CLevelMgr::tick()
