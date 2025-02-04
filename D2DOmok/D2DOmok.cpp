@@ -54,7 +54,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	(void)CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 	// D2D factory »ý¼º
 	if (S_OK != D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &gp_factory)) { 
-		return 0; }
+		return 0; 
+	}
 
 	TCHAR my_class_name[] = _T("wnd_class");
 	WNDCLASS wc;
