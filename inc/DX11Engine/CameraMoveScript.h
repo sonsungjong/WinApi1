@@ -6,6 +6,9 @@ class CCameraMoveScript
 private:
     float m_speed;
 
+    void MoveByPerspective();
+    void MoveByOrthographic();
+
 public:
     virtual void tick() override;
 

@@ -20,7 +20,7 @@ void CMeshRender::finaltick()
 void CMeshRender::render()
 {
 	// 오브젝트의 위치값을 상수버퍼를 통해서 바인딩
-	getOwner()->getTransform()->binding();
+	getOwner()->Transform()->binding();
 
 	// 사용할 쉐이더 바인딩
 	getMaterial()->binding();

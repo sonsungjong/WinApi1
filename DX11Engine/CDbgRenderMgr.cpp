@@ -17,7 +17,7 @@ CDbgRenderMgr::CDbgRenderMgr()
 	m_DebugRenderObj->addComponent(new CTransform);					// 위치 계산 할 때
 	m_DebugRenderObj->addComponent(new CMeshRender);				// 렌더링 할 때
 
-	m_DebugRenderObj->getMeshRender()->setMaterial(CAssetMgr::getInstance()->FindAsset<CMaterial>(L"DebugShapeMtrl"));
+	m_DebugRenderObj->MeshRender()->setMaterial(CAssetMgr::getInstance()->FindAsset<CMaterial>(L"DebugShapeMtrl"));
 }
 
 CDbgRenderMgr::~CDbgRenderMgr()
@@ -45,39 +45,39 @@ void CDbgRenderMgr::render()
 		if (iter->matWorld == XMMatrixIdentity())
 		{
 			// 매트릭스가 비어있을 때 계산
-			m_DebugRenderObj->getTransform()->setRelativePos(iter->Position);
-			m_DebugRenderObj->getTransform()->setRelativeScale(iter->Scale);
-			m_DebugRenderObj->getTransform()->setRelativeRotation(iter->Rotation);
-			m_DebugRenderObj->getTransform()->finaltick();
+			m_DebugRenderObj->Transform()->setRelativePos(iter->Position);
+			m_DebugRenderObj->Transform()->setRelativeScale(iter->Scale);
+			m_DebugRenderObj->Transform()->setRelativeRotation(iter->Rotation);
+			m_DebugRenderObj->Transform()->finaltick();
 		}
 		else
 		{
-			m_DebugRenderObj->getTransform()->setWorldMatrix(iter->matWorld);
+			m_DebugRenderObj->Transform()->setWorldMatrix(iter->matWorld);
 		}
 
 		// 메쉬
 		switch (iter->Shape)
 		{
 		case DEBUG_SHAPE::RECT:
-			m_DebugRenderObj->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh_Debug"));
+			m_DebugRenderObj->MeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh_Debug"));
 			break;
 		case DEBUG_SHAPE::CIRCLE:
-			m_DebugRenderObj->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"CircleMesh_Debug"));
+			m_DebugRenderObj->MeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"CircleMesh_Debug"));
 			break;
 		case DEBUG_SHAPE::LINE:
-			m_DebugRenderObj->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"LineMesh"));
+			m_DebugRenderObj->MeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"LineMesh"));
 			break;
 		case DEBUG_SHAPE::CUBE:
-			m_DebugRenderObj->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"CubeMesh"));
+			m_DebugRenderObj->MeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"CubeMesh"));
 			break;
 		case DEBUG_SHAPE::SPHERE:
-			m_DebugRenderObj->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"SphereMesh"));
+			m_DebugRenderObj->MeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"SphereMesh"));
 			break;
 		default:
 			break;
 		}
 		
-		m_DebugRenderObj->getMeshRender()->getMaterial()->setScalarParam(SCALAR_PARAM::VEC4_0, iter->Color);
+		m_DebugRenderObj->MeshRender()->getMaterial()->setScalarParam(SCALAR_PARAM::VEC4_0, iter->Color);
 
 		// 재질 (선택해놓은 재질로 오브젝트 랜더링)
 		m_DebugRenderObj->render();

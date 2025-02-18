@@ -33,14 +33,14 @@ void CCamera::finaltick()
 {
 	// View 행렬 계산
 	// 1. 먼저 이동을 시킨다
-	Vec3 vCamWorldPos = getOwner()->getTransform()->getRelativePos();
+	Vec3 vCamWorldPos = getOwner()->Transform()->getRelativePos();
 	Matrix matViewTrans = XMMatrixTranslation(-vCamWorldPos.x, -vCamWorldPos.y, -vCamWorldPos.z);			// 카메라 위치의 반대값으로 이동행렬 셋팅 (카메라를 원점으로 배치시키는 만큼 물체한테도 적용)
 	
 	// 2. 그 다음 회전을 시킨다
 	// 카메라가 바라보는 방향을 원점의 z축으로 회전시키는 만큼 물체에도 적용시킨다 => (0,0,1)
-	Vec3 vR = getTransform()->getRelativeDirection(DIR_TYPE::RIGHT);
-	Vec3 vU = getTransform()->getRelativeDirection(DIR_TYPE::UP);
-	Vec3 vF = getTransform()->getRelativeDirection(DIR_TYPE::FRONT);
+	Vec3 vR = Transform()->getRelativeDirection(DIR_TYPE::RIGHT);
+	Vec3 vU = Transform()->getRelativeDirection(DIR_TYPE::UP);
+	Vec3 vF = Transform()->getRelativeDirection(DIR_TYPE::FRONT);
 
 	Matrix matViewRotation = XMMatrixIdentity();
 	matViewRotation._11 = vR.x;    matViewRotation._12 = vU.x;    matViewRotation._13 = vF.x;

@@ -14,7 +14,7 @@ CPlayerScript::~CPlayerScript()
 void CPlayerScript::tick()
 {
 	// 키 입력에 따른 위치이동
-	Vec3 vCurPos = getOwner()->getTransform()->getRelativePos();
+	Vec3 vCurPos = getOwner()->Transform()->getRelativePos();
 
 	if (KEY_PRESSED(KEY::UP))
 	{
@@ -44,5 +44,5 @@ void CPlayerScript::tick()
 		vCurPos.z += DT * m_speed;
 	}
 
-	getOwner()->getTransform()->setRelativePos(vCurPos);
+	getOwner()->Transform()->setRelativePos(vCurPos);
 }
