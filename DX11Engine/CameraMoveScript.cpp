@@ -36,9 +36,9 @@ void CCameraMoveScript::tick()
 	}
 }
 
+// 원근 투영 시 이동처리
 void CCameraMoveScript::MoveByPerspective()
 {
-	// 원근 투영 시 이동처리
 	// Shift 속도 배율
 	float speed = m_speed;
 	if (KEY_PRESSED(KEY::LSHIFT))
@@ -49,6 +49,7 @@ void CCameraMoveScript::MoveByPerspective()
 	// 키 입력에 따른 위치이동
 	Vec3 vCurPos = Transform()->getRelativePos();
 
+	// 방향벡터
 	Vec3 vFront = Transform()->getRelativeDirection(DIR_TYPE::FRONT);
 	Vec3 vRight = Transform()->getRelativeDirection(DIR_TYPE::RIGHT);
 
@@ -69,6 +70,7 @@ void CCameraMoveScript::MoveByPerspective()
 		vCurPos += vRight * speed * DT;
 	}
 
+	// 오른쪽 클릭시 회전
 	if (KEY_PRESSED(KEY::RBTN))
 	{
 		Vec2 vDrag = CKeyMgr::getInstance()->getMouseDrag();
@@ -80,11 +82,71 @@ void CCameraMoveScript::MoveByPerspective()
 		Transform()->setRelativeRotation(vRotation);
 	}
 
+	// 위치 적용
 	getOwner()->Transform()->setRelativePos(vCurPos);
 }
 
+// 직교 투영 시 이동처리
 void CCameraMoveScript::MoveByOrthographic()
 {
-	// 직교 투영 시 이동처리
+	// Shift 속도 배율
+	float speed = m_speed;
+	if (KEY_PRESSED(KEY::LSHIFT))
+	{
+		speed *= 4.f;
+	}
 
+	// 키 입력에 따른 위치이동
+	Vec3 vCurPos = Transform()->getRelativePos();
+
+	if (KEY_PRESSED(KEY::W))
+	{
+		vCurPos.y += speed * DT;
+	}
+	if (KEY_PRESSED(KEY::S))
+	{
+		vCurPos.y -= speed * DT;
+	}
+	if (KEY_PRESSED(KEY::A))
+	{
+		vCurPos.x -= speed * DT;
+	}
+	if (KEY_PRESSED(KEY::D))
+	{
+		vCurPos.x += speed * DT;
+	}
+	if (KEY_PRESSED(KEY::F2))
+	{
+		float scale = Camera()->getScale();
+		scale -= DT;
+		
+		// 100배 이상 줌인을 못하게
+		if (scale < 0.01f) 
+		{
+			scale = 0.01f;
+		}
+		Camera()->setScale(scale);
+	}
+	if (KEY_PRESSED(KEY::F3))
+	{
+		float scale = Camera()->getScale();
+		scale += DT;
+
+		// 10배 이상 줌아웃을 못하게 (1배 : 원본크기)
+		if (scale > 10.0f)
+		{
+			scale = 10.0f;
+		}
+		Camera()->setScale(scale);
+	}
+	if (KEY_PRESSED(KEY::F4))
+	{
+		// 1배 : 원본크기
+		float scale = 1.f;
+
+		Camera()->setScale(scale);
+	}
+
+	// 위치 적용
+	getOwner()->Transform()->setRelativePos(vCurPos);
 }

@@ -57,7 +57,7 @@ void CLevelMgr::init()
 
 	m_curLevel->addObject(nLayerIdx, pObject);
 
-	DrawDebugRect(Vec3(0.f, 0.f, 500.f), Vec3(100.f, 100.f, 1.f), Vec3(0.f, 0.f, 0.f), Vec4(0.f, 1.f, 0.f, 1.f), 100.f);					// 100초
+	DrawDebugRect(Vec3(0.f, 0.f, 500.f), Vec3(100.f, 100.f, 1.f), Vec3(0.f, 0.f, 0.f), Vec4(0.f, 1.f, 0.f, 1.f), 100.f);					// 100초 동안 전시
 	DrawDebugCircle(Vec3(0.f, 0.f, 500.f), 100.f, Vec4(0.f, 1.f, 0.f, 1.f), 100.f);
 }
 

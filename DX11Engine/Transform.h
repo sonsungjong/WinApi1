@@ -32,6 +32,7 @@ public:
     void setRelativeRotation(float _x, float _y, float _z) { m_RelativeRotation = Vec3(_x, _y, _z); }
 
     void setWorldMatrix(const Matrix& _mat) { m_matWorld = _mat; }
+    const Matrix& getWorldMatrix() { return m_matWorld; }
 
     Vec3 getRelativeDirection(DIR_TYPE _type) { return m_RelativeDirection[(UINT)_type]; }
 };
