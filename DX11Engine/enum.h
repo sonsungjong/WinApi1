@@ -60,6 +60,20 @@ enum class RS_TYPE
 	END
 };
 
+// DepthStencil State
+enum class DS_TYPE
+{
+	LESS,
+	LESS_EQUAL,
+
+	GREATER,
+
+	NO_TEST,
+	NO_TEST_NO_WRITE,
+
+	END
+};
+
 // Direction Type
 enum class DIR_TYPE
 {

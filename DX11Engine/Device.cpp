@@ -90,6 +90,12 @@ int CDevice::init(HWND _hWnd, Vec2 _resolution)
 		return E_FAIL;
 	}
 
+	// DepthStencilState 생성
+	if (FAILED(createDepthStencilState()))
+	{
+		return E_FAIL;
+	}
+
 	return S_OK;
 }
 
@@ -234,6 +240,21 @@ int CDevice::createRasterizerState()
 	desc.CullMode = D3D11_CULL_NONE;
 	desc.FillMode = D3D11_FILL_WIREFRAME;
 	DEVICE->CreateRasterizerState(&desc, m_arrRasterizerState[(UINT)RS_TYPE::WIRE_FRAME].GetAddressOf());
+
+	return S_OK;
+}
+
+int CDevice::createDepthStencilState()
+{
+	m_DS[(UINT)DS_TYPE::LESS] = nullptr;				// 기본값 nullptr
+
+	D3D11_DEPTH_STENCIL_DESC desc = {};
+	desc.DepthEnable = true;
+	desc.StencilEnable = false;
+	desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;					// 작거나 같은 경우 통과
+	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;				// 깊이 기록
+
+	DEVICE->CreateDepthStencilState(&desc, m_DS[(UINT)DS_TYPE::LESS_EQUAL].GetAddressOf());
 
 	return S_OK;
 }
