@@ -7,6 +7,7 @@ class CRenderComponent;
 class CTransform;
 class CMeshRender;
 class CCamera;
+class CCollider2D;
 
 class CScript;
 
@@ -35,6 +36,7 @@ public:
     GET_COMPONENT(Transform, TRANSFORM);
     GET_COMPONENT(MeshRender, MESHRENDER);
     GET_COMPONENT(Camera, CAMERA);
+    GET_COMPONENT(Collider2D, COLLIDER2D);
     //CTransform* getTransform() { return (CTransform*)m_arrCom[(UINT)COMPONENT_TYPE::TRANSFORM]; }
     //CMeshRender* getMeshRender() { return (CMeshRender*)m_arrCom[(UINT)COMPONENT_TYPE::MESHRENDER]; }
     //CCamera* getCamera() { return (CCamera*)m_arrCom[(UINT)COMPONENT_TYPE::CAMERA]; }

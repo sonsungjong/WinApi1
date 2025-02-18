@@ -45,6 +45,7 @@ void CLevelMgr::init()
 	pObject->setName(L"Player");
 	pObject->addComponent(new CTransform);					// 이동 관련
 	pObject->addComponent(new CMeshRender);				// 랜더링 해줌
+	pObject->addComponent(new CCollider2D);					// 충돌
 	pObject->addComponent(new CPlayerScript);				// 플레이어 기능
 
 	pObject->Transform()->setRelativePos(Vec3(0.f, 0.f, 100.f));
@@ -55,10 +56,11 @@ void CLevelMgr::init()
 	pObject->MeshRender()->getMaterial()->setScalarParam(SCALAR_PARAM::INT_0, 0);				// INT_0 자리에 0를 전달해라 (fx파일의 0번 재질 선택)
 	pObject->MeshRender()->getMaterial()->setTexParam(TEX_PARAM::TEX_0, CAssetMgr::getInstance()->FindAsset<CTexture>(L"texture\\Fighter.bmp"));
 
-	m_curLevel->addObject(nLayerIdx, pObject);
+	pObject->Collider2D()->setAbsolute(false);								// true : 이미지 비율에 영향을 받지 않게함, false : 오브젝트 크기에 의존
+	pObject->Collider2D()->setOffset(Vec3(0.f, 0.f, 0.f));				// 이미지 비율에 영향을 받음 (Absolute를 키면 절대값으로 비율없이 바로 적용)
+	pObject->Collider2D()->setScale(Vec3(0.2f, 0.6f, 1.f));			// 스케일 1.5배로 변경
 
-	DrawDebugRect(Vec3(0.f, 0.f, 500.f), Vec3(100.f, 100.f, 1.f), Vec3(0.f, 0.f, 0.f), Vec4(0.f, 1.f, 0.f, 1.f), 100.f);					// 100초 동안 전시
-	DrawDebugCircle(Vec3(0.f, 0.f, 500.f), 100.f, Vec4(0.f, 1.f, 0.f, 1.f), 100.f);
+	m_curLevel->addObject(nLayerIdx, pObject);
 }
 
 void CLevelMgr::tick()

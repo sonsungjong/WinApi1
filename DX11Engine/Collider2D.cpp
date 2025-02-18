@@ -29,11 +29,24 @@ void CCollider2D::finaltick()
 		Matrix matTrans = XMMatrixTranslation(m_offset.x, m_offset.y, m_offset.z);
 
 		m_matColWorld = matScale * matRotation * matTrans;
-		m_matColWorld *= Transform()->getWorldMatrix();
+		m_matColWorld = m_matColWorld * Transform()->getWorldMatrix();
 	}
 	else
 	{
 		// 물체의 크기에 영향을 안받게
+		Matrix matScale = XMMatrixScaling(m_scale.x, m_scale.y, m_scale.z);
+		Matrix matRotation = XMMatrixRotationZ(m_rotation.z);
+		Matrix matTrans = XMMatrixTranslation(m_offset.x, m_offset.y, m_offset.z);
 
+		m_matColWorld = matScale * matRotation * matTrans;
+
+		Matrix matObjScale = XMMatrixIdentity();
+		Vec3 vObjScale = Transform()->getRelativeScale();
+		matObjScale = XMMatrixScaling(vObjScale.x, vObjScale.y, vObjScale.z);
+		Matrix matObjScale_inverse = XMMatrixInverse(nullptr, matObjScale);				// matObjScale 행렬의 역행렬을 구하는 함수
+
+		m_matColWorld = m_matColWorld * matObjScale_inverse * Transform()->getWorldMatrix();
 	}
+
+	DrawDebugRect(m_matColWorld, Vec4(0.f, 1.f, 0.f, 1.f), 0.f);					// 한 프레임
 }
