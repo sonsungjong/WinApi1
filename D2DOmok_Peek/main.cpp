@@ -239,6 +239,7 @@ void D2DRender()
 		gp_render_target->EndDraw();
 
 		gp_copy_bitmap->Release();
+		gp_copy_bitmap = nullptr;
 	}
 }
 

@@ -137,3 +137,10 @@ enum class DEBUG_SHAPE
 
 	END
 };
+
+// 투영 종류
+enum class PROJ_TYPE
+{
+	ORTHOGRAPHIC,							// 직교 투영 (거리가 달라도 크기가 동일함... 2D)
+	PERSPECTIVE,								// 원근 투영 (거리에 따라 크기가 달라짐)
+};

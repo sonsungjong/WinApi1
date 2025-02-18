@@ -10,6 +10,8 @@ class CCamera;
 
 class CScript;
 
+#define GET_COMPONENT(Type, TYPE) C##Type* Type() {return (C##Type*)m_arrCom[(UINT)COMPONENT_TYPE::TYPE];}
+
 class CGameObject :
     public CEntity
 {
@@ -30,9 +32,12 @@ public:
     void addComponent(CComponent* _component);
     CComponent* getComponent(COMPONENT_TYPE _type);                 // 자식에서 캐스팅해야함
 
-    CTransform* getTransform() { return (CTransform*)m_arrCom[(UINT)COMPONENT_TYPE::TRANSFORM]; }
-    CMeshRender* getMeshRender() { return (CMeshRender*)m_arrCom[(UINT)COMPONENT_TYPE::MESHRENDER]; }
-    CCamera* getCamera() { return (CCamera*)m_arrCom[(UINT)COMPONENT_TYPE::CAMERA]; }
+    GET_COMPONENT(Transform, TRANSFORM);
+    GET_COMPONENT(MeshRender, MESHRENDER);
+    GET_COMPONENT(Camera, CAMERA);
+    //CTransform* getTransform() { return (CTransform*)m_arrCom[(UINT)COMPONENT_TYPE::TRANSFORM]; }
+    //CMeshRender* getMeshRender() { return (CMeshRender*)m_arrCom[(UINT)COMPONENT_TYPE::MESHRENDER]; }
+    //CCamera* getCamera() { return (CCamera*)m_arrCom[(UINT)COMPONENT_TYPE::CAMERA]; }
 
 public:
     CGameObject();

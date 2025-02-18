@@ -36,6 +36,7 @@ void CLevelMgr::init()
 	pCamObj->addComponent(new CCameraMoveScript);
 
 	pCamObj->getCamera()->setCameraPriority(nLayerIdx);				// 메인카메라(0)
+	pCamObj->getCamera()->setProjType(PROJ_TYPE::ORTHOGRAPHIC);				// 직교 투영 방식으로 렌더링
 
 	m_curLevel->addObject(nLayerIdx, pCamObj);
 
@@ -51,12 +52,13 @@ void CLevelMgr::init()
 
 	pObject->getMeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
 	pObject->getMeshRender()->setMaterial(CAssetMgr::getInstance()->FindAsset<CMaterial>(L"Std2DMtrl"));
-	//pObject->getMeshRender()->getMaterial()->setScalarParam(SCALAR_PARAM::INT_0, 0);				// INT_0 자리에 0를 전달해라 (fx파일의 0번 재질 선택)
+	pObject->getMeshRender()->getMaterial()->setScalarParam(SCALAR_PARAM::INT_0, 0);				// INT_0 자리에 0를 전달해라 (fx파일의 0번 재질 선택)
 	pObject->getMeshRender()->getMaterial()->setTexParam(TEX_PARAM::TEX_0, CAssetMgr::getInstance()->FindAsset<CTexture>(L"texture\\Fighter.bmp"));
 
 	m_curLevel->addObject(nLayerIdx, pObject);
 
-	DrawDebugRect(Vec3(0.f, 0.f, 500.f), Vec3(100.f, 100.f, 1.f), Vec3(0.f, 0.f, 0.f), Vec4(0.f, 1.f, 0.f, 1.f), 30.f);
+	DrawDebugRect(Vec3(0.f, 0.f, 500.f), Vec3(100.f, 100.f, 1.f), Vec3(0.f, 0.f, 0.f), Vec4(0.f, 1.f, 0.f, 1.f), 100.f);					// 100초
+	DrawDebugCircle(Vec3(0.f, 0.f, 500.f), 100.f, Vec4(0.f, 1.f, 0.f, 1.f), 100.f);
 }
 
 void CLevelMgr::tick()

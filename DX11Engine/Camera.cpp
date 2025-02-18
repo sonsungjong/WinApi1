@@ -13,10 +13,16 @@
 
 CCamera::CCamera()
 	: CComponent(COMPONENT_TYPE::CAMERA)
+	, m_ProjType(PROJ_TYPE::PERSPECTIVE)
 	, m_nCamPriority(-1)
-	, m_far(1000.f)
+	, m_FOV((XM_PI / 3.f))
+	, m_far(10000.f)
+	, m_width(0.f)
+	, m_scale(1.f)				// 직교투영 배율값
 {
-
+	Vec2 vRenderResolution = CDevice::getInstance()->getRenderResolution();
+	m_width = vRenderResolution.x;
+	m_aspectRatio = vRenderResolution.x / vRenderResolution.y;
 }
 
 CCamera::~CCamera()
@@ -44,12 +50,16 @@ void CCamera::finaltick()
 	m_matView = matViewTrans * matViewRotation;				// 행렬은 곱하는 순서가 중요하다 ([공전] : 이동 * 회전, [자전] : 회전 * 이동)
 
 	// Proj 행렬 계산
-	Vec2 vRenderResolution = CDevice::getInstance()->getRenderResolution();
-
-	// 해상도 비율
-	float AspectRatio = vRenderResolution.x / vRenderResolution.y;
-
-	m_matProj = XMMatrixPerspectiveFovLH((XM_PI / 3.f), AspectRatio, 1.f, m_far);
+	if (PROJ_TYPE::PERSPECTIVE == m_ProjType)
+	{
+		// 원근 투영일때는 시야각 반영
+		m_matProj = XMMatrixPerspectiveFovLH(m_FOV, m_aspectRatio, 1.f, m_far);
+	}
+	else
+	{
+		// 직교 투영일때는 시야각이 없음
+		m_matProj = XMMatrixOrthographicLH(m_width * m_scale, (m_width / m_aspectRatio) * m_scale, 1.f, m_far);
+	}
 }
 
 void CCamera::render()

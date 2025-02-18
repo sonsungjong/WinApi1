@@ -80,7 +80,7 @@ void CAssetMgr::createDefaultMesh()
 	v.vColor = Vec4(1.f, 1.f, 1.f, 1.f);
 	vecVtx.push_back(v);
 
-	float Radius = 0.5f;
+	float Radius = 0.5f;				// 기본 반지름
 	UINT Slice = 60;
 	float AngleStep = (2 * XM_PI) / Slice;
 
@@ -104,6 +104,17 @@ void CAssetMgr::createDefaultMesh()
 	pMesh = new CMesh;
 	pMesh->create(vecVtx.data(), (UINT)vecVtx.size(), vecIdx.data(), (UINT)vecIdx.size());
 	AddAsset<CMesh>(L"CircleMesh", pMesh);
+
+	vecIdx.clear();
+	for (int i = 0; i <= Slice; ++i)
+	{
+		vecIdx.push_back(i + 1);
+	}
+
+	pMesh = new CMesh;
+	pMesh->create(vecVtx.data(), (UINT)vecVtx.size(), vecIdx.data(), (UINT)vecIdx.size());
+	AddAsset<CMesh>(L"CircleMesh_Debug", pMesh);
+
 	vecVtx.clear();
 	vecIdx.clear();
 }
