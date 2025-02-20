@@ -60,6 +60,29 @@ enum class RS_TYPE
 	END
 };
 
+// DepthStencil State
+enum class DS_TYPE
+{
+	LESS,
+	LESS_EQUAL,
+
+	GREATER,
+
+	NO_TEST,
+	NO_TEST_NO_WRITE,
+
+	END
+};
+
+enum class BS_TYPE
+{
+	DEFAULT,								// Src(1), Dest(0)
+	ALPHA_BLEND,						// Src(A), Dest(1-A)
+	ONE_ONE,								// Src(1), Dest(1)					// 검은 배경을 투명처리할 때, 빛을 누적할 때
+
+	END,
+};
+
 // Direction Type
 enum class DIR_TYPE
 {

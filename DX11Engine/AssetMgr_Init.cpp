@@ -155,6 +155,8 @@ void CAssetMgr::createDefaultGraphicShader()
 	pShader->createVertexShader(strPath + L"shader\\std2d.fx", "VS_Std2D");
 	pShader->createPixelShader(strPath + L"shader\\std2d.fx", "PS_Std2D");
 	pShader->setRasterizerStateType(RS_TYPE::CULL_NONE);			// 컬링을 하지 않는다 (반대편도 나오게)
+	pShader->setBlendStateType(BS_TYPE::ALPHA_BLEND);					// 알파값 반영
+	pShader->setDepthStencilStateType(DS_TYPE::LESS);
 	AddAsset<CGraphicShader>(L"Std2DShader", pShader);				// 등록한다
 
 	/*
@@ -164,6 +166,8 @@ void CAssetMgr::createDefaultGraphicShader()
 	pShader->createVertexShader(strPath + L"shader\\debug_shape.fx", "VS_DebugShape");
 	pShader->createPixelShader(strPath + L"shader\\debug_shape.fx", "PS_DebugShape");
 	pShader->setRasterizerStateType(RS_TYPE::CULL_NONE);				// 컬링을 하지 않는다 (반대편도 나오게)
+	pShader->setBlendStateType(BS_TYPE::DEFAULT);
+	pShader->setDepthStencilStateType(DS_TYPE::NO_TEST_NO_WRITE);				// 디버그용 도형은 깊이 테스트도 안하고 깊이 기록도 안하게
 	pShader->setTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);						// 선만
 	AddAsset<CGraphicShader>(L"DebugShapeShader", pShader);				// 등록한다
 }

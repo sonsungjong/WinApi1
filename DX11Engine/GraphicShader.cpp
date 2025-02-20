@@ -7,6 +7,8 @@ CGraphicShader::CGraphicShader()
 	: CShader(ASSET_TYPE::GRAPHICS_SHADER)						// 해당 클래스가 그래픽 쉐이더 임을 부모생성자에 알려줌
 	, m_Topology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
 	, m_enumRasterizerType(RS_TYPE::CULL_BACK)
+	, m_enumDepthStencilStateType(DS_TYPE::LESS)
+	, m_BlendStateType(BS_TYPE::DEFAULT)
 {
 }
 
@@ -29,7 +31,7 @@ int CGraphicShader::createVertexShader(const std::wstring& _wstrFilePath, const 
 		return E_FAIL;
 	}
 
-	if (FAILED(DEVICE->CreateVertexShader(m_pVertexShaderBlob->GetBufferPointer(), m_pVertexShaderBlob->GetBufferSize(), nullptr, m_pVertexShader.GetAddressOf()))) {
+	if (FAILED(CDevice::getInstance()->GetDivice()->CreateVertexShader(m_pVertexShaderBlob->GetBufferPointer(), m_pVertexShaderBlob->GetBufferSize(), nullptr, m_pVertexShader.GetAddressOf()))) {
 		return E_FAIL;
 	}
 
@@ -64,7 +66,7 @@ int CGraphicShader::createVertexShader(const std::wstring& _wstrFilePath, const 
 	LayoutDesc[2].SemanticIndex = 0;															// 텍스처
 	nOffset += 8U;
 
-	if (FAILED(DEVICE->CreateInputLayout(LayoutDesc, 3, m_pVertexShaderBlob->GetBufferPointer(), m_pVertexShaderBlob->GetBufferSize(), m_pLayout.GetAddressOf())))
+	if (FAILED(CDevice::getInstance()->GetDivice()->CreateInputLayout(LayoutDesc, 3, m_pVertexShaderBlob->GetBufferPointer(), m_pVertexShaderBlob->GetBufferSize(), m_pLayout.GetAddressOf())))
 	{
 		return E_FAIL;
 	}
@@ -87,7 +89,7 @@ int CGraphicShader::createPixelShader(const std::wstring& _wstrFilePath, const s
 		return E_FAIL;
 	}
 
-	if (FAILED(DEVICE->CreatePixelShader(m_pPixelShaderBlob->GetBufferPointer(), m_pPixelShaderBlob->GetBufferSize(), nullptr, m_pPixelShader.GetAddressOf())))
+	if (FAILED(CDevice::getInstance()->GetDivice()->CreatePixelShader(m_pPixelShaderBlob->GetBufferPointer(), m_pPixelShaderBlob->GetBufferSize(), nullptr, m_pPixelShader.GetAddressOf())))
 	{
 		return E_FAIL;
 	}
@@ -98,15 +100,18 @@ int CGraphicShader::createPixelShader(const std::wstring& _wstrFilePath, const s
 void CGraphicShader::binding()
 {
 	// 각 정점 정보
-	CONTEXT->IASetInputLayout(m_pLayout.Get());
-	CONTEXT->IASetPrimitiveTopology(m_Topology);
+	CDevice::getInstance()->GetContext()->IASetInputLayout(m_pLayout.Get());
+	CDevice::getInstance()->GetContext()->IASetPrimitiveTopology(m_Topology);
 
 	// 버텍스 쉐이더 셋팅
-	CONTEXT->VSSetShader(m_pVertexShader.Get(), nullptr, 0);
+	CDevice::getInstance()->GetContext()->VSSetShader(m_pVertexShader.Get(), nullptr, 0);
 
 	// 레스터라이저 스테이트 셋팅
-	CONTEXT->RSSetState(CDevice::getInstance()->getRasterizerState(m_enumRasterizerType).Get());
+	CDevice::getInstance()->GetContext()->RSSetState(CDevice::getInstance()->getRasterizerState(m_enumRasterizerType).Get());
 
 	// 픽셀 쉐이더 셋팅
-	CONTEXT->PSSetShader(m_pPixelShader.Get(), nullptr, 0);
+	CDevice::getInstance()->GetContext()->PSSetShader(m_pPixelShader.Get(), nullptr, 0);
+
+	CDevice::getInstance()->GetContext()->OMSetDepthStencilState(CDevice::getInstance()->getDepthStencilState(m_enumDepthStencilStateType).Get(), 0);
+	CDevice::getInstance()->GetContext()->OMSetBlendState(CDevice::getInstance()->getBlendState(m_BlendStateType).Get(), Vec4(0.f, 0.f, 0.f, 0.f), 0xffffffff);
 }

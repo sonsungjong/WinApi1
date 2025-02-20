@@ -74,6 +74,15 @@ enum class DS_TYPE
 	END
 };
 
+enum class BS_TYPE
+{
+	DEFAULT,								// Src(1), Dest(0)
+	ALPHA_BLEND,						// Src(A), Dest(1-A)
+	ONE_ONE,								// Src(1), Dest(1)					// 검은 배경을 투명처리할 때, 빛을 누적할 때
+
+	END,
+};
+
 // Direction Type
 enum class DIR_TYPE
 {
