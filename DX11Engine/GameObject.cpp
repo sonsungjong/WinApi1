@@ -8,12 +8,19 @@
 CGameObject::CGameObject()
 	: m_arrCom{}
 	, m_RenderCom(nullptr)
+	, m_Parent(nullptr)
 {
 }
 
 CGameObject::~CGameObject()
 {
 	SafeDelArray(m_arrCom);
+}
+
+void CGameObject::addChild(CGameObject* _object)
+{
+	_object->m_Parent = this;
+	m_vecChild.push_back(_object);
 }
 
 

@@ -298,7 +298,7 @@ int CDevice::createBlendState()
 	D3D11_BLEND_DESC Desc = {};
 
 	// ALPHA_BLEND
-	Desc.AlphaToCoverageEnable = false;
+	Desc.AlphaToCoverageEnable = true;					// 투명 영역이 남지않게 해준다
 	Desc.IndependentBlendEnable = false;					// false를 하면 RenderTarget이 8개 중 처음 것만 사용하게 된다
 	Desc.RenderTarget[0].BlendEnable = true;
 	Desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP::D3D11_BLEND_OP_ADD;

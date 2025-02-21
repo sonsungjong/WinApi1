@@ -137,10 +137,13 @@
     <Filter Include="_04_Manager\_05_LevelMgr">
       <UniqueIdentifier>{d4aacb84-32cd-4bdd-9cee-70ffcef5e330}</UniqueIdentifier>
     </Filter>
-    <Filter Include="_04_Manager\_06_RenderMgr">
+    <Filter Include="_04_Manager\_06_CollisionMgr">
+      <UniqueIdentifier>{00203207-90fb-44c5-850f-72164e71f394}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_04_Manager\_07_RenderMgr">
       <UniqueIdentifier>{9e6b1c9f-7b99-410f-98ac-265c3e88cf0e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="_04_Manager\_07_DebugRenderMgr">
+    <Filter Include="_04_Manager\_08_DebugRenderMgr">
       <UniqueIdentifier>{8ef9aaf1-70de-40ab-8aff-d3d961dc2dff}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -257,7 +260,7 @@
       <Filter>_07_Component\_02_Camera</Filter>
     </ClInclude>
     <ClInclude Include="RenderMgr.h">
-      <Filter>_04_Manager\_06_RenderMgr</Filter>
+      <Filter>_04_Manager\_07_RenderMgr</Filter>
     </ClInclude>
     <ClInclude Include="CameraMoveScript.h">
       <Filter>Scripts</Filter>
@@ -266,10 +269,13 @@
       <Filter>_08_Asset\Material</Filter>
     </ClInclude>
     <ClInclude Include="CDbgRenderMgr.h">
-      <Filter>_04_Manager\_07_DebugRenderMgr</Filter>
+      <Filter>_04_Manager\_08_DebugRenderMgr</Filter>
     </ClInclude>
     <ClInclude Include="Collider2D.h">
       <Filter>_07_Component\_03_Collider2D</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionMgr.h">
+      <Filter>_04_Manager\_06_CollisionMgr</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -358,7 +364,7 @@
       <Filter>_07_Component\_02_Camera</Filter>
     </ClCompile>
     <ClCompile Include="RenderMgr.cpp">
-      <Filter>_04_Manager\_06_RenderMgr</Filter>
+      <Filter>_04_Manager\_07_RenderMgr</Filter>
     </ClCompile>
     <ClCompile Include="extern.cpp">
       <Filter>_01_Header</Filter>
@@ -370,13 +376,16 @@
       <Filter>_08_Asset\Material</Filter>
     </ClCompile>
     <ClCompile Include="CDbgRenderMgr.cpp">
-      <Filter>_04_Manager\_07_DebugRenderMgr</Filter>
+      <Filter>_04_Manager\_08_DebugRenderMgr</Filter>
     </ClCompile>
     <ClCompile Include="func.cpp">
       <Filter>_01_Header</Filter>
     </ClCompile>
     <ClCompile Include="Collider2D.cpp">
       <Filter>_07_Component\_03_Collider2D</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionMgr.cpp">
+      <Filter>_04_Manager\_06_CollisionMgr</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
