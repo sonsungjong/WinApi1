@@ -4,11 +4,14 @@
 #include "AssetMgr.h"
 
 #include "Level.h"
+#include "Layer.h"
 #include "GameObject.h"
 #include "components.h"
 
 #include "PlayerScript.h"
 #include "CameraMoveScript.h"
+
+#include "CollisionMgr.h"
 
 CLevelMgr::CLevelMgr()
 	: m_curLevel(nullptr)
@@ -26,7 +29,12 @@ CLevelMgr::~CLevelMgr()
 void CLevelMgr::init()
 {
 	m_curLevel = new CLevel;
-	UINT nLayerIdx = 0U;
+	m_curLevel->getLayer(0)->setName(L"Default");
+	m_curLevel->getLayer(1)->setName(L"Player");
+	m_curLevel->getLayer(2)->setName(L"Monster");
+	unsigned int main_camera_layer = 0U;
+	unsigned int main_player_layer = 1U;
+	unsigned int main_monster_layer = 2U;
 
 	// Camera Object 생성
 	CGameObject* pCamObj = new CGameObject;
@@ -35,10 +43,10 @@ void CLevelMgr::init()
 	pCamObj->addComponent(new CCamera);
 	pCamObj->addComponent(new CCameraMoveScript);
 
-	pCamObj->Camera()->setCameraPriority(nLayerIdx);				// 메인카메라(0)
+	pCamObj->Camera()->setCameraPriority(main_camera_layer);				// 메인카메라(0)
 	pCamObj->Camera()->setProjType(PROJ_TYPE::ORTHOGRAPHIC);				// 직교 투영 방식으로 렌더링
 
-	m_curLevel->addObject(nLayerIdx, pCamObj);
+	m_curLevel->addObject(main_camera_layer, pCamObj);
 
 	// Player Object 생성
 	CGameObject* pObject = new CGameObject;
@@ -60,7 +68,31 @@ void CLevelMgr::init()
 	pObject->Collider2D()->setOffset(Vec3(0.f, 0.f, 0.f));				// 이미지 비율에 영향을 받음 (Absolute를 키면 절대값으로 비율없이 바로 적용)
 	pObject->Collider2D()->setScale(Vec3(0.2f, 0.6f, 1.f));			// 스케일 1.5배로 변경
 
-	m_curLevel->addObject(nLayerIdx, pObject);
+	m_curLevel->addObject(main_player_layer, pObject);
+
+	// Monster Object 생성
+	pObject = new CGameObject;
+	pObject->setName(L"Monster");
+	pObject->addComponent(new CTransform);					// 이동 관련
+	pObject->addComponent(new CMeshRender);				// 랜더링 해줌
+	pObject->addComponent(new CCollider2D);					// 충돌
+
+	pObject->Transform()->setRelativePos(Vec3(50.f, 0.f, 300.f));
+	pObject->Transform()->setRelativeScale(200.f, 200.f, 0.5f);					// 이미지를 출력할 비율
+
+	pObject->MeshRender()->setMesh(CAssetMgr::getInstance()->FindAsset<CMesh>(L"RectMesh"));
+	pObject->MeshRender()->setMaterial(CAssetMgr::getInstance()->FindAsset<CMaterial>(L"Std2DMtrl"));
+
+	pObject->Collider2D()->setAbsolute(false);								// true : 이미지 비율에 영향을 받지 않게함, false : 오브젝트 크기에 의존
+	pObject->Collider2D()->setOffset(Vec3(0.f, 0.f, 0.f));				// 이미지 비율에 영향을 받음 (Absolute를 키면 절대값으로 비율없이 바로 적용)
+	pObject->Collider2D()->setScale(Vec3(0.2f, 0.6f, 1.f));			// 스케일 1.5배로 변경
+
+	m_curLevel->addObject(main_monster_layer, pObject);
+
+	// Level 충돌 설정
+	CCollisionMgr::getInstance()->LayerCheck(2, 1);				// 1번 레이어와 2번 레이어 충돌 가능하게
+	CCollisionMgr::getInstance()->LayerCheck(17, 22);				
+	CCollisionMgr::getInstance()->LayerCheck(28, 2);				
 }
 
 void CLevelMgr::tick()

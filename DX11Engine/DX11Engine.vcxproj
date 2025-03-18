@@ -169,6 +169,7 @@ call Copy.bat</Command>
     <ClInclude Include="CameraMoveScript.h" />
     <ClInclude Include="CDbgRenderMgr.h" />
     <ClInclude Include="Collider2D.h" />
+    <ClInclude Include="CollisionMgr.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="components.h" />
     <ClInclude Include="ComputeShader.h" />
@@ -213,6 +214,7 @@ call Copy.bat</Command>
     <ClCompile Include="CameraMoveScript.cpp" />
     <ClCompile Include="CDbgRenderMgr.cpp" />
     <ClCompile Include="Collider2D.cpp" />
+    <ClCompile Include="CollisionMgr.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComputeShader.cpp" />
     <ClCompile Include="ConstBuffer.cpp" />

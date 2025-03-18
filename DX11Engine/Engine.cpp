@@ -8,6 +8,7 @@
 #include "AssetMgr.h"
 #include "LevelMgr.h"
 #include "RenderMgr.h"
+#include "CollisionMgr.h"
 
 #include "CDbgRenderMgr.h"
 
@@ -52,6 +53,7 @@ int CEngine::init(HWND _hWnd, Vec2 _resolution)
 	CAssetMgr::getInstance()->init();
 	CLevelMgr::getInstance()->init();
 	CRenderMgr::getInstance()->init();
+	CCollisionMgr::getInstance()->init();
 
 	//if (FAILED(TempInit())) {
 	//	MessageBox(m_hWnd, L"Device 초기화 실패", L"Temp Init 초기화 실패", MB_OK);
@@ -70,6 +72,7 @@ void CEngine::progress()
 
 	// Object Tick
 	CLevelMgr::getInstance()->tick();
+	CCollisionMgr::getInstance()->tick();
 
 	//TempTick();			// 매 프레임마다 호출 (Object Tick)
 
