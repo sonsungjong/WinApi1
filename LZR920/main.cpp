@@ -9,6 +9,7 @@ int g_wndHeight;
 HANDLE g_hSerial;
 std::vector<POINT> g_points;
 std::mutex g_mtx;
+std::vector<unsigned char> g_vecBuf;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
@@ -209,12 +210,137 @@ bool openSerialPort(const wchar_t* portName, DWORD baudRate)
 
 void recvSerialPort()
 {
-    unsigned char buf[1024]{};
+    const int BUFFER_SIZE = 65535;
+    unsigned char* buf = new unsigned char[BUFFER_SIZE] {};
     DWORD bytesRead;
 
-    // 시작부터 끝까지 수신받는다
+    std::vector<unsigned char> dataBuffer;
 
+    while (true)
+    {
+        memset(buf, 0, BUFFER_SIZE);
+        if (ReadFile(g_hSerial, buf, BUFFER_SIZE, &bytesRead, NULL)) 
+        {
+            dataBuffer.insert(dataBuffer.end(), buf, buf + bytesRead);
+
+            while (dataBuffer.size() >= 6)  // 최소 헤더
+            {
+                // SYNC 검사 (FC FD FE FF)
+                unsigned int sync = 0U;
+                memcpy(&sync, dataBuffer.data(), sizeof(unsigned int));
+
+                if (dataBuffer.size() < 8) {
+                    break;
+                }
+
+                if (sync == 0xFFFEFDFC)             // SYNC 확인
+                {
+                    // SIZE 읽기 (LSB first)
+                    unsigned short size = 0U;
+                    memcpy(&size, dataBuffer.data() + 4, sizeof(unsigned short));
+                    if (dataBuffer.size() < 6 + size + 2) {
+                        break; // 아직 전체 메시지가 안 들어왔으니 기다려야 함
+                    }
+
+                    // 메시지 추출
+                    std::vector<unsigned char> message(dataBuffer.begin() + 6, dataBuffer.begin() + 6 + size);
+                    unsigned short footer_chk = 0U;
+                    memcpy(&footer_chk, dataBuffer.data() + 6 + size, sizeof(unsigned short));
+
+                    // 여기서 payload부터가 CMD, 그 뒤가 DATA, 마지막 2바이트는 CHK
+                    unsigned short cmd = 0U;
+                    memcpy(&cmd, message.data(), sizeof(unsigned short));
+                    std::vector<unsigned char> data(message.begin() + 2, message.begin() + size);
+
+                    // CHK 검증
+                    unsigned short calc_chk = 0;
+                    for (unsigned char b : message)
+                    {
+                        calc_chk += b;
+                    }
+
+                    footer_chk = dataBuffer[6 + size] | (dataBuffer[6 + size + 1] << 8);
+                    if (calc_chk == footer_chk)
+                    {
+                        printf("TRUE");
+                        if (cmd == 50011)
+                        {
+                            printf("MDI");
+                            for (size_t idx = 0; idx < data.size(); ++idx)
+                            {
+                                if (data[idx] == 1)
+                                {
+                                    printf("index %zu\n", idx);
+                                }
+                                if (data[idx] == 2)
+                                {
+                                    printf("index %zu\n", idx);
+                                }
+                                if (data[idx] == 3)
+                                {
+                                    printf("index %zu\n", idx);
+                                }
+                            }
+                        }
+
+                        // 데이터
+                        printf("[INFO] SIZE: %u, CMD: 0x%04X\n", size, cmd);
+                    }
+                    else {
+                        printf("FALSE");
+                    }
+
+                    // 처리 끝났으니 제거
+                    dataBuffer.erase(dataBuffer.begin(), dataBuffer.begin() + size);
+                }
+                else {
+                    // SYNC 틀리면 한 바이트씩 버림
+                    dataBuffer.erase(dataBuffer.begin());
+                }
+            }
+        }
+        else {
+            printf("[ERROR] ReadFile 실패\n");
+            break;
+        }
+        
+    }
+
+    delete[] buf;
 }
+
+void parseMDIMessage(const unsigned char* data, size_t size)
+{
+    if (size < 274 || data[0] != 0x02 || data[1] != 'M' || data[2] != 'D' || data[3] != 'I')
+        return;
+
+    std::lock_guard<std::mutex> lock(g_mtx);
+    g_points.clear();
+
+    // 271개 포인트, 각 포인트 2바이트 거리 데이터 (Plane 1 기준)
+    int centerX = g_wndWidth / 2;
+    int centerY = g_wndHeight / 2;
+    float angle_step = 275.0f / 270.0f; // 약 1도 간격 (275포인트)
+
+    for (int i = 0; i < 271; ++i)
+    {
+        int offset = 4 + i * 2; // MDI 시작 후 4바이트부터 거리
+        uint16_t distance = (data[offset] << 8) | data[offset + 1]; // big endian
+
+        if (distance == 0 || distance > 30000) continue; // 거리 0 or 너무 크면 무시
+
+        float angle_deg = -135.0f + i * angle_step; // -135도 ~ +135도
+        float angle_rad = angle_deg * 3.14159265f / 180.0f;
+
+        int x = centerX + static_cast<int>((distance / 100.0f) * cos(angle_rad));
+        int y = centerY - static_cast<int>((distance / 100.0f) * sin(angle_rad));
+
+        g_points.push_back(POINT{ x, y });
+    }
+
+    InvalidateRect(g_hWnd, NULL, TRUE); // 그리기 요청
+}
+
 
 void DrawGDI(HDC hdc)
 {
