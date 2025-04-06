@@ -1,5 +1,12 @@
 ﻿#include "pch.h"
 #include "main.h"
+#include <LogBufferModule/LogBufferModule.h>
+
+#ifdef _DEBUG
+#pragma comment(lib, "LogBufferModule//LogBufferModuleD.lib")
+#else
+#pragma comment(lib, "LogBufferModule//LogBufferModule.lib")
+#endif
 
 HINSTANCE g_hInst;
 HWND g_hWnd;
@@ -265,21 +272,74 @@ void recvSerialPort()
                         printf("TRUE");
                         if (cmd == 50011)
                         {
-                            printf("MDI");
-                            for (size_t idx = 0; idx < data.size(); ++idx)
+                            if (data.size() == 2202)
                             {
-                                if (data[idx] == 1)
+                                // ID + Frame counter
+                                // Plane Number + MDI
+
+                                // 앞에 6바이트를 다시 떼어내고
+                                // 그 다음 Plane Number 1바이트를 읽고
+                                // 그 다음 548 바이트를 unsigned short로 각각 변환한다음
+                                // 다시 Plane Number 1바이트를 읽고
+                                // 다시 548 바이트를 unsigned short로 각각 변환하고... 총 4번
+                                std::vector<unsigned char> id_frame_counter(data.begin(), data.begin() + 6);
+                                std::map<unsigned char, std::vector<unsigned short>> mapMDI;
+                                std::vector<unsigned char> vecPlane;
+
+                                size_t idx = 6;
+                                const int planeCount = 4;
+                                for (int count = 0; count < planeCount; ++count)
                                 {
-                                    printf("index %zu\n", idx);
+                                    // 1바이트를 읽어서 Plane Number 를 키로 넣는다
+                                    unsigned char planeNumber = data[idx];
+                                    vecPlane.push_back(planeNumber);
+                                    idx++;
+
+                                    std::vector<unsigned short> mdi;
+                                    mdi.reserve(274);
+                                    for (int i = 0; i < 274; ++i) {
+                                        // 두 바이트를 조합한다
+                                        // little-endian
+                                        //unsigned short value = data[idx] | (data[idx + 1] << 8);
+                                        unsigned short value = 0U;
+                                        memcpy(&value, &data[idx], sizeof(unsigned short));
+                                        mdi.push_back(value);
+                                        idx += 2;
+                                    }
+
+                                    mapMDI[planeNumber] = mdi;
                                 }
-                                if (data[idx] == 2)
+
+                                for (const auto& plane_mdi : mapMDI)
                                 {
-                                    printf("index %zu\n", idx);
+                                    std::string strPlane = "===========" + std::to_string(plane_mdi.first) + "===========";
+                                    CLogBufferModule::getInstance().log(strPlane);
+                                    std::string strMDI = "\n";
+                                    for (const unsigned short& mdi_data : plane_mdi.second)
+                                    {
+                                        strMDI = strMDI + std::to_string(mdi_data) + "\n";
+                                    }
+                                    CLogBufferModule::getInstance().log(strMDI);
                                 }
-                                if (data[idx] == 3)
-                                {
-                                    printf("index %zu\n", idx);
-                                }
+
+                            }
+                            else if(data.size() == 2196)
+                            {
+                                // Plane Number + MDI
+
+                            }
+                            else if (data.size() == 2216)
+                            {
+                                // ID + Frame counter
+                                // CTN + VNR + Error log + Hot reset counter
+                                // Plane Number + MDI
+
+                            }
+                            else if (data.size() == 2210)
+                            {
+                                // CTN + VNR + Error log + Hot reset counter
+                                // Plane Number + MDI
+
                             }
                         }
 
