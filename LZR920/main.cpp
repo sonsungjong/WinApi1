@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "main.h"
 #include <LogBufferModule/LogBufferModule.h>
-#include "serial_rs485.h"
+//#include "serial_rs485.h"
 
 
 #ifdef _DEBUG
@@ -40,7 +40,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     RegisterClassExW(&wcex);
 
     // 초기화
-    if (!openSerialPort()) {
+    if (!_openSerialPort()) {
         MessageBox(NULL, _T("시리얼 포트 초기화 실패"), _T("ERROR"), MB_ICONERROR);
         return -1;
     }
@@ -150,7 +150,7 @@ void OnPaint(HWND hWnd)
 
 int OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 {
-    std::thread(recvSerialPort).detach();
+    std::thread(_recvSerialPort).detach();
 
     return 0;
 }
@@ -189,7 +189,7 @@ void OnTimer(HWND hWnd, UINT_PTR id)
 
 // "\\\\.\\COM9"
 // 460800
-bool openSerialPort(const char* portName, unsigned int baudRate)
+bool _openSerialPort(const char* portName, unsigned int baudRate)
 {
     bool bResult = false;
     g_hSerial = CreateFileA(portName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
@@ -217,7 +217,7 @@ bool openSerialPort(const char* portName, unsigned int baudRate)
     return bResult;
 }
 
-void recvSerialPort()
+void _recvSerialPort()
 {
     const int BUFFER_SIZE = 65535;
     unsigned char* buf = new unsigned char[BUFFER_SIZE] {};
