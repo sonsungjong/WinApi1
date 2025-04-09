@@ -1,6 +1,8 @@
 ﻿#include "pch.h"
 #include "main.h"
 #include <LogBufferModule/LogBufferModule.h>
+#include "serial_rs485.h"
+
 
 #ifdef _DEBUG
 #pragma comment(lib, "LogBufferModule//LogBufferModuleD.lib")
@@ -185,12 +187,12 @@ void OnTimer(HWND hWnd, UINT_PTR id)
 
 }
 
-// L"\\\\.\\COM8"
+// "\\\\.\\COM9"
 // 460800
-bool openSerialPort(const wchar_t* portName, DWORD baudRate)
+bool openSerialPort(const char* portName, unsigned int baudRate)
 {
     bool bResult = false;
-    g_hSerial = CreateFile(portName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+    g_hSerial = CreateFileA(portName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
     if (g_hSerial != INVALID_HANDLE_VALUE) {
         DCB dcb = { 0 };
@@ -228,6 +230,8 @@ void recvSerialPort()
         memset(buf, 0, BUFFER_SIZE);
         if (ReadFile(g_hSerial, buf, BUFFER_SIZE, &bytesRead, NULL)) 
         {
+            CLogBufferModule::getInstance().log("==>수신크기: " + std::to_string(bytesRead));
+
             dataBuffer.insert(dataBuffer.end(), buf, buf + bytesRead);
 
             while (dataBuffer.size() >= 6)  // 최소 헤더
@@ -313,13 +317,13 @@ void recvSerialPort()
                                 for (const auto& plane_mdi : mapMDI)
                                 {
                                     std::string strPlane = "===========" + std::to_string(plane_mdi.first) + "===========";
-                                    CLogBufferModule::getInstance().log(strPlane);
+                                    //CLogBufferModule::getInstance().log(strPlane);
                                     std::string strMDI = "\n";
                                     for (const unsigned short& mdi_data : plane_mdi.second)
                                     {
                                         strMDI = strMDI + std::to_string(mdi_data) + "\n";
                                     }
-                                    CLogBufferModule::getInstance().log(strMDI);
+                                    //CLogBufferModule::getInstance().log(strMDI);
                                 }
 
                             }

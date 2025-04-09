@@ -11,7 +11,7 @@
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 BOOL PreTranslateMessage(MSG* pMsg);
-bool openSerialPort(const wchar_t* portName = L"\\\\.\\COM8", DWORD baudRate = 460800);
+bool openSerialPort(const char* portName = "\\\\.\\COM9", unsigned int baudRate = 460800);
 void recvSerialPort();
 void DrawGDI(HDC hdc);
 void parseMDIMessage(const unsigned char* data, size_t size);
