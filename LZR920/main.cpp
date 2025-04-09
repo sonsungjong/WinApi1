@@ -19,10 +19,22 @@ int g_wndWidth;
 int g_wndHeight;
 volatile int configure_flag = 0;
 BOOL g_nCount = 0;
+std::map<unsigned char, std::vector<unsigned short>> g_mapMDI;
+std::mutex m_mtxMDI;
 
 HANDLE g_hSerial;
 std::vector<POINT> g_points;
-std::mutex g_mtx;
+constexpr int PLANE_COUNT = 4;
+constexpr int POINT_COUNT = 274;
+
+// 각 Plane 색상
+COLORREF PLANE_COLORS[PLANE_COUNT] = {
+    RGB(255, 0, 0),     // Plane 0 - 빨강
+    RGB(0, 255, 0),     // Plane 1 - 초록
+    RGB(0, 0, 255),     // Plane 2 - 파랑
+    RGB(255, 165, 0)    // Plane 3 - 주황 (Orange)
+};
+
 std::vector<unsigned char> g_vecBuf;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
@@ -51,7 +63,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     }
 
     // 영역 계산
-    RECT rcClient = { 0, 0, 800, 800 };
+    RECT rcClient = { 0, 0, 1920, 1080};
     AdjustWindowRect(&rcClient, WS_POPUP | WS_THICKFRAME, FALSE);
 
     g_hWnd = ::CreateWindowW(wcex.lpszClassName, L"LZR920Class",
@@ -349,7 +361,7 @@ void _recvSerialPort()
                                 // 다시 Plane Number 1바이트를 읽고
                                 // 다시 548 바이트를 unsigned short로 각각 변환하고... 총 4번
                                 std::vector<unsigned char> id_frame_counter(data.begin(), data.begin() + 6);
-                                std::map<unsigned char, std::vector<unsigned short>> mapMDI;
+                                
                                 std::vector<unsigned char> vecPlane;
 
                                 size_t idx = 6;
@@ -373,20 +385,25 @@ void _recvSerialPort()
                                         idx += 2;
                                     }
 
-                                    mapMDI[planeNumber] = mdi;
-                                }
-
-                                for (const auto& plane_mdi : mapMDI)
-                                {
-                                    std::string strPlane = "===========" + std::to_string(plane_mdi.first) + "===========";
-                                    //CLogBufferModule::getInstance().log(strPlane);
-                                    std::string strMDI = "\n";
-                                    for (const unsigned short& mdi_data : plane_mdi.second)
                                     {
-                                        strMDI = strMDI + std::to_string(mdi_data) + "\n";
+                                        std::lock_guard<std::mutex> lg(m_mtxMDI);
+                                        g_mapMDI[planeNumber] = mdi;
                                     }
-                                    //CLogBufferModule::getInstance().log(strMDI);
+
                                 }
+                                RECT rt{ 0, 0, 1920, 1080 };
+                                InvalidateRect(g_hWnd, &rt, TRUE);
+                                //for (const auto& plane_mdi : mapMDI)
+                                //{
+                                //    std::string strPlane = "===========" + std::to_string(plane_mdi.first) + "===========";
+                                //    //CLogBufferModule::getInstance().log(strPlane);
+                                //    std::string strMDI = "\n";
+                                //    for (const unsigned short& mdi_data : plane_mdi.second)
+                                //    {
+                                //        strMDI = strMDI + std::to_string(mdi_data) + "\n";
+                                //    }
+                                //    //CLogBufferModule::getInstance().log(strMDI);
+                                //}
 
                             }
                             else if(data.size() == 2196)
@@ -455,46 +472,91 @@ void _recvSerialPort()
     delete[] buf;
 }
 
-void parseMDIMessage(const unsigned char* data, size_t size)
-{
-    if (size < 274 || data[0] != 0x02 || data[1] != 'M' || data[2] != 'D' || data[3] != 'I')
-        return;
 
-    std::lock_guard<std::mutex> lock(g_mtx);
-    g_points.clear();
-
-    // 271개 포인트, 각 포인트 2바이트 거리 데이터 (Plane 1 기준)
-    int centerX = g_wndWidth / 2;
-    int centerY = g_wndHeight / 2;
-    float angle_step = 275.0f / 270.0f; // 약 1도 간격 (275포인트)
-
-    for (int i = 0; i < 271; ++i)
-    {
-        int offset = 4 + i * 2; // MDI 시작 후 4바이트부터 거리
-        uint16_t distance = (data[offset] << 8) | data[offset + 1]; // big endian
-
-        if (distance == 0 || distance > 30000) continue; // 거리 0 or 너무 크면 무시
-
-        float angle_deg = -135.0f + i * angle_step; // -135도 ~ +135도
-        float angle_rad = angle_deg * 3.14159265f / 180.0f;
-
-        int x = centerX + static_cast<int>((distance / 100.0f) * cos(angle_rad));
-        int y = centerY - static_cast<int>((distance / 100.0f) * sin(angle_rad));
-
-        g_points.push_back(POINT{ x, y });
-    }
-
-    InvalidateRect(g_hWnd, NULL, TRUE); // 그리기 요청
-}
-
+//void DrawGDI(HDC hdc)
+//{
+//    std::lock_guard<std::mutex> lg(m_mtxMDI);
+//
+//    RECT rc;
+//    GetClientRect(g_hWnd, &rc);
+//    int wndWidth = rc.right - rc.left;
+//    int wndHeight = rc.bottom - rc.top;
+//
+//    int pxCenter = wndWidth / 2;
+//    int pyCenter = wndHeight / 2;
+//
+//    constexpr double scale = 10.0; // 거리 스케일 조정
+//
+//    for (int p = 0; p < PLANE_COUNT; ++p) {
+//        COLORREF color = PLANE_COLORS[p];
+//
+//        if (g_mapMDI.count(p) == 0 || g_mapMDI[p].size() != POINT_COUNT)
+//            continue;
+//
+//        for (int i = 0; i < POINT_COUNT; ++i) {
+//            double angle_deg = -48.0 + i * (96.0 / (POINT_COUNT - 1));
+//            double angle_rad = angle_deg * 3.141592 / 180.0;
+//            double distance = static_cast<double>(g_mapMDI[p][i]);
+//
+//            double x = distance * cos(angle_rad);
+//            double y = distance * sin(angle_rad);
+//
+//            int px = static_cast<int>(pxCenter + x / scale);
+//            int py = static_cast<int>(pyCenter - y / scale); // y축 반전
+//
+//            SetPixel(hdc, px, py, color);
+//        }
+//    }
+//}
 
 void DrawGDI(HDC hdc)
 {
-    std::lock_guard<std::mutex> lock(g_mtx);
-    for (const auto& pt : g_points) {
-        Ellipse(hdc, pt.x - 2, pt.y - 2, pt.x + 2, pt.y + 2);
+    std::lock_guard<std::mutex> lg(m_mtxMDI);
+
+    RECT rc;
+    GetClientRect(g_hWnd, &rc);
+    int wndWidth = rc.right - rc.left;
+    int wndHeight = rc.bottom - rc.top;
+
+    int pxCenter = wndWidth / 2;
+    int pyCenter = wndHeight / 2;
+
+    constexpr double scale = 10.0;
+
+    for (int p = 0; p < PLANE_COUNT; ++p) {
+        COLORREF color = PLANE_COLORS[p];
+
+        if (g_mapMDI.count(p) == 0 || g_mapMDI[p].size() != POINT_COUNT)
+            continue;
+
+        std::vector<POINT> polyPoints;
+        polyPoints.reserve(POINT_COUNT);
+
+        for (int i = 0; i < POINT_COUNT; ++i) {
+            double angle_deg = -48.0 + i * (96.0 / (POINT_COUNT - 1));
+            double angle_rad = angle_deg * 3.141592 / 180.0;
+            double distance = static_cast<double>(g_mapMDI[p][i]);
+
+            double x = distance * cos(angle_rad);
+            double y = distance * sin(angle_rad);
+
+            int px = static_cast<int>(pxCenter + x / scale);
+            int py = static_cast<int>(pyCenter - y / scale);
+
+            polyPoints.push_back({ px, py });
+        }
+
+        // GDI Pen 설정
+        HPEN hPen = CreatePen(PS_SOLID, 2, color);
+        HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+
+        Polyline(hdc, polyPoints.data(), static_cast<int>(polyPoints.size()));
+
+        SelectObject(hdc, hOldPen);
+        DeleteObject(hPen);
     }
 }
+
 
 // 설정 모드로
 void sendEnterConfigMode()
