@@ -2,6 +2,9 @@
 #include "main.h"
 #include <LogBufferModule/LogBufferModule.h>
 //#include "serial_rs485.h"
+#include "LZR920_Define.h"
+#include "LZR920_Enum.h"
+//#include "LZR920_Struct.h"
 
 
 #ifdef _DEBUG
@@ -14,6 +17,8 @@ HINSTANCE g_hInst;
 HWND g_hWnd;
 int g_wndWidth;
 int g_wndHeight;
+volatile int configure_flag = 0;
+BOOL g_nCount = 0;
 
 HANDLE g_hSerial;
 std::vector<POINT> g_points;
@@ -74,7 +79,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             // 메시지 처리
             if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
             {
-                //PreTranslateMessage(&msg);
+                PreTranslateMessage(&msg);
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
             }
@@ -91,7 +96,51 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 BOOL PreTranslateMessage(MSG* pMsg)
 {
+    if (pMsg->message == WM_KEYDOWN)
+    {
+        if (pMsg->wParam == VK_TAB) {
+            
+        }
+        else if (pMsg->wParam == VK_RETURN) {
+            printf("Enter");
+        }
+        else if (pMsg->wParam == VK_F1) {
+            sendEnterMeasureMode();
+        }
+        else if (pMsg->wParam == VK_F2) {
+            SetTimer(g_hWnd, 2, 1000, NULL);
+        }
+        else if (pMsg->wParam == VK_F3) {
+            printf("F3");
+        }
+        else if (pMsg->wParam == VK_F4) {
 
+        }
+        else if (pMsg->wParam == VK_F5) {
+
+        }
+        else if (pMsg->wParam == VK_F6) {
+
+        }
+        else if (pMsg->wParam == VK_F7) {
+
+        }
+        else if (pMsg->wParam == VK_F8) {
+
+        }
+        else if (pMsg->wParam == VK_F9) {
+
+        }
+        else if (pMsg->wParam == VK_F10) {
+
+        }
+        else if (pMsg->wParam == VK_F11) {
+
+        }
+        else if (pMsg->wParam == VK_F12) {
+
+        }
+    }
     return TRUE;
 }
 
@@ -184,7 +233,21 @@ void OnCommand(HWND hWnd, int id, HWND hwndCtrl, UINT codeNotify)
 
 void OnTimer(HWND hWnd, UINT_PTR id)
 {
-
+    if (id == 1)
+    {
+        
+    }
+    else if (id == 2)
+    {
+        if (configure_flag == 1 || g_nCount > 10)
+        {
+            KillTimer(hWnd, 2);
+            configure_flag = 0;
+            g_nCount = 0;
+        }
+        sendEnterConfigMode();
+        g_nCount++;
+    }
 }
 
 // "\\\\.\\COM9"
@@ -219,16 +282,16 @@ bool _openSerialPort(const char* portName, unsigned int baudRate)
 
 void _recvSerialPort()
 {
-    const int BUFFER_SIZE = 65535;
-    unsigned char* buf = new unsigned char[BUFFER_SIZE] {};
+    const int buf_size = BUFFER_SIZE;
+    unsigned char* buf = new unsigned char[buf_size] {};
     DWORD bytesRead;
 
     std::vector<unsigned char> dataBuffer;
 
     while (true)
     {
-        memset(buf, 0, BUFFER_SIZE);
-        if (ReadFile(g_hSerial, buf, BUFFER_SIZE, &bytesRead, NULL)) 
+        memset(buf, 0, buf_size);
+        if (ReadFile(g_hSerial, buf, buf_size, &bytesRead, NULL))
         {
             CLogBufferModule::getInstance().log("==>수신크기: " + std::to_string(bytesRead));
 
@@ -273,8 +336,7 @@ void _recvSerialPort()
                     footer_chk = dataBuffer[6 + size] | (dataBuffer[6 + size + 1] << 8);
                     if (calc_chk == footer_chk)
                     {
-                        printf("TRUE");
-                        if (cmd == 50011)
+                        if (cmd == 50011)               // MDI
                         {
                             if (data.size() == 2202)
                             {
@@ -346,6 +408,26 @@ void _recvSerialPort()
 
                             }
                         }
+                        else if (cmd == 50002)          // 모드 변경 응답
+                        {
+                            unsigned char mode = data[0];               // [1] 측정모드 [2] 설정모드
+                            if (mode == 1)
+                            {
+                                printf("측정모드\n");
+                            }
+                            else if(mode == 2)
+                            {
+                                configure_flag = 1;
+                                printf("설정모드\n");
+                            }
+                            else {
+                                printf("알수없는 모드\n");
+                            }
+                        }
+                        else 
+                        {
+                            data;
+                        }
 
                         // 데이터
                         printf("[INFO] SIZE: %u, CMD: 0x%04X\n", size, cmd);
@@ -412,4 +494,57 @@ void DrawGDI(HDC hdc)
     for (const auto& pt : g_points) {
         Ellipse(hdc, pt.x - 2, pt.y - 2, pt.x + 2, pt.y + 2);
     }
+}
+
+// 설정 모드로
+void sendEnterConfigMode()
+{
+    std::thread([]() {
+        unsigned char flag = 0xA5;
+        DWORD bytesWritten = 0;
+        WriteFile(g_hSerial, &flag, 1, &bytesWritten, NULL);
+
+        if (bytesWritten == 1) {
+            CLogBufferModule::getInstance().log("설정 모드 진입 명령 전송 완료 (0xA5)");
+        }
+        else {
+            CLogBufferModule::getInstance().log("설정 모드 진입 명령 전송 실패");
+        }
+    }).detach();
+}
+
+// 측정 모드로
+void sendEnterMeasureMode()
+{
+    // 프레임 구성: SYNC(4) + SIZE(2) + CMD(2) + DATA(1) + CHK(2) = 11 bytes
+    std::thread([]() {
+        unsigned char packet[11] = {};
+        unsigned int sync = HEADER_SYNC_VAL;
+        unsigned short size = 3;             // CMD(2) + DATA(1)
+        unsigned short cmd = 50001;         // SETRAWDATAMODE
+        unsigned char d0 = 1;             // 측정 모드 요청
+
+        // CHK 계산
+        unsigned short chk = 0;
+        chk += cmd & 0xFF;        // LSB
+        chk += (cmd >> 8);        // MSB
+        chk += d0;
+
+        // 패킷 작성 (LSB first)
+        memcpy(&packet[0], &sync, 4);           // SYNC
+        memcpy(&packet[4], &size, 2);           // SIZE
+        memcpy(&packet[6], &cmd, 2);            // CMD
+        packet[8] = d0;                         // DATA
+        memcpy(&packet[9], &chk, 2);            // CHK
+
+        DWORD bytesWritten = 0;
+        WriteFile(g_hSerial, packet, sizeof(packet), &bytesWritten, NULL);
+
+        if (bytesWritten == sizeof(packet)) {
+            CLogBufferModule::getInstance().log("측정 모드 진입 명령 전송 완료 (0x5001)");
+        }
+        else {
+            CLogBufferModule::getInstance().log("측정 모드 진입 명령 전송 실패");
+        }
+    }).detach();
 }

@@ -15,7 +15,8 @@ bool _openSerialPort(const char* portName = "\\\\.\\COM9", unsigned int baudRate
 void _recvSerialPort();
 void DrawGDI(HDC hdc);
 void parseMDIMessage(const unsigned char* data, size_t size);
-
+void sendEnterMeasureMode();
+void sendEnterConfigMode();
 
 
 void OnPaint(HWND hWnd);
