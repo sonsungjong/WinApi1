@@ -24,11 +24,11 @@ std::mutex m_mtxMDI;
 
 HANDLE g_hSerial;
 std::vector<POINT> g_points;
-constexpr int PLANE_COUNT = 4;
-constexpr int POINT_COUNT = 274;
+constexpr int PLANE_COLOR = 4;
+//constexpr int POINT_COUNT = 274;
 
 // 각 Plane 색상
-COLORREF PLANE_COLORS[PLANE_COUNT] = {
+COLORREF PLANE_COLORS[PLANE_COLOR] = {
     RGB(255, 255, 255),     // Plane 0 - 빨강
     RGB(255, 212, 0),     // Plane 1 - 노랑
     RGB(0, 255, 0),     // Plane 2 - 초록
@@ -523,43 +523,39 @@ void DrawGDI(HDC hdc)
 
     constexpr double scale = 10.0;
 
-    for (int p = 0; p < PLANE_COUNT; ++p) 
+    //for (int p = 0; p < g_mapMDI.size(); ++p)
+    for (int p = 0; p < 1; ++p)                 // 테스트용
     {
         COLORREF color = PLANE_COLORS[p];
 
-        const int ellipse_radius = 1;
+        int point_count = g_mapMDI[p].size();
 
-        if (g_mapMDI.count(p) == 0 || g_mapMDI[p].size() != POINT_COUNT)
-        {
+        // 동일 색상이므로, 펜과 브러시를 한 번만 생성
+        HPEN hPen = CreatePen(PS_SOLID, 1, color);
+        HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+        HBRUSH hBrush = CreateSolidBrush(color);
+        HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, hBrush);
 
+        for (int i = 0; i < point_count; ++i) {
+            int ellipse_radius = 1;
+            double angle_deg = -48.0 + i * (96.0 / (point_count - 1));
+            double angle_rad = (angle_deg) * 3.141592 / 180.0;
+            double distance = static_cast<double>(g_mapMDI[p][i]);
+
+            double x = distance * cos(angle_rad);
+            double y = distance * sin(angle_rad);
+
+            int px = static_cast<int>(pxCenter + x / scale);
+            int py = static_cast<int>(pyCenter - y / scale);
+
+            Ellipse(hdc, px - ellipse_radius, py - ellipse_radius, px + ellipse_radius, py + ellipse_radius);
         }
-        else {
-            // 동일 색상이므로, 펜과 브러시를 한 번만 생성
-            HPEN hPen = CreatePen(PS_SOLID, 1, color);
-            HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
-            HBRUSH hBrush = CreateSolidBrush(color);
-            HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, hBrush);
-
-            for (int i = 0; i < POINT_COUNT; ++i) {
-                double angle_deg = -48.0 + i * (96.0 / (POINT_COUNT - 1));
-                double angle_rad = (angle_deg) * 3.141592 / 180.0;
-                double distance = static_cast<double>(g_mapMDI[p][i]);
-
-                double x = distance * cos(angle_rad);
-                double y = distance * sin(angle_rad);
-
-                int px = static_cast<int>(pxCenter + x / scale);
-                int py = static_cast<int>(pyCenter - y / scale);
-
-                Ellipse(hdc, px - ellipse_radius, py - ellipse_radius, px + ellipse_radius, py + ellipse_radius);
-            }
 
 
-            SelectObject(hdc, hOldBrush);
-            DeleteObject(hBrush);
-            SelectObject(hdc, hOldPen);
-            DeleteObject(hPen);
-        }
+        SelectObject(hdc, hOldBrush);
+        DeleteObject(hBrush);
+        SelectObject(hdc, hOldPen);
+        DeleteObject(hPen);
     }
 }
 
