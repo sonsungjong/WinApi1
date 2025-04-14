@@ -24,12 +24,17 @@ private:
     D3D11_PRIMITIVE_TOPOLOGY m_Topology;
 
     RS_TYPE m_enumRasterizerType;
+    DS_TYPE m_enumDepthStencilStateType;
+    BS_TYPE m_BlendStateType;
 
 public:
     int createVertexShader(const std::wstring& _wstrFilePath, const std::string& _strVSFuncName);
     int createPixelShader(const std::wstring& _wstrFilePath, const std::string& _strPSFuncName);
+
     void setTopology(D3D11_PRIMITIVE_TOPOLOGY _Topology) { m_Topology = _Topology; }
     void setRasterizerStateType(RS_TYPE _type) { m_enumRasterizerType = _type; }
+    void setDepthStencilStateType(DS_TYPE _type) { m_enumDepthStencilStateType = _type; }
+    void setBlendStateType(BS_TYPE _type) { m_BlendStateType = _type; }
 
     virtual void binding() override;
 

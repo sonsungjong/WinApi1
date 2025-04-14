@@ -26,8 +26,8 @@ private:
 
 	ComPtr<ID3D11SamplerState> m_arrSamplerState[2];
 	ComPtr<ID3D11RasterizerState> m_arrRasterizerState[(UINT)RS_TYPE::END];
-	//ComPtr<ID3D11BlendState> m_BS[];
-	//ComPtr<ID3D11DepthStencilState> m_DS[];
+	ComPtr<ID3D11BlendState> m_BS[(UINT)BS_TYPE::END];
+	ComPtr<ID3D11DepthStencilState> m_DS[(UINT)DS_TYPE::END];
 	CConstBuffer* m_CB[(UINT)CB_TYPE::END];
 
 private:
@@ -36,6 +36,8 @@ private:
 	int createConstBuffer();				// 상수버퍼 초기화
 	int createSamplerState();
 	int createRasterizerState();
+	int createDepthStencilState();
+	int createBlendState();
 
 public:
 	int init(HWND _hWnd, Vec2 _resolution);
@@ -49,6 +51,8 @@ public:
 
 	CConstBuffer* getConstBuffer(CB_TYPE _type) { return m_CB[(UINT)_type]; }
 	ComPtr<ID3D11RasterizerState> getRasterizerState(RS_TYPE _type) { return m_arrRasterizerState[(UINT)_type]; }
+	ComPtr<ID3D11DepthStencilState> getDepthStencilState(DS_TYPE _type) { return m_DS[(UINT)_type]; }
+	ComPtr<ID3D11BlendState> getBlendState(BS_TYPE _type) { return m_BS[(UINT)_type]; }
 
 //public:
 	// 간략화버전 싱글턴패턴

@@ -13,7 +13,7 @@ CPlayerScript::~CPlayerScript()
 
 void CPlayerScript::tick()
 {
-	// 키 입력에 따른 위치이동
+	// 키 입력에 따른 플레이어의 위치이동
 	Vec3 vCurPos = getOwner()->Transform()->getRelativePos();
 
 	if (KEY_PRESSED(KEY::UP))
@@ -36,12 +36,12 @@ void CPlayerScript::tick()
 	if (KEY_PRESSED(KEY::Z))
 	{
 		// 회전
-		//Vec3 vRotation = getOwner()->getTransform()->getRelativeRotation();
-		//vRotation.z += DT * XM_PI;
-		//getOwner()->getTransform()->setRelativeRotation(vRotation);
+		Vec3 vRotation = getOwner()->Transform()->getRelativeRotation();
+		vRotation.z += DT * XM_PI;
+		getOwner()->Transform()->setRelativeRotation(vRotation);
 
 		// z축으로 밀기
-		vCurPos.z += DT * m_speed;
+		//vCurPos.z += DT * m_speed;
 	}
 
 	getOwner()->Transform()->setRelativePos(vCurPos);
