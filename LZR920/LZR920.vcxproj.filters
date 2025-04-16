@@ -8,6 +8,21 @@
     <Filter Include="Common">
       <UniqueIdentifier>{93c70b07-c4a7-497a-bd75-8e2f8e0a254f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="View">
+      <UniqueIdentifier>{f36f2330-470d-4a86-baaf-ed501c19a25f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model">
+      <UniqueIdentifier>{65c6c58c-9a65-4ade-92d4-ede246e2c2b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Controller">
+      <UniqueIdentifier>{031acf32-231f-4656-99ad-22565dfe5fb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Service">
+      <UniqueIdentifier>{b68e4024-4a75-474e-ad29-6e21609985ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{a0d54ef2-e160-4524-a53e-9ebbfae94508}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
@@ -15,7 +30,6 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="serial_rs485.h" />
     <ClInclude Include="LZR920_Define.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -25,12 +39,67 @@
     <ClInclude Include="LZR920_Enum.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="MDIController.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="MDIView.h">
+      <Filter>View</Filter>
+    </ClInclude>
+    <ClInclude Include="MDIModel.h">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="MainController.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="MainModel.h">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="MainView.h">
+      <Filter>View</Filter>
+    </ClInclude>
+    <ClInclude Include="serial_rs485.h">
+      <Filter>Service</Filter>
+    </ClInclude>
+    <ClInclude Include="LZR920_Func.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="LZR920_Parser.h">
+      <Filter>Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="serial_rs485_win.c" />
-    <ClCompile Include="serial_rs485_linux.c" />
+    <ClCompile Include="MDIController.cpp">
+      <Filter>Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="MDIView.cpp">
+      <Filter>View</Filter>
+    </ClCompile>
+    <ClCompile Include="MDIModel.cpp">
+      <Filter>Model</Filter>
+    </ClCompile>
+    <ClCompile Include="MainController.cpp">
+      <Filter>Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="MainModel.cpp">
+      <Filter>Model</Filter>
+    </ClCompile>
+    <ClCompile Include="MainView.cpp">
+      <Filter>View</Filter>
+    </ClCompile>
+    <ClCompile Include="serial_rs485_linux.c">
+      <Filter>Service</Filter>
+    </ClCompile>
+    <ClCompile Include="serial_rs485_win.c">
+      <Filter>Service</Filter>
+    </ClCompile>
+    <ClCompile Include="LZR920_Func.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="LZR920_Parser.c">
+      <Filter>Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="LZR920.rc">

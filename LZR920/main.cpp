@@ -1,10 +1,12 @@
-﻿#include "pch.h"
+﻿
+#include "pch.h"
 #include "main.h"
+
 #include <LogBufferModule/LogBufferModule.h>
-//#include "serial_rs485.h"
 #include "LZR920_Define.h"
 #include "LZR920_Enum.h"
 //#include "LZR920_Struct.h"
+#include "MainController.h"
 
 
 #ifdef _DEBUG
@@ -57,10 +59,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     RegisterClassExW(&wcex);
 
     // 초기화
-    if (!_openSerialPort()) {
-        MessageBox(NULL, _T("시리얼 포트 초기화 실패"), _T("ERROR"), MB_ICONERROR);
-        return -1;
-    }
+    //if (!_openSerialPort()) {
+    //    MessageBox(NULL, _T("시리얼 포트 초기화 실패"), _T("ERROR"), MB_ICONERROR);
+    //    return -1;
+    //}
 
     // 영역 계산
     RECT rcClient = { 0, 0, 1540, 800};
