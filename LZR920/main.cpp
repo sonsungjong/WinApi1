@@ -59,10 +59,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     RegisterClassExW(&wcex);
 
     // 초기화
-    //if (!_openSerialPort()) {
-    //    MessageBox(NULL, _T("시리얼 포트 초기화 실패"), _T("ERROR"), MB_ICONERROR);
-    //    return -1;
-    //}
+    if (!_openSerialPort()) {
+        MessageBox(NULL, _T("시리얼 포트 초기화 실패"), _T("ERROR"), MB_ICONERROR);
+        return -1;
+    }
 
     // 영역 계산
     RECT rcClient = { 0, 0, 1540, 800};
