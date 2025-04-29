@@ -6,7 +6,6 @@
 #include "LZR920_Define.h"
 #include "LZR920_Enum.h"
 //#include "LZR920_Struct.h"
-#include "MainController.h"
 
 
 #ifdef _DEBUG

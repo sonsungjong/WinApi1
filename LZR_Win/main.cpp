@@ -1,0 +1,342 @@
+﻿#include "pch.h"
+#include "framework.h"
+#include "main.h"
+
+HINSTANCE g_hInst;                                // 현재 인스턴스입니다.
+HWND g_hWnd;
+float g_dpi_response;
+int g_wndWidth;
+int g_wndHeight;
+int g_screenWidth;
+int g_screenHeight;
+int g_posX;
+int g_posY;
+BOOL g_isCreated = false;
+ST_DoubleBuffer g_doubleBuffer;
+
+ST_ViewRgn g_rgnTopBar;
+ST_ViewRgn g_rgnTopBarTitle;
+ST_ViewRgn g_rgnMDIViewer;
+ST_ViewRgn g_rgnSettingViewerBox;
+ST_ViewRgn g_rgnConnModeBox;
+ST_ViewRgn g_rgnSettingChangeBox;
+ST_ViewRgn g_rgnTextPortNumber;				// 포트번호 COM
+ST_ViewRgn g_rgnEditPortNumber;
+ST_ViewRgn g_rgnBtnConnPort;							// 연결
+ST_ViewRgn g_rgnBtnModeMeasurement;
+ST_ViewRgn g_rgnBtnModeConfiguration;
+ST_ViewRgn g_rgnEditStartSpot;					// 시작지점 0~273
+ST_ViewRgn g_rgnEditEndSpot;					// 끝지점 1~274
+ST_ViewRgn g_rgnComboDistance;				// 8m, 12m, 16m 거리
+ST_ViewRgn g_rgnBtnChangeSetting;				// 설정변경 (RAM)
+ST_ViewRgn g_rgnBtnInitSetting;				// 초기설정 (RAM)
+ST_ViewRgn g_rgnBtnSaveSetting;				// 변경사항 저장 (EPPROM)
+ST_ViewRgn g_rgnTextCurMode;				// 현재모드
+ST_ViewRgn g_rgnTextBaudRate;				// 현재 전송 속도
+ST_ViewRgn g_rgnTextPlane0;				// Plane0 활성여부
+ST_ViewRgn g_rgnTextPlane1;				// Plane1 활성여부
+ST_ViewRgn g_rgnTextPlane2;				// Plane2 활성여부
+ST_ViewRgn g_rgnTextPlane3;				// Plane3 활성여부
+ST_ViewRgn g_rgnTextStartingSpot;				// 측정 시작지점
+ST_ViewRgn g_rgnTextStartingAngle;				// 측정 시작각도
+ST_ViewRgn g_rgnTextEndSpot;				// 측정 종료지점
+ST_ViewRgn g_rgnTextEndAngle;				// 측정 종료각도
+ST_ViewRgn g_rgnAPD_Distance;				// 측정 최대사거리
+
+RECT g_wndRect;
+const wchar_t g_szTitle[64] = L"FST";
+wchar_t g_szTextPortNumber[64] = { 0 };
+HWND g_comboPortNumber;
+
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	if (WM_PAINT == msg)
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hWnd, &ps);
+
+		DoubleBuffer_Paint(&g_doubleBuffer, hWnd, &ps);
+
+		EndPaint(hWnd, &ps);
+	}
+	else if (WM_MOUSEMOVE == msg)
+	{
+
+	}
+	else if (WM_LBUTTONDOWN == msg)
+	{
+
+	}
+	else if (WM_LBUTTONUP == msg)
+	{
+
+	}
+	else if (WM_TIMER == msg)
+	{
+
+	}
+	else if (WM_COMMAND == msg)
+	{
+		unsigned short id = LOWORD(wParam);
+		if (id == 30001)
+		{
+			// 30001 버튼 눌림
+
+		}
+		return 0;
+	}
+	else if (WM_SIZE == msg)
+	{
+		DoubleBuffer_Resize(&g_doubleBuffer, hWnd, LOWORD(lParam), HIWORD(lParam));
+	}
+	else if (WM_NCHITTEST == msg)
+	{
+		// 마우스 위치에 따라 이동 가능하게
+		LRESULT hitTest = DefWindowProc(hWnd, msg, wParam, lParam);
+		if (hitTest == HTCLIENT) {
+			return HTCAPTION;
+		}
+	}
+	else if (WM_CLOSE == msg)
+	{
+		int nResult = MessageBoxW(hWnd, L"프로그램을 종료하시겠습니까?", L"종료 확인", MB_OKCANCEL | MB_ICONQUESTION);
+		if (nResult == IDOK)
+		{
+			DestroyWindow(hWnd);
+		}
+		return 0;
+	}
+	else if (WM_DESTROY == msg)
+	{
+		DoubleBuffer_Destroy(&g_doubleBuffer);
+		PostQuitMessage(0);
+	}
+	else if (WM_CREATE == msg)
+	{
+		DoubleBuffer_init(&g_doubleBuffer, hWnd);
+
+		RECT rect;
+		GetClientRect(hWnd, &rect);
+		HRGN hRgn = CreateRoundRectRgn(
+			rect.left, rect.top, rect.right, rect.bottom,
+			40, 40
+		);
+		SetWindowRgn(hWnd, hRgn, TRUE);
+
+		initPos();
+		createControls(hWnd);
+
+		return 0;
+	}
+
+	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
+{
+	g_hInst = hInstance;
+
+	WNDCLASSEXW wcex = { 0 };
+	wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc = WndProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = g_hInst;
+	wcex.hIcon = NULL;
+	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wcex.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+	wcex.lpszMenuName = NULL;
+	wcex.lpszClassName = L"LZR_WIN";
+	wcex.hIconSm = NULL;
+	RegisterClassExW(&wcex);
+
+	// 창의 크기를 지정
+	RECT rc = { 0, 0, 800, 600 };               // 4:3
+	::AdjustWindowRect(&rc, WS_POPUP | WS_THICKFRAME, FALSE);              // 여백보정
+
+	g_wndWidth = rc.right - rc.left;
+	g_wndHeight = rc.bottom - rc.top;
+
+	g_screenWidth = GetSystemMetrics(SM_CXSCREEN);
+	g_screenHeight = GetSystemMetrics(SM_CYSCREEN);
+	// 중앙 정렬 위치 계산
+	g_posX = (g_screenWidth - g_wndWidth) / 2;
+	g_posY = (g_screenHeight - g_wndHeight) / 2;
+
+	g_hWnd = ::CreateWindowW(wcex.lpszClassName, L"LZR_WIN",
+		WS_POPUP,
+		g_posX, g_posY, g_wndWidth, g_wndHeight,
+		NULL, NULL, g_hInst, NULL);
+
+	g_dpi_response = 96.f / (float)GetDpiForSystem();
+
+	ShowWindow(g_hWnd, true);
+	UpdateWindow(g_hWnd);
+
+	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_LZRWIN));
+
+	// 위치 설정
+	
+
+	// 큐에서 꺼내서 분기문 처리하는 쓰레드 생성
+	
+
+	MSG msg = { 0 };
+
+	while (GetMessage(&msg, NULL, 0, 0)) {
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+
+
+	return (int)msg.wParam;
+}
+
+
+
+void ViewRgn_SetRgn(ST_ViewRgn* stRgn, int _sx, int _sy, int _ex, int _ey)
+{
+	stRgn->rect.left = _sx;
+	stRgn->rect.top = _sy;
+	stRgn->rect.right = _ex;
+	stRgn->rect.bottom = _ey;
+	if (_ex - _sx > 0) {
+		stRgn->width = _ex - _sx;
+	}
+	else {
+		stRgn->width = 0;
+	}
+	if (_ey - _sy > 0) {
+		stRgn->height = _ey - _sy;
+	}
+	else {
+		stRgn->height = 0;
+	}
+}
+
+void createControls(HWND hWnd)
+{
+	g_isCreated = TRUE;
+	RECT rect;
+	GetClientRect(g_hWnd, &rect);
+	InvalidateRect(g_hWnd, &rect, FALSE);
+}
+
+void initPos()
+{
+	// 위치 설정
+	ViewRgn_SetRgn(&g_rgnTopBar, g_wndRect.left, g_wndRect.top, g_wndRect.right, calculateHeight(8));
+	ViewRgn_SetRgn(&g_rgnTopBarTitle, g_wndRect.left, g_wndRect.top, g_wndRect.right, calculateHeight(8));
+	ViewRgn_SetRgn(&g_rgnMDIViewer, calculateWidth(2), calculateHeight(10), calculateWidth(68), calculateHeight(70));
+	ViewRgn_SetRgn(&g_rgnSettingViewerBox, calculateWidth(70), calculateHeight(10), calculateWidth(98), calculateHeight(70));
+	ViewRgn_SetRgn(&g_rgnConnModeBox, calculateWidth(2), calculateHeight(72), calculateWidth(36), calculateHeight(98));
+	ViewRgn_SetRgn(&g_rgnSettingChangeBox, calculateWidth(38), calculateHeight(72), calculateWidth(98), calculateHeight(98));
+	
+}
+
+void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
+{
+	HDC hdc = ps->hdc;
+	
+	HFONT hFont = CreateFontW(
+		-24, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
+		HANGUL_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+		DEFAULT_PITCH | FF_SWISS, L"맑은 고딕"
+	);
+	HFONT hOldFont = (HFONT)SelectObject(pBuffer->m_hMemDC, hFont);
+	SetTextColor(pBuffer->m_hMemDC, RGB(255, 255, 255));
+	SetBkMode(pBuffer->m_hMemDC, TRANSPARENT);
+	HBRUSH hBkBrush = CreateSolidBrush(RGB(3, 3, 3));
+	FillRect(pBuffer->m_hMemDC, &ps->rcPaint, hBkBrush);
+
+	if (g_isCreated == TRUE)
+	{
+
+		FillRect(pBuffer->m_hMemDC, &g_rgnTopBar.rect, (HBRUSH)GetStockObject(DKGRAY_BRUSH));
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTopBarTitle.rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+		HBRUSH hRectBrush = CreateSolidBrush(RGB(50, 50, 50));  // 회색 채우기
+		HBRUSH hOldBrush = (HBRUSH)SelectObject(pBuffer->m_hMemDC, hRectBrush);
+
+		HPEN hNullPen = (HPEN)GetStockObject(NULL_PEN);  // 테두리 없음
+		HPEN hOldPen = (HPEN)SelectObject(pBuffer->m_hMemDC, hNullPen);
+		RoundRect(pBuffer->m_hMemDC, g_rgnMDIViewer.rect.left, g_rgnMDIViewer.rect.top, g_rgnMDIViewer.rect.right, g_rgnMDIViewer.rect.bottom, 20, 20);
+		RoundRect(pBuffer->m_hMemDC, g_rgnSettingViewerBox.rect.left, g_rgnSettingViewerBox.rect.top, g_rgnSettingViewerBox.rect.right, g_rgnSettingViewerBox.rect.bottom, 20, 20);
+		RoundRect(pBuffer->m_hMemDC, g_rgnConnModeBox.rect.left, g_rgnConnModeBox.rect.top, g_rgnConnModeBox.rect.right, g_rgnConnModeBox.rect.bottom, 20, 20);
+		RoundRect(pBuffer->m_hMemDC, g_rgnSettingChangeBox.rect.left, g_rgnSettingChangeBox.rect.top, g_rgnSettingChangeBox.rect.right, g_rgnSettingChangeBox.rect.bottom, 20, 20);
+
+
+		// 복원 및 정리
+		SelectObject(pBuffer->m_hMemDC, hOldBrush);
+		SelectObject(pBuffer->m_hMemDC, hOldPen);
+		DeleteObject(hRectBrush);
+	}
+
+	DeleteObject(hBkBrush);
+	SelectObject(pBuffer->m_hMemDC, hOldFont);
+	DeleteObject(hFont);  // 리소스 해제
+	// 화면에 복사
+	BitBlt(hdc, 0, 0, pBuffer->m_clientWidth, pBuffer->m_clientHeight, pBuffer->m_hMemDC, 0, 0, SRCCOPY);
+}
+
+void DoubleBuffer_init(ST_DoubleBuffer* pBuffer, HWND hWnd)
+{
+	GetClientRect(hWnd, &g_wndRect);
+
+	pBuffer->m_clientWidth = g_wndRect.right - g_wndRect.left;
+	pBuffer->m_clientHeight = g_wndRect.bottom - g_wndRect.top;
+
+	HDC hdc = GetDC(hWnd);
+	pBuffer->m_hMemDC = CreateCompatibleDC(hdc);
+	pBuffer->m_hBitmap = CreateCompatibleBitmap(hdc, pBuffer->m_clientWidth, pBuffer->m_clientHeight);
+	pBuffer->m_hOldBitmap = (HBITMAP)SelectObject(pBuffer->m_hMemDC, pBuffer->m_hBitmap);
+	ReleaseDC(hWnd, hdc);
+}
+
+void DoubleBuffer_Resize(ST_DoubleBuffer* pBuffer, HWND hWnd, int newWidth, int newHeight)
+{
+	if (newWidth > 0 && newHeight > 0)
+	{
+		if (pBuffer->m_hBitmap)
+		{
+			SelectObject(pBuffer->m_hMemDC, pBuffer->m_hOldBitmap);
+			DeleteObject(pBuffer->m_hBitmap);
+		}
+
+		HDC hdc = GetDC(hWnd);
+		pBuffer->m_hBitmap = CreateCompatibleBitmap(hdc, newWidth, newHeight);
+		pBuffer->m_hOldBitmap = (HBITMAP)SelectObject(pBuffer->m_hMemDC, pBuffer->m_hBitmap);
+		ReleaseDC(hWnd, hdc);
+
+		pBuffer->m_clientWidth = newWidth;
+		pBuffer->m_clientHeight = newHeight;
+	}
+}
+
+void DoubleBuffer_Destroy(ST_DoubleBuffer* pBuffer)
+{
+	if (pBuffer->m_hMemDC)
+	{
+		SelectObject(pBuffer->m_hMemDC, pBuffer->m_hOldBitmap);
+		DeleteObject(pBuffer->m_hBitmap);
+		DeleteDC(pBuffer->m_hMemDC);
+
+		pBuffer->m_hMemDC = NULL;
+		pBuffer->m_hBitmap = NULL;
+		pBuffer->m_hOldBitmap = NULL;
+		pBuffer->m_clientWidth = 0;
+		pBuffer->m_clientHeight = 0;
+	}
+}
+
+float calculateWidth(float fPercentage)
+{
+	return ((static_cast<float>(g_wndWidth) * fPercentage) / 100.0f);
+}
+float calculateHeight(float fPercentage)
+{
+	return ((static_cast<float>(g_wndHeight) * fPercentage) / 100.0f);
+}
