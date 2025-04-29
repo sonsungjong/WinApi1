@@ -19,7 +19,7 @@ extern "C" {
     int size_CircularQueue(ST_CircularQueue* q);									// 큐의 현재크기
     int isFull_CircularQueue(ST_CircularQueue* q);									// 큐가 가득 찼는지 판단
     int isEmpty_CircularQueue(ST_CircularQueue* q);								// 큐가 비었는지 판단
-    void enqueue_CircularQueue(ST_CircularQueue* q, void* new_element);							// 큐에 데이터를 추가
+    void enqueue_CircularQueue(ST_CircularQueue* q, void* new_element, int real_size);							// 큐에 데이터를 추가
     void* dequeue_CircularQueue(ST_CircularQueue* q);										// 큐에서 데이터를 삭제하면서 반환
     void* front_CircularQueue(ST_CircularQueue* q);										// 삭제하지않고 데이터를 확인만한다
     void pop_CircularQueue(ST_CircularQueue* q);										// 가장 앞부분을 제거만 한다 (깊은복사 안함)

@@ -12,6 +12,7 @@
 #define IDC_BUTTON_SETTING_CHANGE								30008
 #define IDC_BUTTON_SETTING_RESET								30009
 #define IDC_BUTTON_SETTING_SAVE									30010
+#define ID_PAINT_MDI														40001
 
 typedef struct STDoubleBuffer
 {
@@ -21,6 +22,10 @@ typedef struct STDoubleBuffer
 	int m_clientWidth;
 	int m_clientHeight;
 } ST_DoubleBuffer;
+
+typedef struct STMDI_DATA{
+	unsigned short mdi[4][274];  // Plane 0~3, 거리값
+} ST_MDI_DATA;
 
 typedef struct STViewRgn
 {
@@ -37,7 +42,7 @@ COLORREF PLANE_COLORS[4] = {
 	RGB(238, 130, 238)    // Plane 3 - 바이올렛
 };
 
-void consumer_thread();
+void recvFunction();
 
 void ViewRgn_SetRgn(ST_ViewRgn* stRgn, int _sx, int _sy, int _ex, int _ey);
 void initPos();

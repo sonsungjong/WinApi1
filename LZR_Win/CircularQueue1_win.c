@@ -78,7 +78,7 @@ int isEmpty_CircularQueue(ST_CircularQueue* q)
     return nResult;
 }
 
-void enqueue_CircularQueue(ST_CircularQueue* q, const void* new_element)
+void enqueue_CircularQueue(ST_CircularQueue* q, const void* new_element, int real_size)
 {
     EnterCriticalSection(&g_cs[q->id]);             // 크리티컬 섹션 시작
     if (!((q->front == 0) && (q->rear == q->max_count - 1)) || (q->front == q->rear + 1)) 
@@ -97,7 +97,10 @@ void enqueue_CircularQueue(ST_CircularQueue* q, const void* new_element)
                 q->rear = q->rear + 1;
             }
         }
-        memcpy((char*)q->data + q->rear * q->element_size, new_element, q->element_size);
+        if (g_using[q->id] == 1) 
+        {
+            memcpy((char*)q->data + q->rear * q->element_size, new_element, real_size);
+        }
     }
     else {
         // 만약 덮어쓰지 않으려면 else 의 코드를 모두 주석처리
@@ -116,9 +119,12 @@ void enqueue_CircularQueue(ST_CircularQueue* q, const void* new_element)
         }
         else {
             q->rear++;
-
         }
-        memcpy((char*)q->data + q->rear * q->element_size, new_element, q->element_size);
+
+        if (g_using[q->id] == 1)
+        {
+            memcpy((char*)q->data + q->rear * q->element_size, new_element, real_size);
+        }
     }
     WakeConditionVariable(&g_cv[q->id]);                // condition_variable 깨운다
     LeaveCriticalSection(&g_cs[q->id]);                     // 크리티컬 섹션 종료
@@ -172,36 +178,39 @@ void* wait_pop_CircularQueue(ST_CircularQueue* q)
 {
     void* deep_copy = NULL;
 
-    EnterCriticalSection(&g_cs[q->id]);             // 크리티컬 섹션 시작
-    while((q->front == -1) && (g_using[q->id] == 1))
+    if (g_using[q->id] == 1)
     {
-        SleepConditionVariableCS(&g_cv[q->id], &g_cs[q->id], INFINITE);             // 큐가 비어있는 동안 대기
-    }
-
-    if (g_using[q->id] == 1)                // 사용 중 일때만 큐에 담는다 (안전 종료)
-    {
-        deep_copy = malloc(q->element_size);
-
-        memcpy(deep_copy, (char*)q->data + q->front * q->element_size, q->element_size);
-
-        // 큐에 요소가 단 한 개만 있을 경우
-        if (q->front == q->rear) {
-            q->front = -1;
-            q->rear = -1;
+        EnterCriticalSection(&g_cs[q->id]);             // 크리티컬 섹션 시작
+        while ((q->front == -1) && (g_using[q->id] == 1))
+        {
+            SleepConditionVariableCS(&g_cv[q->id], &g_cs[q->id], INFINITE);             // 큐가 비어있는 동안 대기
         }
-        else {
-            // 순환 처리: front가 마지막 인덱스이면 0으로
-            if (q->front == q->max_count - 1) {
-                q->front = 0;
+
+        if (g_using[q->id] == 1)                // 사용 중 일때만 큐에 담는다 (안전 종료)
+        {
+            deep_copy = malloc(q->element_size);
+
+            memcpy(deep_copy, (char*)q->data + q->front * q->element_size, q->element_size);
+
+            // 큐에 요소가 단 한 개만 있을 경우
+            if (q->front == q->rear) {
+                q->front = -1;
+                q->rear = -1;
             }
             else {
-                q->front = q->front + 1;
+                // 순환 처리: front가 마지막 인덱스이면 0으로
+                if (q->front == q->max_count - 1) {
+                    q->front = 0;
+                }
+                else {
+                    q->front = q->front + 1;
+                }
             }
         }
+
+        LeaveCriticalSection(&g_cs[q->id]);             // 크리티컬 섹션 종료
     }
     
-    LeaveCriticalSection(&g_cs[q->id]);             // 크리티컬 섹션 종료
-
     return deep_copy;
 }
 

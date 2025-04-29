@@ -17,6 +17,8 @@ int g_posY;
 BOOL g_isCreated = FALSE;
 BOOL g_program_end = FALSE;
 ST_DoubleBuffer g_doubleBuffer;
+ST_DataConfig g_infoData;
+unsigned short g_lastMDIData[4][274];
 
 char g_comName[16] = { 0, };
 ST_ViewRgn g_rgnTopBar;
@@ -84,12 +86,12 @@ const wchar_t g_szEndSpotAngle[64] = L"종료각도";
 const wchar_t g_szAPDDistance[64] = L"최대거리";
 
 wchar_t g_szCurMode[64] = L"측정모드";
-wchar_t g_szBaudRateValue[64] = L"460800";
-wchar_t g_szStartingSpotValue[64] = L"0";
-wchar_t g_szStartingSpotAngleValue[64] = L"-48º";
-wchar_t g_szEndSpotAngleValue[64] = L"48º";
-wchar_t g_szEndSpotValue[64] = L"274";
-wchar_t g_szAPDDistanceValue[64] = L"12m";
+wchar_t g_szBaudRateValue[64] = L"";
+wchar_t g_szStartingSpotValue[64] = L"";
+wchar_t g_szStartingSpotAngleValue[64] = L"";
+wchar_t g_szEndSpotAngleValue[64] = L"";
+wchar_t g_szEndSpotValue[64] = L"";
+wchar_t g_szAPDDistanceValue[64] = L"";
 
 HWND g_hEditPortNumber;
 HWND g_hBtnConnPort;
@@ -134,6 +136,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	else if (WM_COMMAND == msg)
 	{
+		// 버튼 이벤트 ID_BTN
 		unsigned short id = LOWORD(wParam);
 		if (id == IDC_BUTTON_CONN_PORT)
 		{
@@ -161,6 +164,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			//MessageBox(g_hWnd, L"측정모드", L"", MB_OK);
 			request_MeasurementMode();
+			Sleep(10);
+			request_MeasurementMode();
+			Sleep(10);
+			request_MeasurementMode();
 		}
 		else if (id == IDC_BUTTON_MODE_CONFIGURATION)
 		{
@@ -173,11 +180,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			ST_SETRAWDATACONFIG_50003 stData;
 			initConfigData(&stData);
 			
+			stData.D10_11_number_distance_values = (unsigned short)274;
+			stData.D12_13_starting_spot = (unsigned short)0;
+			wchar_t szSetDistance[16] = { 0 };
+			int selIndex = (int)SendMessage(g_hComboDistance, CB_GETCURSEL, 0, 0);
+			if (selIndex != CB_ERR)
+			{
+				SendMessage(g_hComboDistance, CB_GETLBTEXT, selIndex, (LPARAM)szSetDistance);
+
+				if (wcscmp(szSetDistance, L"8m") == 0) {
+					stData.D16_apd_distance_range = 0;
+				}
+				else if (wcscmp(szSetDistance, L"12m") == 0) {
+					stData.D16_apd_distance_range = 1;
+				}
+				else if (wcscmp(szSetDistance, L"16m") == 0) {
+					stData.D16_apd_distance_range = 2;
+				}
+			}
 
 			// 값을 보내서 기존 측정값에 채워진 부분만 대입하여 보낸다
-			request_changeSetting(stData);
-			request_changeSetting(stData);
-			request_changeSetting(stData);
+			for (int i = 0; i < 10; i++) {
+				request_changeSetting(stData);
+				Sleep(50);
+			}
 		}
 		else if (id == IDC_BUTTON_SETTING_RESET)
 		{
@@ -202,6 +228,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if (hitTest == HTCLIENT) {
 			return HTCAPTION;
 		}
+	}
+	else if (ID_PAINT_MDI == msg)
+	{
+		ST_MDI_DATA* pMdi = (ST_MDI_DATA*)lParam;
+		if (pMdi) 
+		{
+			//memset(g_lastMDIData, 0, sizeof(g_lastMDIData));
+			memcpy(g_lastMDIData, pMdi->mdi, sizeof(g_lastMDIData));
+			free(pMdi);
+			RECT rectAll;
+			GetClientRect(g_hWnd, &rectAll);
+			InvalidateRect(hWnd, &rectAll, FALSE);
+		}
+		return 0;
 	}
 	else if (WM_CLOSE == msg)
 	{
@@ -285,8 +325,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	// 큐에서 꺼내서 분기문 처리하는 쓰레드 생성
 	init_CircularQueue(&g_recvQueue, 200, 8000, 0);
 	
-	std::thread consumer(consumer_thread);
-	consumer.detach();
+	std::thread recvThread(recvFunction);
+	recvThread.detach();
 
 	MSG msg = { 0 };
 
@@ -300,7 +340,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	return (int)msg.wParam;
 }
 
-void consumer_thread()
+void recvFunction()
 {
 	while (g_program_end == false)
 	{
@@ -309,12 +349,21 @@ void consumer_thread()
 		{
 			unsigned short body_length = 0;
 			unsigned short cmd_id = 0;
-			unsigned char body_msg[4000] = { 0, };
+			unsigned char* real_body_msg;
+			unsigned char body_debug[8000] = { 0, };
 
-			memcpy(&body_length, (char*)data + sizeof(unsigned int), sizeof(unsigned short));
-			memcpy(&cmd_id, (char*)data + sizeof(unsigned int) +sizeof(unsigned short), sizeof(unsigned short));
-			memcpy(body_msg, (char*)data + sizeof(unsigned int) + sizeof(unsigned short) + sizeof(unsigned short), body_length - sizeof(cmd_id));
-			
+			unsigned long long copy_idx = 0;
+			memcpy(&body_length, (char*)data + copy_idx, sizeof(unsigned short));
+			copy_idx += sizeof(unsigned short);
+			memcpy(&cmd_id, (char*)data + copy_idx, sizeof(unsigned short));
+			copy_idx += sizeof(unsigned short);
+			int real_body_size = body_length - sizeof(cmd_id);
+			real_body_msg = (unsigned char*)malloc(real_body_size);
+			memcpy(real_body_msg, (char*)data + copy_idx, real_body_size);
+			memcpy(body_debug, (char*)data + copy_idx, real_body_size);
+			copy_idx += real_body_size;
+
+
 			free(data);
 			data = NULL;
 
@@ -322,17 +371,120 @@ void consumer_thread()
 			if (cmd_id == 50011)
 			{
 				// MDI
+				if (real_body_size == 2202)
+				{
+					ST_MDI_DATA* pMdiData = (ST_MDI_DATA*)malloc(sizeof(ST_MDI_DATA));
+					memset(pMdiData, 0, sizeof(ST_MDI_DATA));
+					size_t idx = 6; // ID + Frame counter 스킵
+					for (int plane = 0; plane < 4; ++plane)
+					{
+						unsigned char planeNum = real_body_msg[idx];
+						idx++;
+						if (planeNum < 4)
+						{
 
+							for (int i = 0; i < 274; ++i)
+							{
+								unsigned short temp = 0;
+								memcpy(&temp, &real_body_msg[idx], sizeof(unsigned short));
+								idx += sizeof(unsigned short);
+
+								pMdiData->mdi[planeNum][i] = temp;
+							}
+						}
+					}
+
+					// body_msg 에 MDI가 들어있음
+					PostMessage(g_hWnd, ID_PAINT_MDI, 0, (LPARAM)pMdiData);
+				}
+				else if (real_body_size == 2216)
+				{
+					// ID + Frame counter
+					// CTN + VNR + Error log + Hot reset counter
+					// Plane Number + MDI
+					ST_MDI_DATA* pMdiData = (ST_MDI_DATA*)malloc(sizeof(ST_MDI_DATA));
+					memset(pMdiData, 0, sizeof(ST_MDI_DATA));
+					size_t idx = 20; // 스킵
+					for (int plane = 0; plane < 4; ++plane)
+					{
+						unsigned char planeNum = real_body_msg[idx];
+						idx++;
+
+						for (int i = 0; i < 274; ++i)
+						{
+							unsigned short temp = 0;
+							memcpy(&temp, &real_body_msg[idx], sizeof(unsigned short));
+							idx += sizeof(unsigned short);
+
+							pMdiData->mdi[planeNum][i] = temp;
+						}
+					}
+
+					// body_msg 에 MDI가 들어있음
+					PostMessage(g_hWnd, ID_PAINT_MDI, 0, (LPARAM)pMdiData);
+				}
 			}
 			else if (cmd_id == 50002)
 			{
 				// 측정모드, 설정모드 응답
-
+				if (real_body_msg[0] == 1)
+				{
+					// 측정모드
+					wcscpy_s(g_szCurMode, L"측정모드");
+				}
+				else if (real_body_msg[0] == 2)
+				{
+					// 설정모드
+					wcscpy_s(g_szCurMode, L"설정모드");
+				}
+				InvalidateRect(g_hWnd, &g_rgnTextCurMode.rect, FALSE);
 			}
 			else if (cmd_id == 50004)
 			{
 				// 현재 설정값 응답
+				printf("SETTING\n");
+				unsigned long long copy_size = 0U;
+				unsigned long long size_body_msg = body_length - sizeof(unsigned short);
+				ST_DataConfig stDataConfig;
+				if (size_body_msg > sizeof(ST_DataConfig))
+				{
+					copy_size = sizeof(ST_DataConfig);
+				}
+				else {
+					copy_size = size_body_msg;
+				}
+				memcpy(&g_infoData, real_body_msg, size_body_msg);			// 전역에 백업용
+				memcpy(&stDataConfig, real_body_msg, size_body_msg);		// 로컬 사용
 
+				const char* baud_strs[] = { "57600", "115200", "230400", "460800", "921600" };
+				const char* baud_rate = (stDataConfig.D6_baud_rate < 5 ? baud_strs[stDataConfig.D6_baud_rate] : "Unknown");
+
+				swprintf(g_szBaudRateValue, 64, L"%hs", baud_rate);
+				swprintf(g_szStartingSpotValue, 64, L"%u", stDataConfig.D1819_starting_spot);
+				swprintf(g_szEndSpotValue, 64, L"%u", stDataConfig.D1819_starting_spot + stDataConfig.D1617_number_distance_values);
+				if (stDataConfig.D22_apd_distance_range == 0) {
+					swprintf(g_szAPDDistanceValue, 64, L"8m");
+				}
+				else if (stDataConfig.D22_apd_distance_range == 1) {
+					swprintf(g_szAPDDistanceValue, 64, L"12m");
+				}
+				else if (stDataConfig.D22_apd_distance_range == 2) {
+					swprintf(g_szAPDDistanceValue, 64, L"16m");
+				}
+				else {
+					swprintf(g_szAPDDistanceValue, 64, L"");
+				}
+
+				// 시작각도/종료각도 계산 (스팟 간격 * 거리값 개수)
+				double DEG_UNIT = 0.3515625;
+				double start_angle = -48.0 + stDataConfig.D1819_starting_spot * stDataConfig.D2021_gap_between_spots * DEG_UNIT;
+				double end_angle = start_angle + (stDataConfig.D1617_number_distance_values - 1) * stDataConfig.D2021_gap_between_spots * DEG_UNIT;
+
+				swprintf(g_szStartingSpotAngleValue, 64, L"%.1lfº", start_angle);
+				swprintf(g_szEndSpotAngleValue, 64, L"%.1lfº", end_angle);
+
+				// 강제 다시 그리기
+				InvalidateRect(g_hWnd, &g_rgnSettingViewerBox.rect, FALSE);
 			}
 		}
 	}
@@ -570,6 +722,44 @@ void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
 		SelectObject(pBuffer->m_hMemDC, hOldBrush);
 		SelectObject(pBuffer->m_hMemDC, hOldPen);
 		DeleteObject(hRectBrush);
+	}
+
+	int pxCenter = (g_rgnMDIViewer.rect.left + g_rgnMDIViewer.rect.right) / 2;
+	int pyCenter = (g_rgnMDIViewer.rect.top + g_rgnMDIViewer.rect.bottom) / 2;
+
+	constexpr double scale = 10.0;  // 확대 배율 조절: 작게 할수록 더 크게 보임
+
+	for (int plane = 0; plane < 4; ++plane)
+	{
+		COLORREF color = PLANE_COLORS[plane];
+		HPEN hPen = CreatePen(PS_SOLID, 1, color);
+		HBRUSH hBrush = CreateSolidBrush(color);
+		HPEN hOldPen = (HPEN)SelectObject(pBuffer->m_hMemDC, hPen);
+		HBRUSH hOldBrush = (HBRUSH)SelectObject(pBuffer->m_hMemDC, hBrush);
+
+		for (int i = 0; i < 274; ++i)
+		{
+			unsigned short dist = g_lastMDIData[plane][i];
+			if (dist > 0 && dist <= 16000)
+			{
+				double angle_deg = -48.0 + i * (96.0 / 273.0);
+				double angle_rad = angle_deg * 3.141592 / 180.0;
+
+				double x = dist * cos(angle_rad);
+				double y = dist * sin(angle_rad);
+
+				int px = static_cast<int>(pxCenter + x / scale);
+				int py = static_cast<int>(pyCenter - y / scale);
+
+				int ellipse_radius = 2;  // 점 크기 조절
+				Ellipse(pBuffer->m_hMemDC, px - ellipse_radius, py - ellipse_radius, px + ellipse_radius, py + ellipse_radius);
+			}
+		}
+
+		SelectObject(pBuffer->m_hMemDC, hOldBrush);
+		DeleteObject(hBrush);
+		SelectObject(pBuffer->m_hMemDC, hOldPen);
+		DeleteObject(hPen);
 	}
 
 	DeleteObject(hBkBrush);
