@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#pragma warning(disable: 4244)
 #include "targetver.h"
 // Windows 헤더 파일
 #include <WinSock2.h>

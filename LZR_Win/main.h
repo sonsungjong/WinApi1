@@ -29,6 +29,14 @@ typedef struct STViewRgn
 	int height;
 } ST_ViewRgn;
 
+// 각 Plane 색상
+COLORREF PLANE_COLORS[4] = {
+	RGB(255, 255, 255),     // Plane 0 - 하양
+	RGB(255, 212, 0),     // Plane 1 - 노랑
+	RGB(0, 255, 0),     // Plane 2 - 초록
+	RGB(238, 130, 238)    // Plane 3 - 바이올렛
+};
+
 void ViewRgn_SetRgn(ST_ViewRgn* stRgn, int _sx, int _sy, int _ex, int _ey);
 void initPos();
 void createControls(HWND hWnd);
