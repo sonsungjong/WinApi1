@@ -10,6 +10,7 @@
 #include <memory.h>
 #include "RingBuffer1.h"
 #include <mmsystem.h>			//#include <unistd.h>
+#include "QueueGlobal.h"
 
 #pragma comment(lib, "winmm.lib")
 
@@ -170,6 +171,8 @@ DWORD WINAPI processMessageThread(void* lpParam)
 
 							if (stData.message_cmd == 50011)			// MDI
 							{
+
+								enqueue_CircularQueue(&g_recvQueue, &stData);
 								if (size_body_msg == 2202)
 								{
 									// ID + Frame counter
@@ -207,6 +210,7 @@ DWORD WINAPI processMessageThread(void* lpParam)
 							}
 							else if (stData.message_cmd == 50002)			// 모드 변경 응답
 							{
+								enqueue_CircularQueue(&g_recvQueue, &stData);
 								unsigned char mode = stData.message_data[0];
 								if (mode == 1)
 								{
@@ -220,6 +224,7 @@ DWORD WINAPI processMessageThread(void* lpParam)
 								else if (mode == 2)
 								{
 									printf("=============>설정 모드 응답\n");
+									//enqueue_CircularQueue(&g_recvQueue, &);
 									if (InterlockedCompareExchange(&g_curMode, 0, 0) != MODE_CONFIG) {
 										stopTimerRequestConfigurationMode();
 										InterlockedExchange(&g_curMode, MODE_CONFIG);
@@ -252,6 +257,8 @@ DWORD WINAPI processMessageThread(void* lpParam)
 									copy_size = size_body_msg;
 								}
 								memcpy(&g_sensorConfig, stData.message_data, size_body_msg);
+
+								enqueue_CircularQueue(&g_recvQueue, &stData);
 
 								const char* baud_strs[] = { "57600", "115200", "230400", "460800", "921600" };
 								const char* baud_rate = (g_sensorConfig.D6_baud_rate < 5 ? baud_strs[g_sensorConfig.D6_baud_rate] : "Unknown");
@@ -420,6 +427,7 @@ void closeSerialPort(void)
 	RingBuffer_destroy(&ring1);
 	DeleteCriticalSection(&g_txCS);
 	DeleteCriticalSection(&g_cs_end);
+	g_hSerial = INVALID_HANDLE_VALUE;
 }
 
 // 측정 모드 요청
@@ -516,14 +524,18 @@ DWORD WINAPI sendGetModeThread(LPVOID lpParam)
 long long sendPacket(unsigned char* _pPacket, unsigned long long _sizePacket)
 {
 	DWORD bytesWritten = 0;
-	EnterCriticalSection(&g_txCS);
-	BOOL ok = WriteFile(g_hSerial, _pPacket, _sizePacket, &bytesWritten, NULL);
-	LeaveCriticalSection(&g_txCS);
+	if (g_hSerial != INVALID_HANDLE_VALUE)
+	{
+		EnterCriticalSection(&g_txCS);
+		BOOL ok = WriteFile(g_hSerial, _pPacket, _sizePacket, &bytesWritten, NULL);
+		LeaveCriticalSection(&g_txCS);
 
-	if (ok == FALSE) {
-		DWORD err = GetLastError();
-		printf("WriteFile failed: %u, wrote %u/%u\n", err, bytesWritten, _sizePacket);
-		return (long long)-1;
+		if (ok == FALSE) {
+			DWORD err = GetLastError();
+			printf("WriteFile failed: %u, wrote %u/%u\n", err, bytesWritten, _sizePacket);
+			return (long long)-1;
+		}
+
 	}
 
 	return (long long)bytesWritten;

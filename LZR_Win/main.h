@@ -37,6 +37,8 @@ COLORREF PLANE_COLORS[4] = {
 	RGB(238, 130, 238)    // Plane 3 - πŸ¿Ãø√∑ø
 };
 
+void consumer_thread();
+
 void ViewRgn_SetRgn(ST_ViewRgn* stRgn, int _sx, int _sy, int _ex, int _ey);
 void initPos();
 void createControls(HWND hWnd);

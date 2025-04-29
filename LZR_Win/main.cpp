@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "framework.h"
 #include "main.h"
+#include "QueueGlobal.h"
 #include "serial_rs485.h"
 #include "CircularQueue1.h"
 
@@ -13,7 +14,8 @@ int g_screenWidth;
 int g_screenHeight;
 int g_posX;
 int g_posY;
-BOOL g_isCreated = false;
+BOOL g_isCreated = FALSE;
+BOOL g_program_end = FALSE;
 ST_DoubleBuffer g_doubleBuffer;
 
 char g_comName[16] = { 0, };
@@ -280,11 +282,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_LZRWIN));
 
-	// 위치 설정
-	
-
 	// 큐에서 꺼내서 분기문 처리하는 쓰레드 생성
+	init_CircularQueue(&g_recvQueue, 200, 8000, 0);
 	
+	std::thread consumer(consumer_thread);
+	consumer.detach();
 
 	MSG msg = { 0 };
 
@@ -293,12 +295,48 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		DispatchMessage(&msg);
 	}
 
-
+	destroy_CircularQueue(&g_recvQueue);
 
 	return (int)msg.wParam;
 }
 
+void consumer_thread()
+{
+	while (g_program_end == false)
+	{
+		void* data = wait_pop_CircularQueue(&g_recvQueue);
+		if (data != NULL)
+		{
+			unsigned short body_length = 0;
+			unsigned short cmd_id = 0;
+			unsigned char body_msg[4000] = { 0, };
 
+			memcpy(&body_length, (char*)data + sizeof(unsigned int), sizeof(unsigned short));
+			memcpy(&cmd_id, (char*)data + sizeof(unsigned int) +sizeof(unsigned short), sizeof(unsigned short));
+			memcpy(body_msg, (char*)data + sizeof(unsigned int) + sizeof(unsigned short) + sizeof(unsigned short), body_length - sizeof(cmd_id));
+			
+			free(data);
+			data = NULL;
+
+			// 분기처리해서 화면에 사용
+			if (cmd_id == 50011)
+			{
+				// MDI
+
+			}
+			else if (cmd_id == 50002)
+			{
+				// 측정모드, 설정모드 응답
+
+			}
+			else if (cmd_id == 50004)
+			{
+				// 현재 설정값 응답
+
+			}
+		}
+	}
+}
 
 void ViewRgn_SetRgn(ST_ViewRgn* stRgn, int _sx, int _sy, int _ex, int _ey)
 {
@@ -372,6 +410,7 @@ void createControls(HWND hWnd)
 		hWnd, (HMENU)IDC_EDIT_END_SPOT,
 		GetModuleHandle(NULL), NULL
 	);
+	SendMessageW(g_hEditEndSpot, EM_LIMITTEXT, (WPARAM)3, 0);				// 글자수 3글자 제한
 
 	// CBS_DROPDOWNLIST : 입력불가, CBS_DROPDOWN : 입력가능
 	g_hComboDistance = CreateWindowExW(

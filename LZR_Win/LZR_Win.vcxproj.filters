@@ -15,6 +15,7 @@
     <ClInclude Include="RingBuffer1.h" />
     <ClInclude Include="serial_rs485.h" />
     <ClInclude Include="CircularQueue1.h" />
+    <ClInclude Include="QueueGlobal.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -23,6 +24,7 @@
     <ClCompile Include="serial_rs485_win.c" />
     <ClCompile Include="CircularQueue1_linux.c" />
     <ClCompile Include="CircularQueue1_win.c" />
+    <ClCompile Include="QueueGlobal.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="LZR_Win.rc">
