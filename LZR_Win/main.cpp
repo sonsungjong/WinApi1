@@ -24,7 +24,9 @@ ST_ViewRgn g_rgnTextPortNumber;				// 포트번호 COM
 ST_ViewRgn g_rgnEditPortNumber;
 ST_ViewRgn g_rgnBtnConnPort;							// 연결
 ST_ViewRgn g_rgnBtnModeMeasurement;
+ST_ViewRgn g_rgnBtnModeMeasurementValue;
 ST_ViewRgn g_rgnBtnModeConfiguration;
+ST_ViewRgn g_rgnBtnModeConfigurationValue;
 ST_ViewRgn g_rgnEditStartSpot;					// 시작지점 0~273
 ST_ViewRgn g_rgnEditEndSpot;					// 끝지점 1~274
 ST_ViewRgn g_rgnComboDistance;				// 8m, 12m, 16m 거리
@@ -32,21 +34,34 @@ ST_ViewRgn g_rgnBtnChangeSetting;				// 설정변경 (RAM)
 ST_ViewRgn g_rgnBtnInitSetting;				// 초기설정 (RAM)
 ST_ViewRgn g_rgnBtnSaveSetting;				// 변경사항 저장 (EPPROM)
 ST_ViewRgn g_rgnTextCurMode;				// 현재모드
+ST_ViewRgn g_rgnTextCurModeValue;				// 현재모드
 ST_ViewRgn g_rgnTextBaudRate;				// 현재 전송 속도
+ST_ViewRgn g_rgnTextBaudRateValue;				// 현재 전송 속도
 ST_ViewRgn g_rgnTextPlane0;				// Plane0 활성여부
+ST_ViewRgn g_rgnTextPlane0Value;				// Plane0 활성여부
 ST_ViewRgn g_rgnTextPlane1;				// Plane1 활성여부
+ST_ViewRgn g_rgnTextPlane1Value;				// Plane1 활성여부
 ST_ViewRgn g_rgnTextPlane2;				// Plane2 활성여부
+ST_ViewRgn g_rgnTextPlane2Value;				// Plane2 활성여부
 ST_ViewRgn g_rgnTextPlane3;				// Plane3 활성여부
+ST_ViewRgn g_rgnTextPlane3Value;				// Plane3 활성여부
 ST_ViewRgn g_rgnTextStartingSpot;				// 측정 시작지점
+ST_ViewRgn g_rgnTextStartingSpotValue;				// 측정 시작지점
 ST_ViewRgn g_rgnTextStartingAngle;				// 측정 시작각도
+ST_ViewRgn g_rgnTextStartingAngleValue;				// 측정 시작각도
 ST_ViewRgn g_rgnTextEndSpot;				// 측정 종료지점
+ST_ViewRgn g_rgnTextEndSpotValue;				// 측정 종료지점
 ST_ViewRgn g_rgnTextEndAngle;				// 측정 종료각도
+ST_ViewRgn g_rgnTextEndAngleValue;				// 측정 종료각도
 ST_ViewRgn g_rgnAPD_Distance;				// 측정 최대사거리
+ST_ViewRgn g_rgnAPD_DistanceValue;				// 측정 최대사거리
 
 RECT g_wndRect;
 const wchar_t g_szTitle[64] = L"FST";
 wchar_t g_szTextPortNumber[64] = { 0 };
 HWND g_comboPortNumber;
+
+
 
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -234,7 +249,29 @@ void initPos()
 	ViewRgn_SetRgn(&g_rgnSettingViewerBox, calculateWidth(70), calculateHeight(10), calculateWidth(98), calculateHeight(70));
 	ViewRgn_SetRgn(&g_rgnConnModeBox, calculateWidth(2), calculateHeight(72), calculateWidth(36), calculateHeight(98));
 	ViewRgn_SetRgn(&g_rgnSettingChangeBox, calculateWidth(38), calculateHeight(72), calculateWidth(98), calculateHeight(98));
-	
+
+	ViewRgn_SetRgn(&g_rgnTextCurMode, calculateWidth(72), calculateHeight(12), calculateWidth(96), calculateHeight(16));
+	ViewRgn_SetRgn(&g_rgnTextCurModeValue, calculateWidth(72), calculateHeight(12), calculateWidth(96), calculateHeight(16));
+	ViewRgn_SetRgn(&g_rgnTextBaudRate, calculateWidth(72), calculateHeight(18), calculateWidth(96), calculateHeight(22));
+	ViewRgn_SetRgn(&g_rgnTextBaudRateValue, calculateWidth(72), calculateHeight(18), calculateWidth(96), calculateHeight(22));
+	ViewRgn_SetRgn(&g_rgnTextStartingSpot, calculateWidth(72), calculateHeight(24), calculateWidth(96), calculateHeight(28));
+	ViewRgn_SetRgn(&g_rgnTextStartingSpotValue, calculateWidth(72), calculateHeight(24), calculateWidth(96), calculateHeight(28));
+	ViewRgn_SetRgn(&g_rgnTextStartingAngle, calculateWidth(72), calculateHeight(30), calculateWidth(96), calculateHeight(34));
+	ViewRgn_SetRgn(&g_rgnTextStartingAngleValue, calculateWidth(72), calculateHeight(30), calculateWidth(96), calculateHeight(34));
+	ViewRgn_SetRgn(&g_rgnTextEndSpot, calculateWidth(72), calculateHeight(36), calculateWidth(96), calculateHeight(40));
+	ViewRgn_SetRgn(&g_rgnTextEndSpotValue, calculateWidth(72), calculateHeight(36), calculateWidth(96), calculateHeight(40));
+	ViewRgn_SetRgn(&g_rgnTextEndAngle, calculateWidth(72), calculateHeight(42), calculateWidth(96), calculateHeight(46));
+	ViewRgn_SetRgn(&g_rgnTextEndAngleValue, calculateWidth(72), calculateHeight(42), calculateWidth(96), calculateHeight(46));
+	ViewRgn_SetRgn(&g_rgnAPD_Distance, calculateWidth(72), calculateHeight(48), calculateWidth(96), calculateHeight(52));
+	ViewRgn_SetRgn(&g_rgnAPD_DistanceValue, calculateWidth(72), calculateHeight(48), calculateWidth(96), calculateHeight(52));
+	ViewRgn_SetRgn(&g_rgnTextPlane0, calculateWidth(72), calculateHeight(54), calculateWidth(96), calculateHeight(58));
+	ViewRgn_SetRgn(&g_rgnTextPlane0Value, calculateWidth(72), calculateHeight(54), calculateWidth(96), calculateHeight(58));
+	ViewRgn_SetRgn(&g_rgnTextPlane1, calculateWidth(72), calculateHeight(60), calculateWidth(96), calculateHeight(64));
+	ViewRgn_SetRgn(&g_rgnTextPlane1Value, calculateWidth(72), calculateHeight(60), calculateWidth(96), calculateHeight(64));
+	ViewRgn_SetRgn(&g_rgnTextPlane2, calculateWidth(72), calculateHeight(66), calculateWidth(96), calculateHeight(70));
+	ViewRgn_SetRgn(&g_rgnTextPlane2Value, calculateWidth(72), calculateHeight(66), calculateWidth(96), calculateHeight(70));
+	ViewRgn_SetRgn(&g_rgnTextPlane3, calculateWidth(72), calculateHeight(72), calculateWidth(96), calculateHeight(76));
+	ViewRgn_SetRgn(&g_rgnTextPlane3Value, calculateWidth(72), calculateHeight(72), calculateWidth(96), calculateHeight(76));
 }
 
 void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
@@ -256,7 +293,6 @@ void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
 	{
 
 		FillRect(pBuffer->m_hMemDC, &g_rgnTopBar.rect, (HBRUSH)GetStockObject(DKGRAY_BRUSH));
-		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTopBarTitle.rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
 		HBRUSH hRectBrush = CreateSolidBrush(RGB(50, 50, 50));  // 회색 채우기
 		HBRUSH hOldBrush = (HBRUSH)SelectObject(pBuffer->m_hMemDC, hRectBrush);
@@ -268,6 +304,31 @@ void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
 		RoundRect(pBuffer->m_hMemDC, g_rgnConnModeBox.rect.left, g_rgnConnModeBox.rect.top, g_rgnConnModeBox.rect.right, g_rgnConnModeBox.rect.bottom, 20, 20);
 		RoundRect(pBuffer->m_hMemDC, g_rgnSettingChangeBox.rect.left, g_rgnSettingChangeBox.rect.top, g_rgnSettingChangeBox.rect.right, g_rgnSettingChangeBox.rect.bottom, 20, 20);
 
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTopBarTitle.rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextCurMode.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextBaudRate.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextStartingSpot.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextStartingAngle.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextEndSpot.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextEndAngle.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnAPD_Distance.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		//DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextPlane0.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		//DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextPlane1.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		//DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextPlane2.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		//DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextPlane3.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextCurModeValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextBaudRateValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextStartingSpotValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextStartingAngleValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextEndSpotValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextEndAngleValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnAPD_DistanceValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		//DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextPlane0Value.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		//DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextPlane1Value.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		//DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextPlane2Value.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		//DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextPlane3Value.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 
 		// 복원 및 정리
 		SelectObject(pBuffer->m_hMemDC, hOldBrush);
