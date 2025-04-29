@@ -24,15 +24,18 @@ ST_ViewRgn g_rgnTextPortNumber;				// 포트번호 COM
 ST_ViewRgn g_rgnEditPortNumber;
 ST_ViewRgn g_rgnBtnConnPort;							// 연결
 ST_ViewRgn g_rgnBtnModeMeasurement;
-ST_ViewRgn g_rgnBtnModeMeasurementValue;
 ST_ViewRgn g_rgnBtnModeConfiguration;
-ST_ViewRgn g_rgnBtnModeConfigurationValue;
-ST_ViewRgn g_rgnEditStartSpot;					// 시작지점 0~273
-ST_ViewRgn g_rgnEditEndSpot;					// 끝지점 1~274
-ST_ViewRgn g_rgnComboDistance;				// 8m, 12m, 16m 거리
-ST_ViewRgn g_rgnBtnChangeSetting;				// 설정변경 (RAM)
-ST_ViewRgn g_rgnBtnInitSetting;				// 초기설정 (RAM)
-ST_ViewRgn g_rgnBtnSaveSetting;				// 변경사항 저장 (EPPROM)
+
+ST_ViewRgn g_rgnTextSetStartSpot;					// 측정반경 시작지점 [0~273]
+ST_ViewRgn g_rgnEditSetStartSpot;					// 시작지점 0~273
+ST_ViewRgn g_rgnTextSetEndSpot;					// 측정반경 끝지점 [1~274]
+ST_ViewRgn g_rgnEditSetEndSpot;					// 끝지점 1~274
+ST_ViewRgn g_rgnTextSetDistance;					// 측정 거리
+ST_ViewRgn g_rgnComboSetDistance;				// 8m, 12m, 16m 거리
+ST_ViewRgn g_rgnBtnSetChangeSetting;				// 변경 (RAM)
+ST_ViewRgn g_rgnBtnSetInitSetting;					// 초기화 (RAM)
+ST_ViewRgn g_rgnBtnSetSaveSetting;				// 변경사항 저장 (EPPROM)
+
 ST_ViewRgn g_rgnTextCurMode;				// 현재모드
 ST_ViewRgn g_rgnTextCurModeValue;				// 현재모드
 ST_ViewRgn g_rgnTextBaudRate;				// 현재 전송 속도
@@ -58,8 +61,19 @@ ST_ViewRgn g_rgnAPD_DistanceValue;				// 측정 최대사거리
 
 RECT g_wndRect;
 const wchar_t g_szTitle[64] = L"FST";
+const wchar_t g_szPort[64] = L"포트";
+const wchar_t g_szConnModeBoxTitle[64] = L"센서 연결";
 wchar_t g_szTextPortNumber[64] = { 0 };
-HWND g_comboPortNumber;
+HWND g_hEditPortNumber;
+HWND g_hBtnConnPort;
+HWND g_hBtnModeMeasurement;
+HWND g_hBtnModeConfiguration;
+HWND g_hEditStartSpot;
+HWND g_hEditEndSpot;
+HWND g_hComboDistance;
+HWND g_hBtnChangeSetting;
+HWND g_hBtnInitSetting;
+HWND g_hBtnSaveSetting;
 
 
 
@@ -234,10 +248,95 @@ void ViewRgn_SetRgn(ST_ViewRgn* stRgn, int _sx, int _sy, int _ex, int _ey)
 
 void createControls(HWND hWnd)
 {
+	// 컨트롤 생성
+	g_hEditPortNumber = CreateWindowExW(
+		WS_EX_CLIENTEDGE, L"EDIT", L"",
+		WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_NUMBER,
+		g_rgnEditPortNumber.rect.left, g_rgnEditPortNumber.rect.top, g_rgnEditPortNumber.width, g_rgnEditPortNumber.height,
+		hWnd, (HMENU)IDC_EDIT_PORT_NUMBER,
+		GetModuleHandle(NULL), NULL
+	);
+	SendMessageW(g_hEditPortNumber, EM_LIMITTEXT, (WPARAM)2, 0);				// 글자수 2글자 제한
+
+	g_hBtnConnPort = CreateWindowW(
+		L"BUTTON", L"연결",
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		g_rgnBtnConnPort.rect.left, g_rgnBtnConnPort.rect.top, g_rgnBtnConnPort.width, g_rgnBtnConnPort.height,
+		hWnd, (HMENU)IDC_BUTTON_CONN_PORT,
+		GetModuleHandle(NULL), NULL
+	);
+
+	g_hBtnModeMeasurement = CreateWindowW(
+		L"BUTTON", L"측정모드",
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		g_rgnBtnModeMeasurement.rect.left, g_rgnBtnModeMeasurement.rect.top, g_rgnBtnModeMeasurement.width, g_rgnBtnModeMeasurement.height,
+		hWnd, (HMENU)IDC_BUTTON_MODE_MEASUREMENT,
+		GetModuleHandle(NULL), NULL
+	);
+
+	g_hBtnModeConfiguration = CreateWindowW(
+		L"BUTTON", L"설정모드",
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		g_rgnBtnModeConfiguration.rect.left, g_rgnBtnModeConfiguration.rect.top, g_rgnBtnModeConfiguration.width, g_rgnBtnModeConfiguration.height,
+		hWnd, (HMENU)IDC_BUTTON_MODE_CONFIGURATION,
+		GetModuleHandle(NULL), NULL
+	);
+
+	g_hEditStartSpot = CreateWindowExW(
+		WS_EX_CLIENTEDGE, L"EDIT", L"",
+		WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_NUMBER,
+		g_rgnEditSetStartSpot.rect.left, g_rgnEditSetStartSpot.rect.top, g_rgnEditSetStartSpot.width, g_rgnEditSetStartSpot.height,
+		hWnd, (HMENU)IDC_EDIT_START_SPOT,
+		GetModuleHandle(NULL), NULL
+	);
+	SendMessageW(g_hEditStartSpot, EM_LIMITTEXT, (WPARAM)3, 0);				// 글자수 3글자 제한
+
+	g_hEditEndSpot = CreateWindowExW(
+		WS_EX_CLIENTEDGE, L"EDIT", L"",
+		WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_NUMBER,
+		g_rgnEditSetEndSpot.rect.left, g_rgnEditSetEndSpot.rect.top, g_rgnEditSetEndSpot.width, g_rgnEditSetEndSpot.height,
+		hWnd, (HMENU)IDC_EDIT_END_SPOT,
+		GetModuleHandle(NULL), NULL
+	);
+
+	// CBS_DROPDOWNLIST : 입력불가, CBS_DROPDOWN : 입력가능
+	g_hComboDistance = CreateWindowExW(
+		WS_EX_CLIENTEDGE, L"COMBOBOX", L"",
+		WS_CHILD | WS_VISIBLE | WS_TABSTOP | CBS_AUTOHSCROLL | CBS_DROPDOWNLIST,
+		g_rgnComboSetDistance.rect.left, g_rgnComboSetDistance.rect.top, g_rgnComboSetDistance.width, g_rgnComboSetDistance.height,
+		hWnd, (HMENU)IDC_COMBO_DISTANCE,
+		GetModuleHandle(NULL), NULL
+	);
+	//SendMessage(g_hComboDistance, WM_SETFONT, (WPARAM)g_hFont, TRUE);
+	SendMessage(g_hComboDistance, CB_ADDSTRING, 0, (LPARAM)L"-");
+	SendMessage(g_hComboDistance, CB_ADDSTRING, 0, (LPARAM)L"8m");
+	SendMessage(g_hComboDistance, CB_ADDSTRING, 0, (LPARAM)L"12m");
+	SendMessage(g_hComboDistance, CB_ADDSTRING, 0, (LPARAM)L"16m");
+	SendMessage(g_hComboDistance, CB_SETCURSEL, 0, 0);			// 기본선택 0번
+
+	g_hBtnChangeSetting = CreateWindowW(
+		L"BUTTON", L"설정 변경",
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		g_rgnBtnSetChangeSetting.rect.left, g_rgnBtnSetChangeSetting.rect.top, g_rgnBtnSetChangeSetting.width, g_rgnBtnSetChangeSetting.height,
+		hWnd, (HMENU)IDC_BUTTON_SETTING_CHANGE,
+		GetModuleHandle(NULL), NULL
+	);
+	g_hBtnInitSetting = CreateWindowW(
+		L"BUTTON", L"초기 설정",
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		g_rgnBtnSetInitSetting.rect.left, g_rgnBtnSetInitSetting.rect.top, g_rgnBtnSetInitSetting.width, g_rgnBtnSetInitSetting.height,
+		hWnd, (HMENU)IDC_BUTTON_SETTING_RESET,
+		GetModuleHandle(NULL), NULL
+	);
+	g_hBtnSaveSetting = CreateWindowW(
+		L"BUTTON", L"설정 저장",
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		g_rgnBtnSetSaveSetting.rect.left, g_rgnBtnSetSaveSetting.rect.top, g_rgnBtnSetSaveSetting.width, g_rgnBtnSetSaveSetting.height,
+		hWnd, (HMENU)IDC_BUTTON_SETTING_SAVE,
+		GetModuleHandle(NULL), NULL
+	);
+	
 	g_isCreated = TRUE;
-	RECT rect;
-	GetClientRect(g_hWnd, &rect);
-	InvalidateRect(g_hWnd, &rect, FALSE);
 }
 
 void initPos()
@@ -246,10 +345,8 @@ void initPos()
 	ViewRgn_SetRgn(&g_rgnTopBar, g_wndRect.left, g_wndRect.top, g_wndRect.right, calculateHeight(8));
 	ViewRgn_SetRgn(&g_rgnTopBarTitle, g_wndRect.left, g_wndRect.top, g_wndRect.right, calculateHeight(8));
 	ViewRgn_SetRgn(&g_rgnMDIViewer, calculateWidth(2), calculateHeight(10), calculateWidth(68), calculateHeight(70));
-	ViewRgn_SetRgn(&g_rgnSettingViewerBox, calculateWidth(70), calculateHeight(10), calculateWidth(98), calculateHeight(70));
-	ViewRgn_SetRgn(&g_rgnConnModeBox, calculateWidth(2), calculateHeight(72), calculateWidth(36), calculateHeight(98));
-	ViewRgn_SetRgn(&g_rgnSettingChangeBox, calculateWidth(38), calculateHeight(72), calculateWidth(98), calculateHeight(98));
 
+	ViewRgn_SetRgn(&g_rgnSettingViewerBox, calculateWidth(70), calculateHeight(10), calculateWidth(98), calculateHeight(70));
 	ViewRgn_SetRgn(&g_rgnTextCurMode, calculateWidth(72), calculateHeight(12), calculateWidth(96), calculateHeight(16));
 	ViewRgn_SetRgn(&g_rgnTextCurModeValue, calculateWidth(72), calculateHeight(12), calculateWidth(96), calculateHeight(16));
 	ViewRgn_SetRgn(&g_rgnTextBaudRate, calculateWidth(72), calculateHeight(18), calculateWidth(96), calculateHeight(22));
@@ -272,6 +369,26 @@ void initPos()
 	ViewRgn_SetRgn(&g_rgnTextPlane2Value, calculateWidth(72), calculateHeight(66), calculateWidth(96), calculateHeight(70));
 	ViewRgn_SetRgn(&g_rgnTextPlane3, calculateWidth(72), calculateHeight(72), calculateWidth(96), calculateHeight(76));
 	ViewRgn_SetRgn(&g_rgnTextPlane3Value, calculateWidth(72), calculateHeight(72), calculateWidth(96), calculateHeight(76));
+
+	ViewRgn_SetRgn(&g_rgnConnModeBox, calculateWidth(2), calculateHeight(72), calculateWidth(36), calculateHeight(98));
+	ViewRgn_SetRgn(&g_rgnTextPortNumber, calculateWidth(4), calculateHeight(74), calculateWidth(10), calculateHeight(78));
+	ViewRgn_SetRgn(&g_rgnEditPortNumber, calculateWidth(12), calculateHeight(74), calculateWidth(20), calculateHeight(78));
+	ViewRgn_SetRgn(&g_rgnBtnConnPort, calculateWidth(28), calculateHeight(74), calculateWidth(34), calculateHeight(78));
+	ViewRgn_SetRgn(&g_rgnBtnModeMeasurement, calculateWidth(4), calculateHeight(86), calculateWidth(18), calculateHeight(96));
+	ViewRgn_SetRgn(&g_rgnBtnModeConfiguration, calculateWidth(20), calculateHeight(86), calculateWidth(34), calculateHeight(96));
+
+	ViewRgn_SetRgn(&g_rgnSettingChangeBox, calculateWidth(38), calculateHeight(72), calculateWidth(98), calculateHeight(98));
+	ViewRgn_SetRgn(&g_rgnTextSetStartSpot, calculateWidth(40), calculateHeight(74), calculateWidth(67), calculateHeight(78));
+	ViewRgn_SetRgn(&g_rgnEditSetStartSpot, calculateWidth(40), calculateHeight(80), calculateWidth(67), calculateHeight(84));
+	ViewRgn_SetRgn(&g_rgnTextSetEndSpot, calculateWidth(69), calculateHeight(74), calculateWidth(96), calculateHeight(78));
+	ViewRgn_SetRgn(&g_rgnEditSetEndSpot, calculateWidth(69), calculateHeight(80), calculateWidth(96), calculateHeight(84));
+	ViewRgn_SetRgn(&g_rgnTextSetDistance, calculateWidth(40), calculateHeight(86), calculateWidth(67), calculateHeight(90));
+	ViewRgn_SetRgn(&g_rgnComboSetDistance, calculateWidth(69), calculateHeight(86), calculateWidth(96), calculateHeight(90));
+	ViewRgn_SetRgn(&g_rgnBtnSetInitSetting, calculateWidth(40), calculateHeight(92), calculateWidth(57), calculateHeight(96));
+	ViewRgn_SetRgn(&g_rgnBtnSetChangeSetting, calculateWidth(59.5), calculateHeight(92), calculateWidth(76.5), calculateHeight(96));
+	ViewRgn_SetRgn(&g_rgnBtnSetSaveSetting, calculateWidth(79), calculateHeight(92), calculateWidth(96), calculateHeight(96));
+
+
 }
 
 void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
@@ -329,6 +446,7 @@ void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
 		//DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextPlane1Value.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextPlane2Value.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szTitle, -1, &g_rgnTextPlane3Value.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szPort, -1, &g_rgnTextPortNumber.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 
 		// 복원 및 정리
 		SelectObject(pBuffer->m_hMemDC, hOldBrush);

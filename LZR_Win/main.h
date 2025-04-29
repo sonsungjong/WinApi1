@@ -2,6 +2,17 @@
 
 #include "resource.h"
 
+#define IDC_EDIT_PORT_NUMBER										30001
+#define IDC_BUTTON_CONN_PORT										30002
+#define IDC_BUTTON_MODE_MEASUREMENT						30003
+#define IDC_BUTTON_MODE_CONFIGURATION						30004
+#define IDC_EDIT_START_SPOT											30005
+#define IDC_EDIT_END_SPOT												30006
+#define IDC_COMBO_DISTANCE											30007
+#define IDC_BUTTON_SETTING_CHANGE								30008
+#define IDC_BUTTON_SETTING_RESET								30009
+#define IDC_BUTTON_SETTING_SAVE									30010
+
 typedef struct STDoubleBuffer
 {
 	HDC m_hMemDC;
