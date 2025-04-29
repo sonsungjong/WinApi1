@@ -1,6 +1,8 @@
 ﻿#include "pch.h"
 #include "framework.h"
 #include "main.h"
+#include "serial_rs485.h"
+#include "CircularQueue1.h"
 
 HINSTANCE g_hInst;                                // 현재 인스턴스입니다.
 HWND g_hWnd;
@@ -136,9 +138,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			//MessageBox(g_hWnd, L"RS485 연결하기", L"", MB_OK);
 			// 연결중이 아니라면
 			memset(g_comName, 0, sizeof(g_comName));
-			wchar_t comNumber[4] = { 0 };
-			GetWindowText(g_hEditPortNumber, comNumber, sizeof(comNumber) / sizeof(comNumber[0]));
-			int portNum = _wtoi(comNumber);
+			//wchar_t comNumber[4] = { 0 };
+			//GetWindowText(g_hEditPortNumber, comNumber, sizeof(comNumber) / sizeof(comNumber[0]));
+			//int portNum = _wtoi(comNumber);
+			int portNum = GetDlgItemInt(g_hWnd, IDC_EDIT_PORT_NUMBER, NULL, FALSE);
 			sprintf(g_comName, "\\\\.\\COM%d", portNum);
 
 			int nResult = openSerialPort(g_comName, 460800);
@@ -147,6 +150,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				// 연결 성공 시 내부에 현재 모드 요청 타이머 생성 (측정모드는 동작없음)
 				// 연결 성공 시 내부에 현재 설정값 요청 타이머 생성 (측정모드는 동작없음)
 				request_CurrentMode();
+			}
+			else {
+				printf("시리얼포트 연결 실패\n");
 			}
 		}
 		else if (id == IDC_BUTTON_MODE_MEASUREMENT)
@@ -164,9 +170,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			//MessageBox(g_hWnd, L"설정변경", L"", MB_OK);
 			ST_SETRAWDATACONFIG_50003 stData;
 			initConfigData(&stData);
-			stData.D10_11_number_distance_values = (unsigned short)end_spot;
-			stData.D12_13_starting_spot = (unsigned short)start_spot;
-			stData.D16_apd_distance_range = (unsigned char)apd_distance;
+			
 
 			// 값을 보내서 기존 측정값에 채워진 부분만 대입하여 보낸다
 			request_changeSetting(stData);
