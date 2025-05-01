@@ -238,8 +238,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     DeleteObject(br); 
     DeleteDC(mdc);
 
-    HBITMAP hBmpRight = (HBITMAP)LoadImageW(NULL, L"C:\\bmp\\arrow_right_32dp_B7B7B7.bmp", IMAGE_BITMAP, bmp_size, bmp_size, LR_LOADFROMFILE);
-    HBITMAP hBmpDown = (HBITMAP)LoadImageW(NULL, L"C:\\bmp\\arrow_drop_down_32dp_B7B7B7.bmp", IMAGE_BITMAP, bmp_size, bmp_size, LR_LOADFROMFILE);
+    wchar_t exePath[MAX_PATH] = { 0 };
+    GetModuleFileNameW(NULL, exePath, MAX_PATH);
+    PathRemoveFileSpecW(exePath);
+    wchar_t bmpRightPath[MAX_PATH] = { 0 };
+    PathCombineW(bmpRightPath, exePath, L"res\\arrow_right_32dp_B7B7B7.bmp");
+    wchar_t bmpDownPath[MAX_PATH] = { 0 };
+    PathCombineW(bmpDownPath, exePath, L"res\\arrow_drop_down_32dp_B7B7B7.bmp");
+
+    HBITMAP hBmpRight = (HBITMAP)LoadImageW(NULL, bmpRightPath, IMAGE_BITMAP, bmp_size, bmp_size, LR_LOADFROMFILE);
+    HBITMAP hBmpDown = (HBITMAP)LoadImageW(NULL, bmpDownPath, IMAGE_BITMAP, bmp_size, bmp_size, LR_LOADFROMFILE);
 
     ImageList_AddMasked(g_hBtnImg, hBmpBlank, RGB(255, 0, 255));        // 인덱스 0
     ImageList_AddMasked(g_hBtnImg, hBmpBlank, RGB(255, 0, 255));        // 인덱스 1
