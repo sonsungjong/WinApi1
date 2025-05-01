@@ -1,4 +1,5 @@
 #pragma once
 
 #include "resource.h"
-void testTreeItems(HWND hWndTree);
+HBITMAP createCircleBitmap(int circle_size, COLORREF fillColor, COLORREF maskColor);
+HBITMAP CreateGdiPlusCircleBitmap(int circle_size, COLORREF fillColor);

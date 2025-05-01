@@ -3,15 +3,21 @@
 #include <windowsx.h>
 #include <CommCtrl.h>
 #include <Shlwapi.h>
+#include <gdiplus.h>
+using namespace Gdiplus;
 
 #pragma comment(lib, "Shlwapi.lib")
 #pragma comment(lib, "comctl32.lib")
+#pragma comment(lib, "gdiplus.lib")
 
 HINSTANCE g_hInst;
 HWND g_hWnd;
 
 HWND g_hTreeView;
 HIMAGELIST g_hBtnImg;
+HIMAGELIST g_hStateCircleImg;
+
+ULONG_PTR g_gdiplusToken = 0;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -53,7 +59,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     }
 
                     // 2) 토글
-                    int next = (idx == 1 ? 2 : 1);
+                    int next = 1;
+                    if (idx == 2) {
+                        next = 3;
+                    }
+                    else if(idx == 3) {
+                        next = 2;
+                    }
+                    else {
+                        return 0;
+                    }
 
                     // 3) 아이템에 새 state 설정
                     TVITEMW ti = {};
@@ -67,7 +82,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     TreeView_Expand(
                         g_hTreeView,
                         hItem,
-                        next == 2 ? TVE_EXPAND : TVE_COLLAPSE
+                        next == 3 ? TVE_EXPAND : TVE_COLLAPSE
                     );
                 }
             }
@@ -89,6 +104,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     return CDRF_SKIPDEFAULT;
                 }
                 return CDRF_DODEFAULT;
+            }
+            else if (pnm->code == TVN_KEYDOWN)
+            {
+                // 임시 테스트용 키다운 (회색 -> 빨강 -> 주황 -> 초록)
+                LPNMTVKEYDOWN pk = (LPNMTVKEYDOWN)pnm;
+                if (pk->wVKey == VK_RETURN)
+                {
+                    HTREEITEM hSel = TreeView_GetSelection(g_hTreeView);
+                    if (hSel)
+                    {
+                        TVITEMW ti = { 0 };
+                        ti.hItem = hSel;
+                        ti.mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+                        TreeView_GetItem(g_hTreeView, &ti);
+                        int next = (ti.iImage +1) % 4;              // 0 ~ 3 으로 색상을 지정한다
+                        ti.iImage = next;
+                        ti.iSelectedImage = next;
+                        TreeView_SetItem(g_hTreeView, &ti);
+                    }
+                }
             }
         }
 
@@ -115,7 +150,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
-        // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
+        
         EndPaint(hWnd, &ps);
     }
     break;
@@ -134,6 +169,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_ int       nCmdShow)
 {
     g_hInst = hInstance;                    // 인스턴스 핸들을 전역 변수에 저장합니다.
+
+    GdiplusStartupInput gdiplusStartupInput;
+    GdiplusStartup(&g_gdiplusToken, &gdiplusStartupInput, nullptr);
 
     // Register Class
     WNDCLASSEXW wcex;
@@ -155,13 +193,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     RECT rc = { 0, 0, 640, 480 };
     ::AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);              // 여백보정
 
-    g_hWnd = ::CreateWindowW(L"Test1", L"Blank Window",
+    g_hWnd = ::CreateWindowW(L"Test1", L"TreeView Custom",
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT,
         rc.right - rc.left, rc.bottom - rc.top,
-        nullptr, nullptr, g_hInst, nullptr);
+        NULL, NULL, g_hInst, NULL);
 
-    ShowWindow(g_hWnd, true);
+    ShowWindow(g_hWnd, nCmdShow);
     UpdateWindow(g_hWnd);
 
     // 단축키 테이블
@@ -187,65 +225,78 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         TVS_EX_DOUBLEBUFFER
     );
 
+    const int bmp_size = 24;
     // 1) State용 ImageList 생성 (예: 오른쪽 화살표→인덱스1, 아래 화살표→인덱스2)
-    g_hBtnImg = ImageList_Create(16, 16, ILC_COLOR32 | ILC_MASK, 2, 0);
+    g_hBtnImg = ImageList_Create(bmp_size, bmp_size, ILC_COLOR32 | ILC_MASK, 3, 1);
 
-    HBITMAP hBmpBlank = CreateBitmap(16, 16, 1, 1, nullptr);
-    ImageList_AddMasked(g_hBtnImg, hBmpBlank, RGB(255, 0, 255));
+    HBITMAP hBmpBlank = CreateCompatibleBitmap(GetDC(nullptr), bmp_size, bmp_size);
+    HDC mdc = CreateCompatibleDC(nullptr);
+    SelectObject(mdc, hBmpBlank);
+    HBRUSH br = CreateSolidBrush(RGB(255, 255, 255));               // 배경색과 같게
+    RECT blankRECT = { 0, 0, bmp_size, bmp_size };
+    FillRect(mdc, &blankRECT, br);
+    DeleteObject(br); 
+    DeleteDC(mdc);
 
-    HBITMAP hBmpRight = (HBITMAP)LoadImageW(
-        NULL,
-        L"C:\\bmp\\Nuion_Arrow_Right2.bmp",
-        IMAGE_BITMAP,
-        16, 16,            // 원하는 크기가 있으면 지정 (0,0이면 원본 크기)
-        LR_LOADFROMFILE
-    );
-    HBITMAP hBmpDown = (HBITMAP)LoadImageW(
-        NULL,
-        L"C:\\bmp\\Nuion_Arrow_Bottom2.bmp",
-        IMAGE_BITMAP,
-        16, 16,
-        LR_LOADFROMFILE
-    );
+    HBITMAP hBmpRight = (HBITMAP)LoadImageW(NULL, L"C:\\bmp\\arrow_right_32dp_B7B7B7.bmp", IMAGE_BITMAP, bmp_size, bmp_size, LR_LOADFROMFILE);
+    HBITMAP hBmpDown = (HBITMAP)LoadImageW(NULL, L"C:\\bmp\\arrow_drop_down_32dp_B7B7B7.bmp", IMAGE_BITMAP, bmp_size, bmp_size, LR_LOADFROMFILE);
 
-    ImageList_AddMasked(g_hBtnImg, hBmpRight, RGB(255, 0, 255)); // 인덱스 1
-    ImageList_AddMasked(g_hBtnImg, hBmpDown, RGB(255, 0, 255)); // 인덱스 2
+    ImageList_AddMasked(g_hBtnImg, hBmpBlank, RGB(255, 0, 255));        // 인덱스 0
+    ImageList_AddMasked(g_hBtnImg, hBmpBlank, RGB(255, 0, 255));        // 인덱스 1
+    ImageList_AddMasked(g_hBtnImg, hBmpRight, RGB(255, 0, 255));        // 인덱스 2
+    ImageList_AddMasked(g_hBtnImg, hBmpDown, RGB(255, 0, 255));         // 인덱스 3
 
     // 2) 트리뷰에 State ImageList 설정
     TreeView_SetImageList(g_hTreeView, g_hBtnImg, TVSIL_STATE);
 
+    // CIRCLE : gray(0), red(1), yellow(2), green(3)
+    g_hStateCircleImg = ImageList_Create(bmp_size, bmp_size, ILC_COLOR32 | ILC_MASK, 4, 1);
+    HBITMAP bmpGray = CreateGdiPlusCircleBitmap(bmp_size, RGB(129, 129, 129));
+    HBITMAP bmpRed = CreateGdiPlusCircleBitmap(bmp_size, RGB(255, 0, 0));
+    HBITMAP bmpYellow = CreateGdiPlusCircleBitmap(bmp_size, RGB(192, 192, 101));
+    HBITMAP bmpGreen = CreateGdiPlusCircleBitmap(bmp_size, RGB(0, 172, 0));
+
+    ImageList_AddMasked(g_hStateCircleImg, bmpGray, RGB(255, 0, 255));
+    ImageList_AddMasked(g_hStateCircleImg, bmpRed, RGB(255, 0, 255));
+    ImageList_AddMasked(g_hStateCircleImg, bmpYellow, RGB(255, 0, 255));
+    ImageList_AddMasked(g_hStateCircleImg, bmpGreen, RGB(255, 0, 255));
+    TreeView_SetImageList(g_hTreeView, g_hStateCircleImg, TVSIL_NORMAL);
+
     TVINSERTSTRUCT tvis = {};
     tvis.hInsertAfter = TVI_LAST;
-    tvis.item.mask = TVIF_TEXT | TVIF_PARAM | TVIF_STATE;
+    tvis.item.mask = TVIF_TEXT | TVIF_PARAM | TVIF_STATE | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
     tvis.item.stateMask = TVIS_STATEIMAGEMASK;
+    tvis.item.state = INDEXTOSTATEIMAGEMASK(2);     // 오른쪽 화살표
+    tvis.item.iImage = 0; 
+    tvis.item.iSelectedImage = 0;
 
     // [1] 최상위 루트
     tvis.hParent = TVI_ROOT;
     tvis.item.pszText = (LPWSTR)L"최상위1";
-    tvis.item.state = INDEXTOSTATEIMAGEMASK(1);     // 화살표 표시
     HTREEITEM hRoot = TreeView_InsertItem(g_hTreeView, &tvis);
 
     // [2] 루트의 두 자식
-    const wchar_t* childNames[2] = { L"    자식 노드 A", L"자식 노드 B" };
+    const wchar_t* childNames[2] = { L"자식 노드 A", L"자식 노드 B" };
     HTREEITEM children[2];
 
     tvis.hParent = hRoot;
     tvis.item.pszText = (LPWSTR)childNames[0];
-    tvis.item.state = 0;     // 화살표 표시
+    tvis.item.state = INDEXTOSTATEIMAGEMASK(1);     // 화살표 없음
+    tvis.item.iImage = 0;
+    tvis.item.iSelectedImage = 0;
     children[0] = TreeView_InsertItem(g_hTreeView, &tvis);
 
     tvis.hParent = hRoot;
     tvis.item.pszText = (LPWSTR)childNames[1];
-    tvis.item.state = INDEXTOSTATEIMAGEMASK(1);     // 화살표 표시
+    tvis.item.state = INDEXTOSTATEIMAGEMASK(2);     // 오른쪽 화살표
     children[1] = TreeView_InsertItem(g_hTreeView, &tvis);
 
     // 3) 각 자식 아래에 두 개씩 손자 노드
-    tvis.item.mask = TVIF_TEXT | TVIF_PARAM;    // ← TVIF_STATE 빼기
-    const wchar_t* grandNames[2] = { L"손자 노드 1", L"손자 노드 2" };
+    const wchar_t* grandNames[] = { L"손자 노드 1", L"손자 노드 2" };
 
         for (int j = 0; j < 2; ++j) {
             tvis.hParent = children[1];
-            tvis.item.state = 0;     // 화살표 없앰
+            tvis.item.state = INDEXTOSTATEIMAGEMASK(1);     // 화살표 없음
             tvis.item.pszText = (LPWSTR)grandNames[j];
             TreeView_InsertItem(g_hTreeView, &tvis);
         }
@@ -271,11 +322,84 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     }
 
+    GdiplusShutdown(g_gdiplusToken);
+
     return (int)msg.wParam;
 }
 
 
-void testTreeItems(HWND hWndTree)
+HBITMAP createCircleBitmap(int circle_size, COLORREF fillColor, COLORREF maskColor)
 {
+    // 1) 32비트 ARGB DIB 섹션(TOP-DOWN) 생성
+    BITMAPINFO bi = { 0 };
+    bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
+    bi.bmiHeader.biWidth = circle_size;
+    bi.bmiHeader.biHeight = -circle_size;  // top-down
+    bi.bmiHeader.biPlanes = 1;
+    bi.bmiHeader.biBitCount = 32;
+    bi.bmiHeader.biCompression = BI_RGB;
 
+    void* pvBits = nullptr;
+    HBITMAP hBmp = CreateDIBSection( NULL, &bi, DIB_RGB_COLORS,&pvBits, NULL, 0);
+    if (!hBmp) return NULL;
+
+    // 2) 메모리 DC에 비트맵 선택
+    HDC hdcMem = CreateCompatibleDC(NULL);
+    HBITMAP hOld = (HBITMAP)SelectObject(hdcMem, hBmp);
+
+    // 3) 전체 배경을 maskColor 로 채워서 투명 마스크 준비
+    HBRUSH hBrMask = CreateSolidBrush(maskColor);
+    RECT   rc = { 0,0,circle_size,circle_size };
+    FillRect(hdcMem, &rc, hBrMask);
+    DeleteObject(hBrMask);
+
+    // 4) 펜 없이(fill 전용) 브러시로 원 그리기
+    HBRUSH hBrFill = CreateSolidBrush(fillColor);
+    HPEN   hOldPen = (HPEN)SelectObject(hdcMem, GetStockObject(NULL_PEN));
+    SelectObject(hdcMem, hBrFill);
+    Ellipse(hdcMem, 0, 0, circle_size, circle_size);
+    DeleteObject(hBrFill);
+
+    // 5) 클린업
+    SelectObject(hdcMem, hOldPen);
+    SelectObject(hdcMem, hOld);
+    DeleteDC(hdcMem);
+
+    return hBmp;
+}
+
+// GDI+로 원 비트맵 생성
+// circle_size: 비트맵 크기(px)
+// fillColor : 원을 채울 RGB 색상
+HBITMAP CreateGdiPlusCircleBitmap(int circle_size, COLORREF fillColor)
+{
+    // 1) GDI+ Bitmap 객체 생성 (ARGB)
+    Bitmap bmp(circle_size, circle_size, PixelFormat32bppARGB);
+
+    // 2) 고품질 안티앨리어싱 설정
+    HDC screenDC = GetDC(NULL);
+    float dpiX = (float)GetDeviceCaps(screenDC, LOGPIXELSX);
+    float dpiY = (float)GetDeviceCaps(screenDC, LOGPIXELSY);
+    ReleaseDC(NULL, screenDC);
+    bmp.SetResolution(dpiX, dpiY);
+
+    Graphics g(&bmp);
+    g.SetSmoothingMode(SmoothingModeHighQuality);
+    g.SetPixelOffsetMode(PixelOffsetModeHighQuality);
+
+    // 2) 배경을 완전 투명(ARGB=0)으로 지우기
+    Color bk(0, GetRValue(fillColor), GetGValue(fillColor), GetBValue(fillColor));
+    Color circle(255, GetRValue(fillColor), GetGValue(fillColor), GetBValue(fillColor));
+    g.Clear(bk);
+
+    // 3) 솔리드 브러시로 원 그리기 (풀 불투명)
+    SolidBrush brFill(circle);
+    int diameter = circle_size * 75 / 100;            // 전체 크기의 75%
+    int inset = (circle_size - diameter) / 2;     // 남은 공간을 반으로 나눠서
+    g.FillEllipse(&brFill, inset, inset, diameter, diameter);
+
+    // 4) GDI+ Bitmap → HBITMAP (알파 채널 유지)
+    HBITMAP hBmp = nullptr;
+    bmp.GetHBITMAP(bk, &hBmp);
+    return hBmp;
 }
