@@ -1,19 +1,16 @@
 ﻿#include "framework.h"
 #include "TreeView1.h"
-#include <windowsx.h>
-#include <CommCtrl.h>
-#include <Shlwapi.h>
-#include <gdiplus.h>
-using namespace Gdiplus;
 
 #pragma comment(lib, "Shlwapi.lib")
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "gdiplus.lib")
+using namespace Gdiplus;
 
 HINSTANCE g_hInst;
 HWND g_hWnd;
 
 HWND g_hTreeView;
+CTreeData g_treeData;
 HIMAGELIST g_hBtnImg;
 HIMAGELIST g_hStateCircleImg;
 
@@ -108,22 +105,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             else if (pnm->code == TVN_KEYDOWN)
             {
                 // 임시 테스트용 키다운 (회색 -> 빨강 -> 주황 -> 초록)
-                LPNMTVKEYDOWN pk = (LPNMTVKEYDOWN)pnm;
-                if (pk->wVKey == VK_RETURN)
-                {
-                    HTREEITEM hSel = TreeView_GetSelection(g_hTreeView);
-                    if (hSel)
-                    {
-                        TVITEMW ti = { 0 };
-                        ti.hItem = hSel;
-                        ti.mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE;
-                        TreeView_GetItem(g_hTreeView, &ti);
-                        int next = (ti.iImage +1) % 4;              // 0 ~ 3 으로 색상을 지정한다
-                        ti.iImage = next;
-                        ti.iSelectedImage = next;
-                        TreeView_SetItem(g_hTreeView, &ti);
-                    }
-                }
+                //LPNMTVKEYDOWN pk = (LPNMTVKEYDOWN)pnm;
+                //if (pk->wVKey == VK_RETURN)
+                //{
+                //    HTREEITEM hSel = TreeView_GetSelection(g_hTreeView);
+                //    if (hSel)
+                //    {
+                //        TVITEMW ti = { 0 };
+                //        ti.hItem = hSel;
+                //        ti.mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+                //        TreeView_GetItem(g_hTreeView, &ti);
+                //        int next = (ti.iImage +1) % 4;              // 0 ~ 3 으로 색상을 지정한다
+                //        ti.iImage = next;
+                //        ti.iSelectedImage = next;
+                //        TreeView_SetItem(g_hTreeView, &ti);
+                //    }
+                //}
+                UpdateAllNodesByCycling(g_hTreeView);
             }
         }
 
@@ -227,7 +225,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     const int bmp_size = 24;
     // 1) State용 ImageList 생성 (예: 오른쪽 화살표→인덱스1, 아래 화살표→인덱스2)
-    g_hBtnImg = ImageList_Create(bmp_size, bmp_size, ILC_COLOR32 | ILC_MASK, 3, 1);
+    g_hBtnImg = ImageList_Create(bmp_size, bmp_size, ILC_COLOR32 | ILC_MASK, 4, 1);
 
     HBITMAP hBmpBlank = CreateCompatibleBitmap(GetDC(nullptr), bmp_size, bmp_size);
     HDC mdc = CreateCompatibleDC(nullptr);
@@ -270,6 +268,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ImageList_AddMasked(g_hStateCircleImg, bmpGreen, RGB(255, 0, 255));
     TreeView_SetImageList(g_hTreeView, g_hStateCircleImg, TVSIL_NORMAL);
 
+    // 루트 노드 생성
+    TreeNode* root = g_treeData.AddRoot(L"최상위1", /*state=*/2, /*icon=*/0);
+    // 루트의 자식
+    TreeNode* cA = g_treeData.AddChild(root, L"자식 노드 A", /*state=*/1, /*icon=*/0);
+    TreeNode* cB = g_treeData.AddChild(root, L"자식 노드 B", /*state=*/2, /*icon=*/0);
+    // B의 손자
+    g_treeData.AddChild(cB, L"손자 노드 1", /*state=*/1, /*icon=*/0);
+    g_treeData.AddChild(cB, L"손자 노드 2", /*state=*/1, /*icon=*/0);
+
+    // 트리뷰에 반영
+    g_treeData.PopulateTreeView(g_hTreeView);
+    
+    /*
     TVINSERTSTRUCT tvis = {};
     tvis.hInsertAfter = TVI_LAST;
     tvis.item.mask = TVIF_TEXT | TVIF_PARAM | TVIF_STATE | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
@@ -291,7 +302,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     tvis.item.pszText = (LPWSTR)childNames[0];
     tvis.item.state = INDEXTOSTATEIMAGEMASK(1);     // 화살표 없음
     tvis.item.iImage = 0;
-    tvis.item.iSelectedImage = 0;
+    //tvis.item.iSelectedImage = 0;
     children[0] = TreeView_InsertItem(g_hTreeView, &tvis);
 
     tvis.hParent = hRoot;
@@ -302,13 +313,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 3) 각 자식 아래에 두 개씩 손자 노드
     const wchar_t* grandNames[] = { L"손자 노드 1", L"손자 노드 2" };
 
-        for (int j = 0; j < 2; ++j) {
-            tvis.hParent = children[1];
-            tvis.item.state = INDEXTOSTATEIMAGEMASK(1);     // 화살표 없음
-            tvis.item.pszText = (LPWSTR)grandNames[j];
-            TreeView_InsertItem(g_hTreeView, &tvis);
-        }
-    
+    for (int j = 0; j < 2; ++j) {
+        tvis.hParent = children[1];
+        tvis.item.state = INDEXTOSTATEIMAGEMASK(1);     // 화살표 없음
+        tvis.item.pszText = (LPWSTR)grandNames[j];
+        TreeView_InsertItem(g_hTreeView, &tvis);
+    }
+    */
 
     MSG msg = { 0 };
     while (WM_QUIT != msg.message)
@@ -410,4 +421,88 @@ HBITMAP CreateGdiPlusCircleBitmap(int circle_size, COLORREF fillColor)
     HBITMAP hBmp = nullptr;
     bmp.GetHBITMAP(bk, &hBmp);
     return hBmp;
+}
+
+void UpdateAllNodesByCycling(HWND hTree) {
+    // 재귀 람다
+    std::function<void(HTREEITEM)> recurse = [&](HTREEITEM hItem) {
+        for (HTREEITEM h = hItem; h != NULL; h = TreeView_GetNextSibling(hTree, h)) {
+            // 1) 현재 노드의 이미지 인덱스 읽기
+            TVITEMW gi = { 0 };
+            gi.hItem = h;
+            gi.mask = TVIF_IMAGE;
+            TreeView_GetItem(hTree, &gi);
+
+            int next = (gi.iImage + 1) % 4;  // 0→1→2→3→0 순환
+
+            // 2) 같은 next 로 설정
+            TVITEMW si = { 0 };
+            si.hItem = h;
+            si.mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+            si.iImage = next;
+            si.iSelectedImage = next;
+            TreeView_SetItem(hTree, &si);
+
+            // 3) 자식 노드도 재귀
+            HTREEITEM hChild = TreeView_GetChild(hTree, h);
+            if (hChild) recurse(hChild);
+        }
+        };
+
+    recurse(TreeView_GetRoot(hTree));
+}
+
+ST_TreeNode* CTreeData::AddRoot(const std::wstring& txt, int state, int icon)
+{
+    roots.emplace_back(std::make_unique<ST_TreeNode>(txt, state, icon));
+    return roots.back().get();
+}
+
+ST_TreeNode* CTreeData::AddChild(ST_TreeNode* parent, const std::wstring& txt, int state, int icon)
+{
+    auto node = std::make_unique<ST_TreeNode>(txt, state, icon);
+    ST_TreeNode* ptr = node.get();
+    parent->children.push_back(ptr);
+    allNodes.emplace_back(std::move(node));
+
+    return ptr;
+}
+
+void CTreeData::PopulateTreeView(HWND hTree)
+{
+    // 리드로우 중지
+    SendMessage(hTree, WM_SETREDRAW, FALSE, 0);
+
+    // 항목 삭제
+    TreeView_DeleteAllItems(hTree);
+
+    // 항목 삽입
+    for (auto& root : roots)
+    {
+        InsertRecursive(hTree, TVI_ROOT, root.get());
+    }
+
+    // 리드로우 재개
+    SendMessage(hTree, WM_SETREDRAW, TRUE, 0);
+    //InvalidateRect(hTree, NULL, FALSE);
+    //UpdateWindow(hTree);
+}
+
+void CTreeData::InsertRecursive(HWND hTree, HTREEITEM hParent, ST_TreeNode* node)
+{
+    TVINSERTSTRUCTW tvis = {};
+    tvis.hParent = hParent;
+    tvis.hInsertAfter = TVI_LAST;
+    tvis.item.mask = TVIF_TEXT | TVIF_PARAM | TVIF_STATE | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+    tvis.item.pszText = const_cast<LPWSTR>(node->text.c_str());
+    tvis.item.stateMask = TVIS_STATEIMAGEMASK;
+    tvis.item.state = INDEXTOSTATEIMAGEMASK(node->stateIndex);
+    tvis.item.iImage = node->iconIndex;
+    tvis.item.iSelectedImage = node->iconIndex;
+
+    HTREEITEM hItem = TreeView_InsertItem(hTree, &tvis);
+    for (ST_TreeNode* child : node->children)
+    {
+        InsertRecursive(hTree, hItem, child);
+    }
 }
