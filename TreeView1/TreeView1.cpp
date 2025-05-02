@@ -453,15 +453,15 @@ void CTreeData::UpdateAllNodeIcons(HWND hTree)
     //UpdateWindow(hTree);
 }
 
-ST_TreeNode* CTreeData::AddRoot(const std::wstring& txt, int state, int icon)
+ST_TreeNode* CTreeData::AddRoot(const std::wstring& txt, int state, int icon_color)
 {
-    roots.emplace_back(std::make_unique<ST_TreeNode>(txt, state, icon));
+    roots.emplace_back(std::make_unique<ST_TreeNode>(txt, state, icon_color));
     return roots.back().get();
 }
 
-ST_TreeNode* CTreeData::AddChild(ST_TreeNode* parent, const std::wstring& txt, int state, int icon)
+ST_TreeNode* CTreeData::AddChild(ST_TreeNode* parent, const std::wstring& txt, int state, int icon_color)
 {
-    auto node = std::make_unique<ST_TreeNode>(txt, state, icon);
+    auto node = std::make_unique<ST_TreeNode>(txt, state, icon_color);
     ST_TreeNode* ptr = node.get();
     parent->children.push_back(ptr);
     allNodes.emplace_back(std::move(node));
