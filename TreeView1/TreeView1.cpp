@@ -18,6 +18,7 @@ HIMAGELIST g_hStateCircleImg;
 HWND g_hTreeView;
 CTreeData g_treeData;
 ST_TreeNode* rootA;
+ST_TreeNode* rootB;
 ST_TreeNode* gp_rootA_nodeA;
 ST_TreeNode* gp_rootA_nodeB;
 ST_TreeNode* gp_rootA_nodeC;
@@ -271,6 +272,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // 트리뷰 자료구조 채우기
     rootA = g_treeData.AddRoot(L"최상위1", static_cast<int>(TREE_ARROW_INDEX::CLOSE), static_cast<int>(TREE_ICON_COLOR_INDEX::GREY));
+    rootB = g_treeData.AddRoot(L"최상위2", static_cast<int>(TREE_ARROW_INDEX::NONE), static_cast<int>(TREE_ICON_COLOR_INDEX::GREY));
     // 루트의 자식
     gp_rootA_nodeA = g_treeData.AddChild(rootA, L"자식 노드 A", static_cast<int>(TREE_ARROW_INDEX::NONE), static_cast<int>(TREE_ICON_COLOR_INDEX::GREY));
     gp_rootA_nodeB = g_treeData.AddChild(rootA, L"자식 노드 B", static_cast<int>(TREE_ARROW_INDEX::CLOSE), static_cast<int>(TREE_ICON_COLOR_INDEX::GREY));
