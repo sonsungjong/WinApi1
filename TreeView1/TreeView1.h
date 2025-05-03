@@ -51,9 +51,10 @@ public:
     ST_TreeNode* AddChild(ST_TreeNode* parent, const std::wstring& txt, int state = 0, int icon_color = 0);
     // UI 업데이트
     void PopulateTreeView(HWND hTree);              // 기존 항목을 모조리 지우고 다시 그린다
-    void UpdateAllNodeIcons(HWND hTree);            // 화면에 아이콘색깔만 반영한다
+    void RefreshView(HWND hTree);            // 화면에 아이콘색깔만 반영한다
 
     void SetNodeIconColor(ST_TreeNode* node, TREE_ICON_COLOR_INDEX color);
+    void SetNodeText(ST_TreeNode* node, const std::wstring& newText);
     void CycleAllIconColors();
     
 private:
@@ -63,5 +64,4 @@ private:
     void InsertRecursive(HWND hTree, HTREEITEM hParent, ST_TreeNode* node);
 };
 
-HBITMAP createCircleBitmap(int circle_size, COLORREF fillColor, COLORREF maskColor);
-HBITMAP CreateGdiPlusCircleBitmap(int circle_size, COLORREF fillColor);
+HBITMAP createGdiPlusCircleBitmap(int circle_size, COLORREF fillColor);
