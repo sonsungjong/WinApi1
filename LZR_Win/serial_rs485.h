@@ -153,6 +153,7 @@ extern "C" {
 	long long sendPacket(unsigned char* _pPacket, unsigned long long _sizePacket);
 	void request_RestoreSetting(void);
 	void request_saveConfig_EEPROM(void);				// 설정값 영구저장
+	void request_SETRAWDATAREDLASER(void);				// 레드레이저
 
 #ifdef __cplusplus
 }

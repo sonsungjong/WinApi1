@@ -276,6 +276,11 @@ DWORD WINAPI processMessageThread(void* lpParam)
 									break;
 								}
 							}
+							else if (stData.message_cmd == 50010)			// GETREDLASER 응답
+							{
+								unsigned char* p = stData.message_data;
+								break;
+							}
 							else if (stData.message_cmd == 50004)			// GETRAWDATACONFIG 응답 (설정값)
 							{
 								// 1) status bits(D0-D3) 복사
@@ -864,6 +869,49 @@ void request_saveConfig_EEPROM(void)
 	}
 	else {
 		printf("영구 저장 요청 전송 실패: %lld/%zu\n", written, sizeof(packet));
+	}
+}
+
+void request_SETRAWDATAREDLASER(void)
+{
+	// SETRAWDATAREDLASER
+	// 1) 파라미터 정의
+	const unsigned int SYNC = HEADER_SYNC_VAL; // 0xFFFEFDFC
+	const unsigned short CMD = 50009;           // SETRAWDATAREDLASER
+	const unsigned char DATA = 1;					// ON
+	const unsigned short SIZE = sizeof(CMD) + sizeof(DATA);
+	const unsigned short CHK = (CMD & 0xFF) + (CMD >> 8) + DATA;
+
+	// 2) 프레임 버퍼 할당 (SYNC(4) + SIZE(2) + CMD(2) + CHK(2) = 10바이트)
+	unsigned char packet[11] = { 0 };
+	size_t idx = 0;
+
+	// 3) SYNC (LSB first)
+	memcpy(packet + idx, &SYNC, sizeof(SYNC));
+	idx += sizeof(SYNC);
+
+	// 4) SIZE
+	memcpy(packet + idx, &SIZE, sizeof(SIZE));
+	idx += sizeof(SIZE);
+
+	// 5) CMD
+	memcpy(packet + idx, &CMD, sizeof(CMD));
+	idx += sizeof(CMD);
+
+	// DATA
+	packet[idx++] = DATA;
+
+	// 6) CHK
+	memcpy(packet + idx, &CHK, sizeof(CHK));
+	idx += sizeof(CHK);
+
+	// 7) 전송
+	long long written = sendPacket(packet, sizeof(packet));
+	if (written == sizeof(packet)) {
+		printf("레드레이저ON (CMD=50009)\n");
+	}
+	else {
+		printf("레드레이저ON 전송 실패: %lld/%zu\n", written, sizeof(packet));
 	}
 }
 

@@ -182,6 +182,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			
 			stData.D10_11_number_distance_values = (unsigned short)274;
 			stData.D12_13_starting_spot = (unsigned short)0;
+			stData.D24_led_error_enable = 1;
 			wchar_t szSetDistance[16] = { 0 };
 			int selIndex = (int)SendMessage(g_hComboDistance, CB_GETCURSEL, 0, 0);
 			if (selIndex != CB_ERR)
@@ -200,7 +201,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 
 			// 값을 보내서 기존 측정값에 채워진 부분만 대입하여 보낸다
-			for (int i = 0; i < 10; i++) {
+			for (int i = 0; i < 1; i++) {
 				request_changeSetting(stData);
 				Sleep(50);
 			}
@@ -209,6 +210,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			//MessageBox(g_hWnd, L"공장초기화", L"", MB_OK);
 			request_RestoreSetting();
+			//request_SETRAWDATAREDLASER();				// 추후에 레드레이저 버튼 추가 필요
 		}
 		else if (id == IDC_BUTTON_SETTING_SAVE)
 		{
@@ -422,6 +424,21 @@ void recvFunction()
 
 					// body_msg 에 MDI가 들어있음
 					PostMessage(g_hWnd, ID_PAINT_MDI, 0, (LPARAM)pMdiData);
+				}
+			}
+			else if (cmd_id == 50010) 
+			{
+				if (real_body_msg[0] == 0)
+				{
+					printf("0\n");
+				}
+				else if (real_body_msg[0] == 1)
+				{
+					printf("1\n");
+				}
+				else if (real_body_msg[0] == 2)
+				{
+					printf("2\n");
 				}
 			}
 			else if (cmd_id == 50002)
