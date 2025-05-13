@@ -294,11 +294,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			memcpy(g_lastMDIData, pMdi->mdi, sizeof(g_lastMDIData));
 			free(pMdi);
 
-			RECT rectAll;
-			GetClientRect(g_hWnd, &rectAll);
-			InvalidateRect(hWnd, &rectAll, FALSE);
+			//RECT rectAll;
+			//GetClientRect(g_hWnd, &rectAll);
+			//InvalidateRect(hWnd, &rectAll, FALSE);
 			
-			//InvalidateRect(hWnd, &g_rgnMDIViewer.rect, FALSE);
+			InvalidateRect(hWnd, &g_rgnMDIViewer.rect, FALSE);
 		}
 		return 0;
 	}
