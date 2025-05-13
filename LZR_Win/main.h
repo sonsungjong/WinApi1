@@ -8,10 +8,12 @@
 #define IDC_BUTTON_MODE_CONFIGURATION						30004
 #define IDC_EDIT_START_SPOT											30005
 #define IDC_EDIT_END_SPOT												30006
-#define IDC_COMBO_DISTANCE											30007
+#define IDC_COMBO_APD_DISTANCE									30007
 #define IDC_BUTTON_SETTING_CHANGE								30008
 #define IDC_BUTTON_SETTING_RESET								30009
 #define IDC_BUTTON_SETTING_SAVE									30010
+#define IDC_EDIT_MAX_DISTANCE										30011
+#define IDC_BUTTON_RED_LASER										30012
 #define ID_PAINT_MDI														40001
 
 typedef struct STDoubleBuffer

@@ -140,13 +140,14 @@ extern "C" {
 
 	int openSerialPort(char* portName, int baudRate);
 	void closeSerialPort(void);
-	void initConfigData(ST_SETRAWDATACONFIG_50003* p_stData);
+	void setConfigData(ST_SETRAWDATACONFIG_50003* p_stData);
+	void initConfigData(ST_DataConfig* p_stData);
 
 	// 메시지 생성부
 	void request_MeasurementMode(void);
 	void request_ConfigMode(void);
 	void request_GetConfig(void);				// 현재 설정값 조회
-	void request_changeSetting(ST_SETRAWDATACONFIG_50003 stData);
+	void request_changeSetting(int D10_11_number_distance_values, int D12_13_starting_spot, int D26_27_max_distance_range_SW, int D16_apd_distance_range);
 	void startTimerRequestConfigurationMode(void);			// 설정모드 요청 타이머
 	void stopTimerRequestConfigurationMode(void);			// 설정모드 요청 타이머 중지
 	void request_CurrentMode(void);			// 현재 모드 조회

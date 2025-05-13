@@ -5,6 +5,11 @@
 #include "serial_rs485.h"
 #include "CircularQueue1.h"
 
+// T+ 초록색
+// T- 노란색
+// + 빨간색
+// - 주황색
+
 HINSTANCE g_hInst;                                // 현재 인스턴스입니다.
 HWND g_hWnd;
 float g_dpi_response;
@@ -41,57 +46,68 @@ ST_ViewRgn g_rgnTextSetStartSpot;					// 측정반경 시작지점 [0~273]
 ST_ViewRgn g_rgnEditSetStartSpot;					// 시작지점 0~273
 ST_ViewRgn g_rgnTextSetEndSpot;					// 측정반경 끝지점 [1~274]
 ST_ViewRgn g_rgnEditSetEndSpot;					// 끝지점 1~274
-ST_ViewRgn g_rgnTextSetDistance;					// 측정 거리
-ST_ViewRgn g_rgnComboSetDistance;				// 8m, 12m, 16m 거리
-ST_ViewRgn g_rgnBtnSetChangeSetting;				// 변경 (RAM)
-ST_ViewRgn g_rgnBtnSetInitSetting;					// 초기화 (RAM)
+ST_ViewRgn g_rgnTextSetAPDDistance;					// 최적 거리
+ST_ViewRgn g_rgnTextSetMAXDistance;					// 최대 거리
+ST_ViewRgn g_rgnComboSetAPDDistance;				// 8m, 12m, 16m 거리
+ST_ViewRgn g_rgnEditSetMAXDistance;				// 8m, 12m, 16m 거리
+ST_ViewRgn g_rgnBtnRedLaser;							// 레드레이저
+ST_ViewRgn g_rgnBtnSetChangeSetting;				// 설정 변경 (RAM)
+ST_ViewRgn g_rgnBtnSetInitSetting;					// 공장설정으로 초기화 (RAM)
 ST_ViewRgn g_rgnBtnSetSaveSetting;				// 변경사항 저장 (EPPROM)
 
 ST_ViewRgn g_rgnTextCurMode;				// 측정모드, 설정모드
-//ST_ViewRgn g_rgnTextCurModeValue;				// 현재모드
+ST_ViewRgn g_rgnDetection;						// 측정모드 : DETECTION!
 ST_ViewRgn g_rgnTextBaudRate;				// 현재 전송 속도
-ST_ViewRgn g_rgnTextBaudRateValue;				// 현재 전송 속도
-ST_ViewRgn g_rgnTextPlane0;				// Plane0 활성여부
-ST_ViewRgn g_rgnTextPlane0Value;				// Plane0 활성여부
-ST_ViewRgn g_rgnTextPlane1;				// Plane1 활성여부
-ST_ViewRgn g_rgnTextPlane1Value;				// Plane1 활성여부
-ST_ViewRgn g_rgnTextPlane2;				// Plane2 활성여부
-ST_ViewRgn g_rgnTextPlane2Value;				// Plane2 활성여부
-ST_ViewRgn g_rgnTextPlane3;				// Plane3 활성여부
-ST_ViewRgn g_rgnTextPlane3Value;				// Plane3 활성여부
+ST_ViewRgn g_rgnTextBaudRateValue;				// 현재 전송 속도 (값)
+//ST_ViewRgn g_rgnTextPlane0;				// Plane0 활성여부
+//ST_ViewRgn g_rgnTextPlane0Value;				// Plane0 활성여부 (값)
+//ST_ViewRgn g_rgnTextPlane1;				// Plane1 활성여부
+//ST_ViewRgn g_rgnTextPlane1Value;				// Plane1 활성여부 (값)
+//ST_ViewRgn g_rgnTextPlane2;				// Plane2 활성여부
+//ST_ViewRgn g_rgnTextPlane2Value;				// Plane2 활성여부 (값)
+//ST_ViewRgn g_rgnTextPlane3;				// Plane3 활성여부
+//ST_ViewRgn g_rgnTextPlane3Value;				// Plane3 활성여부 (값)
 ST_ViewRgn g_rgnTextStartingSpot;				// 측정 시작지점
-ST_ViewRgn g_rgnTextStartingSpotValue;				// 측정 시작지점
+ST_ViewRgn g_rgnTextStartingSpotValue;				// 측정 시작지점 (값)
 ST_ViewRgn g_rgnTextStartingAngle;				// 측정 시작각도
-ST_ViewRgn g_rgnTextStartingAngleValue;				// 측정 시작각도
+ST_ViewRgn g_rgnTextStartingAngleValue;				// 측정 시작각도 (값)
 ST_ViewRgn g_rgnTextEndSpot;				// 측정 종료지점
-ST_ViewRgn g_rgnTextEndSpotValue;				// 측정 종료지점
+ST_ViewRgn g_rgnTextEndSpotValue;				// 측정 종료지점 (값)
 ST_ViewRgn g_rgnTextEndAngle;				// 측정 종료각도
-ST_ViewRgn g_rgnTextEndAngleValue;				// 측정 종료각도
-ST_ViewRgn g_rgnAPD_Distance;				// 측정 최대사거리
-ST_ViewRgn g_rgnAPD_DistanceValue;				// 측정 최대사거리
+ST_ViewRgn g_rgnTextEndAngleValue;				// 측정 종료각도 (값)
+ST_ViewRgn g_rgnAPD_Distance;				// 최적거리
+ST_ViewRgn g_rgnAPD_DistanceValue;				// 최적거리 (값)
+ST_ViewRgn g_rgnMAX_Distance;				// 측정 최대사거리
+ST_ViewRgn g_rgnMAX_DistanceValue;				// 측정 최대사거리 (값)
 
 RECT g_wndRect;
-const wchar_t g_szTitle[64] = L"LZR920";
-const wchar_t g_szPort[64] = L"포트";
-const wchar_t g_szConnModeBoxTitle[64] = L"센서 연결";
+// 변경창 (고정 UI)
+const wchar_t g_szTitle[64] = L"LZR920";					// 제목
+const wchar_t g_szPort[64] = L"포트 번호";
 const wchar_t g_szSetStartSpot[64] = L"시작 반경 [0~273]";
 const wchar_t g_szSetEndSpot[64] = L"종료 반경 [1~274]";
-const wchar_t g_szSetDistance[64] = L"최대 측정 거리";
+const wchar_t g_szSetAPD_Distance[64] = L"최적 측정 거리 [8~16m]";
+const wchar_t g_szSetMAX_Distance[64] = L"최대 측정 거리 [0~65000mm]";
 
+// 현재설정값 (수신기반)
 const wchar_t g_szBaudRate[64] = L"전송속도";
 const wchar_t g_szStartingSpot[64] = L"시작반경";
 const wchar_t g_szStartingSpotAngle[64] = L"시작각도";
 const wchar_t g_szEndSpot[64] = L"종료반경";
 const wchar_t g_szEndSpotAngle[64] = L"종료각도";
-const wchar_t g_szAPDDistance[64] = L"최대거리";
+const wchar_t g_szAPDDistance[64] = L"최적거리";
+const wchar_t g_szMAXDistance[64] = L"최대거리";
 
 wchar_t g_szCurMode[64] = L"측정모드";
+wchar_t g_szDetection[64] = L"DETECTION!";					// DETECTION!
 wchar_t g_szBaudRateValue[64] = L"";
 wchar_t g_szStartingSpotValue[64] = L"";
 wchar_t g_szStartingSpotAngleValue[64] = L"";
 wchar_t g_szEndSpotAngleValue[64] = L"";
 wchar_t g_szEndSpotValue[64] = L"";
 wchar_t g_szAPDDistanceValue[64] = L"";
+wchar_t g_szMAXDistanceValue[64] = L"";				// 65000 mm
+bool g_bDetection = false;
 
 HWND g_hEditPortNumber;
 HWND g_hBtnConnPort;
@@ -99,7 +115,8 @@ HWND g_hBtnModeMeasurement;
 HWND g_hBtnModeConfiguration;
 HWND g_hEditStartSpot;
 HWND g_hEditEndSpot;
-HWND g_hComboDistance;
+HWND g_hComboAPDDistance;
+HWND g_hEditMAXDistance;
 HWND g_hBtnChangeSetting;
 HWND g_hBtnInitSetting;
 HWND g_hBtnSaveSetting;
@@ -164,45 +181,75 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			//MessageBox(g_hWnd, L"측정모드", L"", MB_OK);
 			request_MeasurementMode();
-			Sleep(10);
-			request_MeasurementMode();
-			Sleep(10);
-			request_MeasurementMode();
+			//Sleep(10);
+			//request_MeasurementMode();
+			//Sleep(10);
+			//request_MeasurementMode();
 		}
 		else if (id == IDC_BUTTON_MODE_CONFIGURATION)
 		{
 			//MessageBox(g_hWnd, L"설정모드", L"", MB_OK);
 			request_ConfigMode();
 		}
-		else if (id == IDC_BUTTON_SETTING_CHANGE)
+		else if (id == IDC_BUTTON_SETTING_CHANGE)			// 설정값 변경
 		{
 			//MessageBox(g_hWnd, L"설정변경", L"", MB_OK);
-			ST_SETRAWDATACONFIG_50003 stData;
-			initConfigData(&stData);
 			
-			stData.D10_11_number_distance_values = (unsigned short)274;
-			stData.D12_13_starting_spot = (unsigned short)0;
-			stData.D24_led_error_enable = 1;
-			wchar_t szSetDistance[16] = { 0 };
-			int selIndex = (int)SendMessage(g_hComboDistance, CB_GETCURSEL, 0, 0);
+			
+			int D10_11_number_distance_values = -1;				// 종료 반경 1~274
+			int D12_13_starting_spot = -1;								// 시작 반경 0~273
+			int D16_apd_distance_range = -1;							// 최적거리 0(8m), 1(12m), 2(16m)
+			int D26_27_max_distance_range_SW = -1;				// 최대거리 0~65000mm
+
+			// 시작 반경-1, 종료 반경-1, 최대 측정 거리-1, 최적측정거리-1
+			// 시작 반경이 0~273이 아니면 안됨
+			
+			//stData.D24_led_error_enable = 1;
+			wchar_t szSetAPDDistance[16] = { 0 };
+			wchar_t szSetMAXDistance[16] = { 0 };
+			wchar_t szSetStartingSpot[16] = { 0 };
+			wchar_t szSetNumberDisatanceValues[16] = { 0 };
+			GetWindowText(g_hEditStartSpot, szSetStartingSpot, sizeof(szSetStartingSpot)/sizeof(szSetStartingSpot[0]));
+			GetWindowText(g_hEditEndSpot, szSetNumberDisatanceValues, sizeof(szSetNumberDisatanceValues)/sizeof(szSetNumberDisatanceValues[0]));
+			GetWindowText(g_hEditMAXDistance, szSetMAXDistance, sizeof(szSetMAXDistance)/sizeof(szSetMAXDistance[0]));
+
+			if (wcslen(szSetMAXDistance) > 0) 
+			{
+				D26_27_max_distance_range_SW = _wtoi(szSetMAXDistance);
+			}
+
+			if (wcslen(szSetStartingSpot) > 0 && wcslen(szSetNumberDisatanceValues) > 0)
+			{
+				// 시작 반경과 종료 반경은 같이 입력하게
+				int start = _wtoi(szSetStartingSpot);
+				int count = _wtoi(szSetNumberDisatanceValues);
+
+				if (start >= 0 && start <= 273 && count >= 1 && count <= 274) {
+					D12_13_starting_spot = start;
+					D10_11_number_distance_values = count;
+				}
+			}
+
+			int selIndex = (int)SendMessage(g_hComboAPDDistance, CB_GETCURSEL, 0, 0);
 			if (selIndex != CB_ERR)
 			{
-				SendMessage(g_hComboDistance, CB_GETLBTEXT, selIndex, (LPARAM)szSetDistance);
+				SendMessage(g_hComboAPDDistance, CB_GETLBTEXT, selIndex, (LPARAM)szSetAPDDistance);
 
-				if (wcscmp(szSetDistance, L"8m") == 0) {
-					stData.D16_apd_distance_range = 0;
+				// 최적 사거리
+				if (wcscmp(szSetAPDDistance, L"8m") == 0) {
+					D16_apd_distance_range = 0;
 				}
-				else if (wcscmp(szSetDistance, L"12m") == 0) {
-					stData.D16_apd_distance_range = 1;
+				else if (wcscmp(szSetAPDDistance, L"12m") == 0) {
+					D16_apd_distance_range = 1;
 				}
-				else if (wcscmp(szSetDistance, L"16m") == 0) {
-					stData.D16_apd_distance_range = 2;
+				else if (wcscmp(szSetAPDDistance, L"16m") == 0) {
+					D16_apd_distance_range = 2;
 				}
 			}
 
 			// 값을 보내서 기존 측정값에 채워진 부분만 대입하여 보낸다
 			for (int i = 0; i < 1; i++) {
-				request_changeSetting(stData);
+				request_changeSetting(D10_11_number_distance_values, D12_13_starting_spot, D26_27_max_distance_range_SW, D16_apd_distance_range);
 				Sleep(50);
 			}
 		}
@@ -210,7 +257,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			//MessageBox(g_hWnd, L"공장초기화", L"", MB_OK);
 			request_RestoreSetting();
-			//request_SETRAWDATAREDLASER();				// 추후에 레드레이저 버튼 추가 필요
+		}
+		else if (id == IDC_BUTTON_RED_LASER)
+		{
+			//MessageBox(g_hWnd, L"레드레이저", L"", MB_OK);
+			request_SETRAWDATAREDLASER();
 		}
 		else if (id == IDC_BUTTON_SETTING_SAVE)
 		{
@@ -236,12 +287,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		ST_MDI_DATA* pMdi = (ST_MDI_DATA*)lParam;
 		if (pMdi) 
 		{
-			//memset(g_lastMDIData, 0, sizeof(g_lastMDIData));
 			memcpy(g_lastMDIData, pMdi->mdi, sizeof(g_lastMDIData));
 			free(pMdi);
+
 			RECT rectAll;
 			GetClientRect(g_hWnd, &rectAll);
 			InvalidateRect(hWnd, &rectAll, FALSE);
+			
+			//InvalidateRect(hWnd, &g_rgnMDIViewer.rect, FALSE);
 		}
 		return 0;
 	}
@@ -300,7 +353,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	RegisterClassExW(&wcex);
 
 	// 창의 크기를 지정
-	RECT rc = { 0, 0, 800, 600 };               // 4:3
+	RECT rc = { 0, 0, 1900, 1000 };
 	::AdjustWindowRect(&rc, WS_POPUP | WS_THICKFRAME, FALSE);              // 여백보정
 
 	g_wndWidth = rc.right - rc.left;
@@ -370,9 +423,8 @@ void recvFunction()
 			data = NULL;
 
 			// 분기처리해서 화면에 사용
-			if (cmd_id == 50011)
+			if (cmd_id == 50011)				// MDI
 			{
-				// MDI
 				if (real_body_size == 2202)
 				{
 					ST_MDI_DATA* pMdiData = (ST_MDI_DATA*)malloc(sizeof(ST_MDI_DATA));
@@ -441,7 +493,7 @@ void recvFunction()
 					printf("2\n");
 				}
 			}
-			else if (cmd_id == 50002)
+			else if (cmd_id == 50002)				// 모드 응답
 			{
 				// 측정모드, 설정모드 응답
 				if (real_body_msg[0] == 1)
@@ -456,7 +508,7 @@ void recvFunction()
 				}
 				InvalidateRect(g_hWnd, &g_rgnTextCurMode.rect, FALSE);
 			}
-			else if (cmd_id == 50004)
+			else if (cmd_id == 50004)				// 설정값 응답
 			{
 				// 현재 설정값 응답
 				printf("SETTING\n");
@@ -497,6 +549,7 @@ void recvFunction()
 				double start_angle = -48.0 + stDataConfig.D1819_starting_spot * stDataConfig.D2021_gap_between_spots * DEG_UNIT;
 				double end_angle = start_angle + (stDataConfig.D1617_number_distance_values - 1) * stDataConfig.D2021_gap_between_spots * DEG_UNIT;
 
+				swprintf(g_szMAXDistanceValue, 64, L"%d mm", stDataConfig.D3233_max_distance_range_SW);
 				swprintf(g_szStartingSpotAngleValue, 64, L"%.1lfº", start_angle);
 				swprintf(g_szEndSpotAngleValue, 64, L"%.1lfº", end_angle);
 
@@ -582,20 +635,37 @@ void createControls(HWND hWnd)
 	SendMessageW(g_hEditEndSpot, EM_LIMITTEXT, (WPARAM)3, 0);				// 글자수 3글자 제한
 
 	// CBS_DROPDOWNLIST : 입력불가, CBS_DROPDOWN : 입력가능
-	g_hComboDistance = CreateWindowExW(
+	g_hComboAPDDistance = CreateWindowExW(
 		WS_EX_CLIENTEDGE, L"COMBOBOX", L"",
 		WS_CHILD | WS_VISIBLE | WS_TABSTOP | CBS_AUTOHSCROLL | CBS_DROPDOWNLIST,
-		g_rgnComboSetDistance.rect.left, g_rgnComboSetDistance.rect.top, g_rgnComboSetDistance.width, g_rgnComboSetDistance.height,
-		hWnd, (HMENU)IDC_COMBO_DISTANCE,
+		g_rgnComboSetAPDDistance.rect.left, g_rgnComboSetAPDDistance.rect.top, g_rgnComboSetAPDDistance.width, g_rgnComboSetAPDDistance.height,
+		hWnd, (HMENU)IDC_COMBO_APD_DISTANCE,
 		GetModuleHandle(NULL), NULL
 	);
 	//SendMessage(g_hComboDistance, WM_SETFONT, (WPARAM)g_hFont, TRUE);
-	SendMessage(g_hComboDistance, CB_ADDSTRING, 0, (LPARAM)L"-");
-	SendMessage(g_hComboDistance, CB_ADDSTRING, 0, (LPARAM)L"8m");
-	SendMessage(g_hComboDistance, CB_ADDSTRING, 0, (LPARAM)L"12m");
-	SendMessage(g_hComboDistance, CB_ADDSTRING, 0, (LPARAM)L"16m");
-	SendMessage(g_hComboDistance, CB_SETCURSEL, 0, 0);			// 기본선택 0번
+	SendMessage(g_hComboAPDDistance, CB_ADDSTRING, 0, (LPARAM)L"-");
+	SendMessage(g_hComboAPDDistance, CB_ADDSTRING, 0, (LPARAM)L"8m");
+	SendMessage(g_hComboAPDDistance, CB_ADDSTRING, 0, (LPARAM)L"12m");
+	SendMessage(g_hComboAPDDistance, CB_ADDSTRING, 0, (LPARAM)L"16m");
+	SendMessage(g_hComboAPDDistance, CB_SETCURSEL, 0, 0);			// 기본선택 0번
 
+	g_hEditMAXDistance = CreateWindowExW(
+		WS_EX_CLIENTEDGE, L"EDIT", L"",
+		WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_NUMBER,
+		g_rgnEditSetMAXDistance.rect.left, g_rgnEditSetMAXDistance.rect.top, g_rgnEditSetMAXDistance.width, g_rgnEditSetMAXDistance.height,
+		hWnd, (HMENU)IDC_EDIT_MAX_DISTANCE,
+		GetModuleHandle(NULL), NULL
+	);
+	SendMessageW(g_hEditMAXDistance, EM_LIMITTEXT, (WPARAM)5, 0);				// 글자수 5글자 제한
+
+
+	g_hBtnChangeSetting = CreateWindowW(
+		L"BUTTON", L"레드레이저",
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		g_rgnBtnRedLaser.rect.left, g_rgnBtnRedLaser.rect.top, g_rgnBtnRedLaser.width, g_rgnBtnRedLaser.height,
+		hWnd, (HMENU)IDC_BUTTON_RED_LASER,
+		GetModuleHandle(NULL), NULL
+	);
 	g_hBtnChangeSetting = CreateWindowW(
 		L"BUTTON", L"설정 변경",
 		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
@@ -623,52 +693,64 @@ void createControls(HWND hWnd)
 
 void initPos()
 {
-	// 위치 설정
+	// 상단 - 제목
 	ViewRgn_SetRgn(&g_rgnTopBar, g_wndRect.left, g_wndRect.top, g_wndRect.right, calculateHeight(8));
 	ViewRgn_SetRgn(&g_rgnTopBarTitle, g_wndRect.left, g_wndRect.top, g_wndRect.right, calculateHeight(8));
-	ViewRgn_SetRgn(&g_rgnMDIViewer, calculateWidth(2), calculateHeight(10), calculateWidth(68), calculateHeight(70));
 
-	ViewRgn_SetRgn(&g_rgnSettingViewerBox, calculateWidth(70), calculateHeight(10), calculateWidth(98), calculateHeight(70));
-	ViewRgn_SetRgn(&g_rgnTextCurMode, calculateWidth(72), calculateHeight(12), calculateWidth(96), calculateHeight(16));
-	//ViewRgn_SetRgn(&g_rgnTextCurModeValue, calculateWidth(72), calculateHeight(12), calculateWidth(96), calculateHeight(16));
-	ViewRgn_SetRgn(&g_rgnTextBaudRate, calculateWidth(72), calculateHeight(18), calculateWidth(96), calculateHeight(22));
-	ViewRgn_SetRgn(&g_rgnTextBaudRateValue, calculateWidth(72), calculateHeight(18), calculateWidth(96), calculateHeight(22));
-	ViewRgn_SetRgn(&g_rgnTextStartingSpot, calculateWidth(72), calculateHeight(24), calculateWidth(96), calculateHeight(28));
-	ViewRgn_SetRgn(&g_rgnTextStartingSpotValue, calculateWidth(72), calculateHeight(24), calculateWidth(96), calculateHeight(28));
-	ViewRgn_SetRgn(&g_rgnTextStartingAngle, calculateWidth(72), calculateHeight(30), calculateWidth(96), calculateHeight(34));
-	ViewRgn_SetRgn(&g_rgnTextStartingAngleValue, calculateWidth(72), calculateHeight(30), calculateWidth(96), calculateHeight(34));
-	ViewRgn_SetRgn(&g_rgnTextEndSpot, calculateWidth(72), calculateHeight(36), calculateWidth(96), calculateHeight(40));
-	ViewRgn_SetRgn(&g_rgnTextEndSpotValue, calculateWidth(72), calculateHeight(36), calculateWidth(96), calculateHeight(40));
-	ViewRgn_SetRgn(&g_rgnTextEndAngle, calculateWidth(72), calculateHeight(42), calculateWidth(96), calculateHeight(46));
-	ViewRgn_SetRgn(&g_rgnTextEndAngleValue, calculateWidth(72), calculateHeight(42), calculateWidth(96), calculateHeight(46));
-	ViewRgn_SetRgn(&g_rgnAPD_Distance, calculateWidth(72), calculateHeight(48), calculateWidth(96), calculateHeight(52));
-	ViewRgn_SetRgn(&g_rgnAPD_DistanceValue, calculateWidth(72), calculateHeight(48), calculateWidth(96), calculateHeight(52));
-	ViewRgn_SetRgn(&g_rgnTextPlane0, calculateWidth(72), calculateHeight(54), calculateWidth(96), calculateHeight(58));
-	ViewRgn_SetRgn(&g_rgnTextPlane0Value, calculateWidth(72), calculateHeight(54), calculateWidth(96), calculateHeight(58));
-	ViewRgn_SetRgn(&g_rgnTextPlane1, calculateWidth(72), calculateHeight(60), calculateWidth(96), calculateHeight(64));
-	ViewRgn_SetRgn(&g_rgnTextPlane1Value, calculateWidth(72), calculateHeight(60), calculateWidth(96), calculateHeight(64));
-	ViewRgn_SetRgn(&g_rgnTextPlane2, calculateWidth(72), calculateHeight(66), calculateWidth(96), calculateHeight(70));
-	ViewRgn_SetRgn(&g_rgnTextPlane2Value, calculateWidth(72), calculateHeight(66), calculateWidth(96), calculateHeight(70));
-	ViewRgn_SetRgn(&g_rgnTextPlane3, calculateWidth(72), calculateHeight(72), calculateWidth(96), calculateHeight(76));
-	ViewRgn_SetRgn(&g_rgnTextPlane3Value, calculateWidth(72), calculateHeight(72), calculateWidth(96), calculateHeight(76));
+	// 좌측 - MDI표시
+	ViewRgn_SetRgn(&g_rgnMDIViewer, calculateWidth(2), calculateHeight(10), calculateWidth(78), calculateHeight(80));
 
-	ViewRgn_SetRgn(&g_rgnConnModeBox, calculateWidth(2), calculateHeight(72), calculateWidth(36), calculateHeight(98));
-	ViewRgn_SetRgn(&g_rgnTextPortNumber, calculateWidth(4), calculateHeight(74), calculateWidth(10), calculateHeight(78));
-	ViewRgn_SetRgn(&g_rgnEditPortNumber, calculateWidth(12), calculateHeight(74), calculateWidth(20), calculateHeight(78));
-	ViewRgn_SetRgn(&g_rgnBtnConnPort, calculateWidth(28), calculateHeight(74), calculateWidth(34), calculateHeight(78));
-	ViewRgn_SetRgn(&g_rgnBtnModeMeasurement, calculateWidth(4), calculateHeight(86), calculateWidth(18), calculateHeight(96));
-	ViewRgn_SetRgn(&g_rgnBtnModeConfiguration, calculateWidth(20), calculateHeight(86), calculateWidth(34), calculateHeight(96));
+	// 우측 - 설정값
+	ViewRgn_SetRgn(&g_rgnSettingViewerBox, calculateWidth(80), calculateHeight(10), calculateWidth(98), calculateHeight(80));
+	ViewRgn_SetRgn(&g_rgnTextCurMode, calculateWidth(82), calculateHeight(12), calculateWidth(96), calculateHeight(16));
+	ViewRgn_SetRgn(&g_rgnDetection, calculateWidth(82), calculateHeight(12), calculateWidth(96), calculateHeight(16));
+	ViewRgn_SetRgn(&g_rgnTextBaudRate, calculateWidth(82), calculateHeight(18), calculateWidth(96), calculateHeight(22));
+	ViewRgn_SetRgn(&g_rgnTextBaudRateValue, calculateWidth(82), calculateHeight(18), calculateWidth(96), calculateHeight(22));
+	ViewRgn_SetRgn(&g_rgnTextStartingSpot, calculateWidth(82), calculateHeight(24), calculateWidth(96), calculateHeight(28));
+	ViewRgn_SetRgn(&g_rgnTextStartingSpotValue, calculateWidth(82), calculateHeight(24), calculateWidth(96), calculateHeight(28));
+	ViewRgn_SetRgn(&g_rgnTextStartingAngle, calculateWidth(82), calculateHeight(30), calculateWidth(96), calculateHeight(34));
+	ViewRgn_SetRgn(&g_rgnTextStartingAngleValue, calculateWidth(82), calculateHeight(30), calculateWidth(96), calculateHeight(34));
+	ViewRgn_SetRgn(&g_rgnTextEndSpot, calculateWidth(82), calculateHeight(36), calculateWidth(96), calculateHeight(40));
+	ViewRgn_SetRgn(&g_rgnTextEndSpotValue, calculateWidth(82), calculateHeight(36), calculateWidth(96), calculateHeight(40));
+	ViewRgn_SetRgn(&g_rgnTextEndAngle, calculateWidth(82), calculateHeight(42), calculateWidth(96), calculateHeight(46));
+	ViewRgn_SetRgn(&g_rgnTextEndAngleValue, calculateWidth(82), calculateHeight(42), calculateWidth(96), calculateHeight(46));
+	ViewRgn_SetRgn(&g_rgnAPD_Distance, calculateWidth(82), calculateHeight(48), calculateWidth(96), calculateHeight(52));
+	ViewRgn_SetRgn(&g_rgnAPD_DistanceValue, calculateWidth(82), calculateHeight(48), calculateWidth(96), calculateHeight(52));
+	ViewRgn_SetRgn(&g_rgnMAX_Distance, calculateWidth(82), calculateHeight(54), calculateWidth(96), calculateHeight(58));
+	ViewRgn_SetRgn(&g_rgnMAX_DistanceValue, calculateWidth(82), calculateHeight(54), calculateWidth(96), calculateHeight(58));
+	//ViewRgn_SetRgn(&g_rgnTextPlane0, calculateWidth(82), calculateHeight(54), calculateWidth(96), calculateHeight(58));
+	//ViewRgn_SetRgn(&g_rgnTextPlane0Value, calculateWidth(82), calculateHeight(54), calculateWidth(96), calculateHeight(58));
+	//ViewRgn_SetRgn(&g_rgnTextPlane1, calculateWidth(82), calculateHeight(60), calculateWidth(96), calculateHeight(64));
+	//ViewRgn_SetRgn(&g_rgnTextPlane1Value, calculateWidth(82), calculateHeight(60), calculateWidth(96), calculateHeight(64));
+	//ViewRgn_SetRgn(&g_rgnTextPlane2, calculateWidth(82), calculateHeight(66), calculateWidth(96), calculateHeight(70));
+	//ViewRgn_SetRgn(&g_rgnTextPlane2Value, calculateWidth(82), calculateHeight(66), calculateWidth(96), calculateHeight(70));
+	//ViewRgn_SetRgn(&g_rgnTextPlane3, calculateWidth(82), calculateHeight(72), calculateWidth(96), calculateHeight(76));
+	//ViewRgn_SetRgn(&g_rgnTextPlane3Value, calculateWidth(82), calculateHeight(72), calculateWidth(96), calculateHeight(76));
 
-	ViewRgn_SetRgn(&g_rgnSettingChangeBox, calculateWidth(38), calculateHeight(72), calculateWidth(98), calculateHeight(98));
-	ViewRgn_SetRgn(&g_rgnTextSetStartSpot, calculateWidth(40), calculateHeight(74), calculateWidth(67), calculateHeight(78));
-	ViewRgn_SetRgn(&g_rgnEditSetStartSpot, calculateWidth(40), calculateHeight(80), calculateWidth(67), calculateHeight(84));
-	ViewRgn_SetRgn(&g_rgnTextSetEndSpot, calculateWidth(69), calculateHeight(74), calculateWidth(96), calculateHeight(78));
-	ViewRgn_SetRgn(&g_rgnEditSetEndSpot, calculateWidth(69), calculateHeight(80), calculateWidth(96), calculateHeight(84));
-	ViewRgn_SetRgn(&g_rgnTextSetDistance, calculateWidth(40), calculateHeight(86), calculateWidth(67), calculateHeight(90));
-	ViewRgn_SetRgn(&g_rgnComboSetDistance, calculateWidth(69), calculateHeight(86), calculateWidth(96), calculateHeight(90));
-	ViewRgn_SetRgn(&g_rgnBtnSetInitSetting, calculateWidth(40), calculateHeight(92), calculateWidth(57), calculateHeight(96));
-	ViewRgn_SetRgn(&g_rgnBtnSetChangeSetting, calculateWidth(59.5), calculateHeight(92), calculateWidth(76.5), calculateHeight(96));
-	ViewRgn_SetRgn(&g_rgnBtnSetSaveSetting, calculateWidth(79), calculateHeight(92), calculateWidth(96), calculateHeight(96));
+	// 좌측하단 - 연결 및 모드
+	ViewRgn_SetRgn(&g_rgnConnModeBox, calculateWidth(2), calculateHeight(82), calculateWidth(36), calculateHeight(98));
+	ViewRgn_SetRgn(&g_rgnTextPortNumber, calculateWidth(4), calculateHeight(84), calculateWidth(10), calculateHeight(88));
+	ViewRgn_SetRgn(&g_rgnEditPortNumber, calculateWidth(10.5), calculateHeight(85), calculateWidth(15), calculateHeight(87.5));
+	ViewRgn_SetRgn(&g_rgnBtnConnPort, calculateWidth(16), calculateHeight(85), calculateWidth(20), calculateHeight(87.5));
+	ViewRgn_SetRgn(&g_rgnBtnModeMeasurement, calculateWidth(4), calculateHeight(92), calculateWidth(18), calculateHeight(96));
+	ViewRgn_SetRgn(&g_rgnBtnModeConfiguration, calculateWidth(20), calculateHeight(92), calculateWidth(34), calculateHeight(96));
+
+	// 우측하단 - 
+	ViewRgn_SetRgn(&g_rgnSettingChangeBox, calculateWidth(38), calculateHeight(82), calculateWidth(98), calculateHeight(98));
+	ViewRgn_SetRgn(&g_rgnTextSetStartSpot, calculateWidth(40), calculateHeight(83.5), calculateWidth(51), calculateHeight(87.5));
+	ViewRgn_SetRgn(&g_rgnEditSetStartSpot, calculateWidth(52), calculateHeight(84.5), calculateWidth(58), calculateHeight(87));
+	ViewRgn_SetRgn(&g_rgnTextSetEndSpot, calculateWidth(60), calculateHeight(83.5), calculateWidth(71), calculateHeight(87.5));
+	ViewRgn_SetRgn(&g_rgnEditSetEndSpot, calculateWidth(72), calculateHeight(84.5), calculateWidth(78), calculateHeight(87));
+
+	ViewRgn_SetRgn(&g_rgnTextSetMAXDistance, calculateWidth(40), calculateHeight(88.5), calculateWidth(58), calculateHeight(92.5));
+	ViewRgn_SetRgn(&g_rgnEditSetMAXDistance, calculateWidth(58), calculateHeight(89.5), calculateWidth(78), calculateHeight(92));
+	ViewRgn_SetRgn(&g_rgnTextSetAPDDistance, calculateWidth(40), calculateHeight(93), calculateWidth(58), calculateHeight(97));
+	ViewRgn_SetRgn(&g_rgnComboSetAPDDistance, calculateWidth(58), calculateHeight(94), calculateWidth(78), calculateHeight(97));
+
+	ViewRgn_SetRgn(&g_rgnBtnRedLaser, calculateWidth(86), calculateHeight(84), calculateWidth(91), calculateHeight(89));
+	ViewRgn_SetRgn(&g_rgnBtnSetChangeSetting, calculateWidth(92), calculateHeight(84), calculateWidth(97), calculateHeight(89));
+	ViewRgn_SetRgn(&g_rgnBtnSetInitSetting, calculateWidth(86), calculateHeight(91), calculateWidth(91), calculateHeight(96));
+	ViewRgn_SetRgn(&g_rgnBtnSetSaveSetting, calculateWidth(92), calculateHeight(91), calculateWidth(97), calculateHeight(96));
 
 
 }
@@ -712,18 +794,22 @@ void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
 		DrawText(pBuffer->m_hMemDC, g_szEndSpot, -1, &g_rgnTextEndSpot.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szEndSpotAngle, -1, &g_rgnTextEndAngle.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szAPDDistance, -1, &g_rgnAPD_Distance.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szMAXDistance, -1, &g_rgnMAX_Distance.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szPlane0, -1, &g_rgnTextPlane0.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szPlane1, -1, &g_rgnTextPlane1.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szPlane2, -1, &g_rgnTextPlane2.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szPlane3, -1, &g_rgnTextPlane3.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 
-		//DrawText(pBuffer->m_hMemDC, x, -1, &g_rgnTextCurModeValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		if (g_bDetection) {
+			DrawText(pBuffer->m_hMemDC, g_szDetection, -1, &g_rgnDetection.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		}
 		DrawText(pBuffer->m_hMemDC, g_szBaudRateValue, -1, &g_rgnTextBaudRateValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szStartingSpotValue, -1, &g_rgnTextStartingSpotValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szStartingSpotAngleValue, -1, &g_rgnTextStartingAngleValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szEndSpotValue, -1, &g_rgnTextEndSpotValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szEndSpotAngleValue, -1, &g_rgnTextEndAngleValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szAPDDistanceValue, -1, &g_rgnAPD_DistanceValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szMAXDistanceValue, -1, &g_rgnMAX_DistanceValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szPlane0Value, -1, &g_rgnTextPlane0Value.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szPlane1Value, -1, &g_rgnTextPlane1Value.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szPlane2Value, -1, &g_rgnTextPlane2Value.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
@@ -733,7 +819,8 @@ void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
 
 		DrawText(pBuffer->m_hMemDC, g_szSetStartSpot, -1, &g_rgnTextSetStartSpot.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szSetEndSpot, -1, &g_rgnTextSetEndSpot.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
-		DrawText(pBuffer->m_hMemDC, g_szSetDistance, -1, &g_rgnTextSetDistance.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szSetAPD_Distance, -1, &g_rgnTextSetAPDDistance.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szSetMAX_Distance, -1, &g_rgnTextSetMAXDistance.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 
 		// 복원 및 정리
 		SelectObject(pBuffer->m_hMemDC, hOldBrush);
@@ -757,20 +844,17 @@ void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
 		for (int i = 0; i < 274; ++i)
 		{
 			unsigned short dist = g_lastMDIData[plane][i];
-			if (dist > 0 && dist <= 16000)
-			{
-				double angle_deg = -48.0 + i * (96.0 / 273.0);
-				double angle_rad = angle_deg * 3.141592 / 180.0;
+			double angle_deg = -48.0 + i * (96.0 / 273.0);
+			double angle_rad = angle_deg * 3.141592 / 180.0;
 
-				double x = dist * cos(angle_rad);
-				double y = dist * sin(angle_rad);
+			double x = dist * cos(angle_rad);
+			double y = dist * sin(angle_rad);
 
-				int px = static_cast<int>(pxCenter + x / scale);
-				int py = static_cast<int>(pyCenter - y / scale);
+			int px = static_cast<int>(g_rgnMDIViewer.rect.left + x / scale);
+			int py = static_cast<int>(pyCenter - y / scale);
 
-				int ellipse_radius = 2;  // 점 크기 조절
-				Ellipse(pBuffer->m_hMemDC, px - ellipse_radius, py - ellipse_radius, px + ellipse_radius, py + ellipse_radius);
-			}
+			int ellipse_radius = 2;  // 점 크기 조절
+			Ellipse(pBuffer->m_hMemDC, px - ellipse_radius, py - ellipse_radius, px + ellipse_radius, py + ellipse_radius);
 		}
 
 		SelectObject(pBuffer->m_hMemDC, hOldBrush);

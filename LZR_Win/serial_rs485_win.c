@@ -267,6 +267,7 @@ DWORD WINAPI processMessageThread(void* lpParam)
 										stopTimerRequestConfigurationMode();
 										InterlockedExchange(&g_curMode, MODE_CONFIG);
 									}
+									request_GetConfig();
 									break;
 								}
 								else
@@ -309,23 +310,6 @@ DWORD WINAPI processMessageThread(void* lpParam)
 									enqueue_CircularQueue(&g_recvQueue, msg_data, copy_idx);
 									free(msg_data);
 								}
-
-								//const char* baud_strs[] = { "57600", "115200", "230400", "460800", "921600" };
-								//const char* baud_rate = (g_sensorConfig.D6_baud_rate < 5 ? baud_strs[g_sensorConfig.D6_baud_rate] : "Unknown");
-
-								// 출력
-								//printf("=== 현재 설정값 ===\n");
-								//printf("통신부하: %u%%\n", g_sensorConfig.D4D5_comm_charge);
-								//printf("전송속도: %s\n", baud_rate);
-								//printf("시작 Spot: %u\n", g_sensorConfig.D1819_starting_spot);
-								//printf("거리값 개수: %u\n", g_sensorConfig.D1617_number_distance_values);
-								//printf("Spot 간격: %u\n", g_sensorConfig.D2021_gap_between_spots);
-								//printf("APD 거리: %u\n", g_sensorConfig.D22_apd_distance_range);
-								//printf("Plane enable: P0=%s, P1=%s, P2=%s, P3=%s\n",
-								//	g_sensorConfig.D11_plane0_enable ? "Y" : "N",
-								//	g_sensorConfig.D12_plane1_enable ? "Y" : "N",
-								//	g_sensorConfig.D13_plane2_enable ? "Y" : "N",
-								//	g_sensorConfig.D14_plane3_enable ? "Y" : "N");
 								break;
 							}
 							else if (stData.message_cmd == 50005)
@@ -440,39 +424,36 @@ int openSerialPort(char* portName, int baudRate)
 	return nResult;
 }
 
-void initConfigData(ST_SETRAWDATACONFIG_50003* p_stData)
+void setConfigData(ST_SETRAWDATACONFIG_50003* p_stData)
 {
-	// 포트번호, 통신부하, 전송 속도, 레이저0번, 레이저1번, 레이저2번, 레이저3번, 측정영역, 시작점, 측정거리
-	p_stData->D0_baud_rate = 3;											// 출력
+	p_stData->D0_baud_rate = g_sensorConfig.D6_baud_rate;
 	p_stData->D1_reserved = 0;
-	p_stData->D2_LZR_infos_enable = 0;
-	p_stData->D3_red_laser_timeout = 1;
-	p_stData->D4_test_frame_enable = 0;
-	p_stData->D5_plane0_enable = 1;									// 출력
-	p_stData->D6_plane1_enable = 1;									// 출력
-	p_stData->D7_plane2_enable = 1;									// 출력
-	p_stData->D8_plane3_enable = 1;									// 출력
-	p_stData->D9_pulse_width_enable = 0;
-	p_stData->D10_11_number_distance_values = 274;			// 출력
-	p_stData->D12_13_starting_spot = 0;								// 출력
-	p_stData->D14_15_gap_between_spots = 1;
-	p_stData->D16_apd_distance_range = 1;							// 출력
-	p_stData->D17_canid_fc_enable = 1;
-	p_stData->D18_diode_lifetime_enable = 1;
-	p_stData->D19_polarity_input1 = 1;
-	p_stData->D20_heartbeat_delay = 5;
-	p_stData->D21_led1_enable = 1;
-	p_stData->D22_led2_enable = 1;
-	p_stData->D23_led_blue_enable = 1;
-	p_stData->D24_led_error_enable = 1;
-	p_stData->D25_led_boot_duration = 255;
-	p_stData->D26_27_max_distance_range_SW = 65000;
-	p_stData->D28_plane_number_in_frame = 1;
-	p_stData->D29_immunity_level = 1;
-	p_stData->D30_31_hot_reset_timer = 1200;
-	p_stData->D32_hot_reset_counter = 3;
-
-	//g_sensorConfig 가 비어있지 않으면 옮긴다
+	p_stData->D2_LZR_infos_enable = g_sensorConfig.D8_LZR_information;
+	p_stData->D3_red_laser_timeout = g_sensorConfig.D9_Red_laser_timeout;
+	p_stData->D4_test_frame_enable = g_sensorConfig.D10_test_frame_enable;
+	p_stData->D5_plane0_enable = g_sensorConfig.D11_plane0_enable;
+	p_stData->D6_plane1_enable = g_sensorConfig.D12_plane1_enable;
+	p_stData->D7_plane2_enable = g_sensorConfig.D13_plane2_enable;
+	p_stData->D8_plane3_enable = g_sensorConfig.D14_plane3_enable;
+	p_stData->D9_pulse_width_enable = g_sensorConfig.D15_pulse_width_enable;
+	p_stData->D10_11_number_distance_values = g_sensorConfig.D1617_number_distance_values;
+	p_stData->D12_13_starting_spot = g_sensorConfig.D1819_starting_spot;
+	p_stData->D14_15_gap_between_spots = g_sensorConfig.D2021_gap_between_spots;
+	p_stData->D16_apd_distance_range = g_sensorConfig.D22_apd_distance_range;
+	p_stData->D17_canid_fc_enable = g_sensorConfig.D23_can_id_frame_counter_enable;
+	p_stData->D18_diode_lifetime_enable = g_sensorConfig.D24_diode_lifetime_management_enable;
+	p_stData->D19_polarity_input1 = g_sensorConfig.D25_polarity_input1;
+	p_stData->D20_heartbeat_delay = g_sensorConfig.D26_heartbeat_delay_second;
+	p_stData->D21_led1_enable = g_sensorConfig.D27_led1_enable;
+	p_stData->D22_led2_enable = g_sensorConfig.D28_led2_enable;
+	p_stData->D23_led_blue_enable = g_sensorConfig.D29_led_blue_enable;
+	p_stData->D24_led_error_enable = g_sensorConfig.D30_led_error_enable;
+	p_stData->D25_led_boot_duration = g_sensorConfig.D31_led_boot_duration;
+	p_stData->D26_27_max_distance_range_SW = g_sensorConfig.D3233_max_distance_range_SW;
+	p_stData->D28_plane_number_in_frame = g_sensorConfig.D34_plane_number_inside_frame_enable;
+	p_stData->D29_immunity_level = g_sensorConfig.D35_immunity_level;
+	p_stData->D30_31_hot_reset_timer = g_sensorConfig.D3637_hot_reset_timer_second;
+	p_stData->D32_hot_reset_counter = g_sensorConfig.D38_hot_reset_counter;
 }
 
 void closeSerialPort(void)
@@ -699,9 +680,9 @@ void stopTimerRequestConfigurationMode(void)
 DWORD WINAPI sendGetConfigThread(LPVOID lpParam)
 {
 	// SYNC(4) + SIZE(2) + CMD(2) + CHK(2) = 10 bytes
-	while (g_running_end == 0)
+	//while (g_running_end == 0)
+	if (g_running_end == 0)
 	{
-		// 0.5초에 한번씩 동작
 		if (InterlockedCompareExchange(&g_curMode, 0, 0) == MODE_CONFIG)
 		{
 			// 설정 모드일때는 설정값을 요청한다
@@ -726,18 +707,37 @@ DWORD WINAPI sendGetConfigThread(LPVOID lpParam)
 			{
 				printf("설정값 조회 요청 전송 완료 (CMD=50004)\n");
 			}
-			Sleep(500);
+			//Sleep(500);
 		}
 		else {
 			// 측정모드에서는 요청하지 않는다
-			Sleep(1000);
+			//Sleep(1000);
 		}
 	}
 	return 0;
 }
 
-void request_changeSetting(ST_SETRAWDATACONFIG_50003 stData)
+void request_changeSetting(int D10_11_number_distance_values, int D12_13_starting_spot, int D26_27_max_distance_range_SW, int D16_apd_distance_range)
 {
+	ST_SETRAWDATACONFIG_50003 stData;
+	setConfigData(&stData);
+
+	if (D10_11_number_distance_values != -1) {
+		stData.D10_11_number_distance_values = D10_11_number_distance_values;
+	}
+
+	if (D12_13_starting_spot != -1) {
+		stData.D12_13_starting_spot = D12_13_starting_spot;
+	}
+
+	if (D26_27_max_distance_range_SW != -1) {
+		stData.D26_27_max_distance_range_SW = D26_27_max_distance_range_SW;
+	}
+
+	if (D16_apd_distance_range != -1) {
+		stData.D16_apd_distance_range = D16_apd_distance_range;
+	}
+
 	unsigned short cmd = 50003;
 	unsigned short data_len = sizeof(stData);
 	unsigned short msg_len = sizeof(cmd) + data_len;
@@ -913,6 +913,18 @@ void request_SETRAWDATAREDLASER(void)
 	else {
 		printf("레드레이저ON 전송 실패: %lld/%zu\n", written, sizeof(packet));
 	}
+}
+
+void initConfigData(ST_DataConfig* p_stData)
+{
+	//p_stData->D0_status0 = 0;
+	//p_stData->D1_status1 = 0;
+	//p_stData->D2_status2 = 0;
+	//p_stData->D3_status3 = 0;
+	//p_stData->D4D5_comm_charge = 0;
+	//p_stData->D6_baud_rate = 3;
+	//p_stData->D7_nodata0 = 0;
+	//p_stData->D8_LZR_information = 0;
 }
 
 #endif
