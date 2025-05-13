@@ -215,7 +215,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			if (wcslen(szSetMAXDistance) > 0) 
 			{
-				D26_27_max_distance_range_SW = _wtoi(szSetMAXDistance);
+				int distance = _wtoi(szSetMAXDistance);
+				if (distance >= 0 && distance <= 65000) {
+
+					D26_27_max_distance_range_SW = distance;
+				}
 			}
 
 			if (wcslen(szSetStartingSpot) > 0 && wcslen(szSetNumberDisatanceValues) > 0)
@@ -844,17 +848,20 @@ void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
 		for (int i = 0; i < 274; ++i)
 		{
 			unsigned short dist = g_lastMDIData[plane][i];
-			double angle_deg = -48.0 + i * (96.0 / 273.0);
-			double angle_rad = angle_deg * 3.141592 / 180.0;
+			if (dist != 0)				// 거르기?
+			{
+				double angle_deg = -48.0 + i * (96.0 / 273.0);
+				double angle_rad = angle_deg * 3.141592 / 180.0;
 
-			double x = dist * cos(angle_rad);
-			double y = dist * sin(angle_rad);
+				double x = dist * cos(angle_rad);
+				double y = dist * sin(angle_rad);
 
-			int px = static_cast<int>(g_rgnMDIViewer.rect.left + x / scale);
-			int py = static_cast<int>(pyCenter - y / scale);
+				int px = static_cast<int>(g_rgnMDIViewer.rect.left + x / scale);
+				int py = static_cast<int>(pyCenter - y / scale);
 
-			int ellipse_radius = 2;  // 점 크기 조절
-			Ellipse(pBuffer->m_hMemDC, px - ellipse_radius, py - ellipse_radius, px + ellipse_radius, py + ellipse_radius);
+				int ellipse_radius = 2;  // 점 크기 조절
+				Ellipse(pBuffer->m_hMemDC, px - ellipse_radius, py - ellipse_radius, px + ellipse_radius, py + ellipse_radius);
+			}
 		}
 
 		SelectObject(pBuffer->m_hMemDC, hOldBrush);
