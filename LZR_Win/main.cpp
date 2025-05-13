@@ -481,7 +481,7 @@ void recvFunction()
 							}
 						}
 					}
-
+					checkMDIDifferenceAndTriggerDetection(g_lastMDIData, pMdiData->mdi);			// 감지테스트 50%
 					// body_msg 에 MDI가 들어있음
 					PostMessage(g_hWnd, ID_PAINT_MDI, 0, (LPARAM)pMdiData);
 				//}
