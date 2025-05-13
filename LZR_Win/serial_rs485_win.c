@@ -917,14 +917,39 @@ void request_SETRAWDATAREDLASER(void)
 
 void initConfigData(ST_DataConfig* p_stData)
 {
-	//p_stData->D0_status0 = 0;
-	//p_stData->D1_status1 = 0;
-	//p_stData->D2_status2 = 0;
-	//p_stData->D3_status3 = 0;
-	//p_stData->D4D5_comm_charge = 0;
-	//p_stData->D6_baud_rate = 3;
-	//p_stData->D7_nodata0 = 0;
-	//p_stData->D8_LZR_information = 0;
+	p_stData->D0_status0 = 0;
+	p_stData->D1_status1 = 0;
+	p_stData->D2_status2 = 0;
+	p_stData->D3_status3 = 0;
+	p_stData->D4D5_comm_charge = 0;
+	p_stData->D6_baud_rate = 3;
+	p_stData->D7_nodata0 = 0;
+	p_stData->D8_LZR_information = 1;
+	p_stData->D9_Red_laser_timeout = 1;
+	p_stData->D10_test_frame_enable = 0;
+	p_stData->D11_plane0_enable = 1;
+	p_stData->D12_plane1_enable = 1;
+	p_stData->D13_plane2_enable = 1;
+	p_stData->D14_plane3_enable = 1;
+	p_stData->D15_pulse_width_enable = 0;
+	p_stData->D1617_number_distance_values = 274;
+	p_stData->D1819_starting_spot = 0;
+	p_stData->D2021_gap_between_spots = 1;
+	p_stData->D22_apd_distance_range = 1;
+	p_stData->D23_can_id_frame_counter_enable = 1;
+	p_stData->D24_diode_lifetime_management_enable = 1;
+	p_stData->D25_polarity_input1 = 1;
+	p_stData->D26_heartbeat_delay_second = 5;
+	p_stData->D27_led1_enable = 1;
+	p_stData->D28_led2_enable = 1;
+	p_stData->D29_led_blue_enable = 1;
+	p_stData->D30_led_error_enable = 1;
+	p_stData->D31_led_boot_duration = 255;
+	p_stData->D3233_max_distance_range_SW = 65000;
+	p_stData->D34_plane_number_inside_frame_enable = 1;
+	p_stData->D35_immunity_level = 1;
+	p_stData->D3637_hot_reset_timer_second = 1200;
+	p_stData->D38_hot_reset_counter = 3;
 }
 
 #endif
