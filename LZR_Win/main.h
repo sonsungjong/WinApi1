@@ -15,6 +15,7 @@
 #define IDC_EDIT_MAX_DISTANCE										30011
 #define IDC_BUTTON_RED_LASER										30012
 #define ID_PAINT_MDI														40001
+#define ID_TIMER_DETECTION_OFF									40002
 
 typedef struct STDoubleBuffer
 {
@@ -56,3 +57,4 @@ void DoubleBuffer_init(ST_DoubleBuffer* pBuffer, HWND hWnd);
 void DoubleBuffer_Resize(ST_DoubleBuffer* pBuffer, HWND hWnd, int newWidth, int newHeight);
 void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps);
 void DoubleBuffer_Destroy(ST_DoubleBuffer* pBuffer);
+void checkMDIDifferenceAndTriggerDetection(unsigned short prev[4][274], unsigned short curr[4][274]);

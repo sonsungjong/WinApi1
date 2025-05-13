@@ -950,6 +950,25 @@ void DoubleBuffer_Destroy(ST_DoubleBuffer* pBuffer)
 	}
 }
 
+void checkMDIDifferenceAndTriggerDetection(unsigned short prev[4][274], unsigned short curr[4][274])
+{
+	int total = 4 * 274;
+	int changed = 0;
+
+	for (int p = 0; p < 4; ++p) {
+		for (int i = 0; i < 274; ++i) {
+			if (abs((int)prev[p][i] - (int)curr[p][i]) > 50) {
+				++changed;
+			}
+		}
+	}
+
+	if (changed >= total / 2 && g_bDetection == false) {
+		g_bDetection = true;
+		SetTimer(g_hWnd, ID_TIMER_DETECTION_OFF, 1000, NULL);  // 1초 후 OFF
+	}
+}
+
 float calculateWidth(float fPercentage)
 {
 	return ((static_cast<float>(g_wndWidth) * fPercentage) / 100.0f);
