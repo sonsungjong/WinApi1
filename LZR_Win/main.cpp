@@ -252,7 +252,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 
 			// 값을 보내서 기존 측정값에 채워진 부분만 대입하여 보낸다
-			request_changeSetting(D10_11_number_distance_values, D12_13_starting_spot, D26_27_max_distance_range_SW, D16_apd_distance_range);
+			std::thread([=]() {
+				request_changeSetting(D10_11_number_distance_values, D12_13_starting_spot, D26_27_max_distance_range_SW, D16_apd_distance_range);
+			}).detach();
 			//for (int i = 0; i < 1; i++) {
 				//Sleep(50);
 			//}
@@ -294,11 +296,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			memcpy(g_lastMDIData, pMdi->mdi, sizeof(g_lastMDIData));
 			free(pMdi);
 
-			//RECT rectAll;
-			//GetClientRect(g_hWnd, &rectAll);
-			//InvalidateRect(hWnd, &rectAll, FALSE);
+			RECT rectAll;
+			GetClientRect(g_hWnd, &rectAll);
+			InvalidateRect(hWnd, &rectAll, FALSE);
 			
-			InvalidateRect(hWnd, &g_rgnMDIViewer.rect, FALSE);
+			//InvalidateRect(hWnd, &g_rgnMDIViewer.rect, FALSE);
 		}
 		return 0;
 	}
@@ -429,18 +431,18 @@ void recvFunction()
 			// 분기처리해서 화면에 사용
 			if (cmd_id == 50011)				// MDI
 			{
-				size_t idx = 6; // ID + Frame counter 스킵
-				if (g_infoData.D8_LZR_information == 1)
-				{
-					idx += 14;
-				}
+				size_t idx = 20; // ID + Frame counter 스킵
+				//if (g_infoData.D8_LZR_information == 1)
+				//{
+				//	idx += 14;
+				//}
 				//if (real_body_size == 2202)
 				//{
 					ST_MDI_DATA* pMdiData = (ST_MDI_DATA*)malloc(sizeof(ST_MDI_DATA));
 					memset(pMdiData, 0, sizeof(ST_MDI_DATA));
 
-					int remaining_bytes = (int)(real_body_size - idx);
-					int per_plane_block = remaining_bytes / 4;
+					int remaining_bytes = (int)(real_body_size - idx);			// 2210 , 2196
+					int per_plane_block = remaining_bytes / 4;						// 552 , 549
 					
 					for (int plane = 0; plane < 4; ++plane)
 					{
@@ -457,12 +459,12 @@ void recvFunction()
 
 							//	pMdiData->mdi[planeNum][i] = temp;
 							//}
-							int spot_count = (per_plane_block - 1) / 2;
+							int spot_count = (per_plane_block - 1) / 2;				// 274
 							if (spot_count > 274) spot_count = 274;
 
 							for (int i = 0; i < spot_count; ++i)
 							{
-								if ((idx + 2) > real_body_size) break;
+								if ((idx + 2) > real_body_size) break;					// 2216
 
 								unsigned short temp = 0;
 								memcpy(&temp, &real_body_msg[idx], sizeof(unsigned short));
