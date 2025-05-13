@@ -110,6 +110,11 @@ wchar_t g_szMAXDistanceValue[64] = L"";				// 65000 mm
 bool g_bDetection = false;
 bool g_isDetectionTimerRunning = false;
 
+// 실시간 변경이 필요한 변수 (파일기반 필요)
+std::atomic<double> g_change_percentage = 25;				// 25% 이상 변화가 있으면 물체감지 판단
+std::atomic_uint16_t g_change_distance = 50;				// 각 점에 대해 50mm 이상을 변화로 처리
+std::atomic_int g_detection_delay_time_ms = 1000;			// 1초 후에 재판단
+
 HWND g_hEditPortNumber;
 HWND g_hBtnConnPort;
 HWND g_hBtnModeMeasurement;
@@ -961,21 +966,25 @@ void checkMDIDifferenceAndTriggerDetection(unsigned short prev[4][274], unsigned
 {
 	int total = 4 * 274;
 	int changed = 0;
+	int threshold = (total * g_change_percentage) / 100.0;
 
 	for (int p = 0; p < 4; ++p) {
 		for (int i = 0; i < 274; ++i) {
-			if (abs((int)prev[p][i] - (int)curr[p][i]) > 50) {
+			// 점별로 50mm 이상 변화있는지 체크
+			if (abs((int)prev[p][i] - (int)curr[p][i]) > g_change_distance) {
 				++changed;
+				if (changed >= threshold) break;
 			}
 		}
+		if (changed >= threshold) break;
 	}
 
-	if (changed >= total / 2 && g_isDetectionTimerRunning == false)
+	if (changed >= threshold && g_isDetectionTimerRunning == false)
 	{
 		g_bDetection = true;
 		g_isDetectionTimerRunning = true;
 		InvalidateRect(g_hWnd, &g_rgnDetection.rect, FALSE); // 다시 그리기
-		SetTimer(g_hWnd, ID_TIMER_DETECTION_OFF, 1000, NULL);  // 1초 후 OFF
+		SetTimer(g_hWnd, ID_TIMER_DETECTION_OFF, g_detection_delay_time_ms, NULL);  // MS 후 OFF
 	}
 }
 
