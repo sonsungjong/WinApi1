@@ -252,10 +252,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 
 			// 값을 보내서 기존 측정값에 채워진 부분만 대입하여 보낸다
-			for (int i = 0; i < 1; i++) {
-				request_changeSetting(D10_11_number_distance_values, D12_13_starting_spot, D26_27_max_distance_range_SW, D16_apd_distance_range);
-				Sleep(50);
-			}
+			request_changeSetting(D10_11_number_distance_values, D12_13_starting_spot, D26_27_max_distance_range_SW, D16_apd_distance_range);
+			//for (int i = 0; i < 1; i++) {
+				//Sleep(50);
+			//}
 		}
 		else if (id == IDC_BUTTON_SETTING_RESET)
 		{
