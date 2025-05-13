@@ -108,6 +108,7 @@ wchar_t g_szEndSpotValue[64] = L"";
 wchar_t g_szAPDDistanceValue[64] = L"";
 wchar_t g_szMAXDistanceValue[64] = L"";				// 65000 mm
 bool g_bDetection = false;
+bool g_isDetectionTimerRunning = false;
 
 HWND g_hEditPortNumber;
 HWND g_hBtnConnPort;
@@ -149,7 +150,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	else if (WM_TIMER == msg)
 	{
-
+		if (wParam == ID_TIMER_DETECTION_OFF)
+		{
+			g_bDetection = false;
+			g_isDetectionTimerRunning = false;
+			KillTimer(hWnd, ID_TIMER_DETECTION_OFF);
+			InvalidateRect(g_hWnd, &g_rgnDetection.rect, FALSE); // 다시 그리기
+		}
 	}
 	else if (WM_COMMAND == msg)
 	{
@@ -963,8 +970,11 @@ void checkMDIDifferenceAndTriggerDetection(unsigned short prev[4][274], unsigned
 		}
 	}
 
-	if (changed >= total / 2 && g_bDetection == false) {
+	if (changed >= total / 2 && g_isDetectionTimerRunning == false)
+	{
 		g_bDetection = true;
+		g_isDetectionTimerRunning = true;
+		InvalidateRect(g_hWnd, &g_rgnDetection.rect, FALSE); // 다시 그리기
 		SetTimer(g_hWnd, ID_TIMER_DETECTION_OFF, 1000, NULL);  // 1초 후 OFF
 	}
 }
