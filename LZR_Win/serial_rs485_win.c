@@ -532,7 +532,8 @@ void request_MeasurementMode(void)
 DWORD WINAPI sendGetModeThread(LPVOID lpParam)
 {
 	// 프레임 구성: SYNC(4) + SIZE(2) + CMD(2) + CHK(2) = 10 bytes
-	for (int i = 0; i < 3; i++) {
+	//for (int i = 0; i < 1; i++) 
+	{
 		unsigned char packet[10] = { 0, };
 		unsigned int sync = HEADER_SYNC_VAL;           // 0xFFFEFDFC
 		unsigned short size = sizeof(unsigned short);         // CMD만 있으므로 2

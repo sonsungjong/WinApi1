@@ -499,7 +499,7 @@ void recvFunction()
 			}
 			else if (cmd_id == 50002)				// 모드 응답
 			{
-				// 측정모드, 설정모드 응답
+				// 측정모드, 설정 모드 응답
 				if (real_body_msg[0] == 1)
 				{
 					// 측정모드
@@ -507,7 +507,7 @@ void recvFunction()
 				}
 				else if (real_body_msg[0] == 2)
 				{
-					// 설정모드
+					// 설정모드 응답
 					wcscpy_s(g_szCurMode, L"설정모드");
 				}
 				InvalidateRect(g_hWnd, &g_rgnTextCurMode.rect, FALSE);
