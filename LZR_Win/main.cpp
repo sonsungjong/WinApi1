@@ -22,7 +22,7 @@ int g_posY;
 BOOL g_isCreated = FALSE;
 BOOL g_program_end = FALSE;
 ST_DoubleBuffer g_doubleBuffer;
-ST_DataConfig g_infoData;
+static ST_DataConfig g_infoData;
 unsigned short g_lastMDIData[4][274];
 
 char g_comName[16] = { 0, };
@@ -429,11 +429,19 @@ void recvFunction()
 			// 분기처리해서 화면에 사용
 			if (cmd_id == 50011)				// MDI
 			{
-				if (real_body_size == 2202)
+				size_t idx = 6; // ID + Frame counter 스킵
+				if (g_infoData.D8_LZR_information == 1)
 				{
+					idx += 14;
+				}
+				//if (real_body_size == 2202)
+				//{
 					ST_MDI_DATA* pMdiData = (ST_MDI_DATA*)malloc(sizeof(ST_MDI_DATA));
 					memset(pMdiData, 0, sizeof(ST_MDI_DATA));
-					size_t idx = 6; // ID + Frame counter 스킵
+
+					int remaining_bytes = (int)(real_body_size - idx);
+					int per_plane_block = remaining_bytes / 4;
+					
 					for (int plane = 0; plane < 4; ++plane)
 					{
 						unsigned char planeNum = real_body_msg[idx];
@@ -441,8 +449,21 @@ void recvFunction()
 						if (planeNum < 4)
 						{
 
-							for (int i = 0; i < 274; ++i)
+							//for (int i = 0; i < 274; ++i)
+							//{
+							//	unsigned short temp = 0;
+							//	memcpy(&temp, &real_body_msg[idx], sizeof(unsigned short));
+							//	idx += sizeof(unsigned short);
+
+							//	pMdiData->mdi[planeNum][i] = temp;
+							//}
+							int spot_count = (per_plane_block - 1) / 2;
+							if (spot_count > 274) spot_count = 274;
+
+							for (int i = 0; i < spot_count; ++i)
 							{
+								if ((idx + 2) > real_body_size) break;
+
 								unsigned short temp = 0;
 								memcpy(&temp, &real_body_msg[idx], sizeof(unsigned short));
 								idx += sizeof(unsigned short);
@@ -454,33 +475,33 @@ void recvFunction()
 
 					// body_msg 에 MDI가 들어있음
 					PostMessage(g_hWnd, ID_PAINT_MDI, 0, (LPARAM)pMdiData);
-				}
-				else if (real_body_size == 2216)
-				{
-					// ID + Frame counter
-					// CTN + VNR + Error log + Hot reset counter
-					// Plane Number + MDI
-					ST_MDI_DATA* pMdiData = (ST_MDI_DATA*)malloc(sizeof(ST_MDI_DATA));
-					memset(pMdiData, 0, sizeof(ST_MDI_DATA));
-					size_t idx = 20; // 스킵
-					for (int plane = 0; plane < 4; ++plane)
-					{
-						unsigned char planeNum = real_body_msg[idx];
-						idx++;
+				//}
+				//else if (real_body_size == 2216)
+				//{
+				//	// ID + Frame counter
+				//	// CTN + VNR + Error log + Hot reset counter
+				//	// Plane Number + MDI
+				//	ST_MDI_DATA* pMdiData = (ST_MDI_DATA*)malloc(sizeof(ST_MDI_DATA));
+				//	memset(pMdiData, 0, sizeof(ST_MDI_DATA));
+				//	size_t idx = 20; // 스킵
+				//	for (int plane = 0; plane < 4; ++plane)
+				//	{
+				//		unsigned char planeNum = real_body_msg[idx];
+				//		idx++;
 
-						for (int i = 0; i < 274; ++i)
-						{
-							unsigned short temp = 0;
-							memcpy(&temp, &real_body_msg[idx], sizeof(unsigned short));
-							idx += sizeof(unsigned short);
+				//		for (int i = 0; i < 274; ++i)
+				//		{
+				//			unsigned short temp = 0;
+				//			memcpy(&temp, &real_body_msg[idx], sizeof(unsigned short));
+				//			idx += sizeof(unsigned short);
 
-							pMdiData->mdi[planeNum][i] = temp;
-						}
-					}
+				//			pMdiData->mdi[planeNum][i] = temp;
+				//		}
+				//	}
 
-					// body_msg 에 MDI가 들어있음
-					PostMessage(g_hWnd, ID_PAINT_MDI, 0, (LPARAM)pMdiData);
-				}
+				//	// body_msg 에 MDI가 들어있음
+				//	PostMessage(g_hWnd, ID_PAINT_MDI, 0, (LPARAM)pMdiData);
+				//}
 			}
 			else if (cmd_id == 50010) 
 			{
