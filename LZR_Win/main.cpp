@@ -79,13 +79,19 @@ ST_ViewRgn g_rgnAPD_Distance;				// 최적거리
 ST_ViewRgn g_rgnAPD_DistanceValue;				// 최적거리 (값)
 ST_ViewRgn g_rgnMAX_Distance;				// 측정 최대사거리
 ST_ViewRgn g_rgnMAX_DistanceValue;				// 측정 최대사거리 (값)
+ST_ViewRgn g_rgnDetection_Percentage;				// 감지비율
+ST_ViewRgn g_rgnDetection_PercentageValue;				// 감지비율 (값)
+ST_ViewRgn g_rgnDetection_Scale;							// 감지거리차이
+ST_ViewRgn g_rgnDetection_ScaleValue;				// 감지거리차이
+ST_ViewRgn g_rgnDetection_Interval;						// 감지비율
+ST_ViewRgn g_rgnDetection_IntervalValue;				// 감지비율 (값)
 
 RECT g_wndRect;
 // 변경창 (고정 UI)
 const wchar_t g_szTitle[64] = L"LZR920";					// 제목
 const wchar_t g_szPort[64] = L"포트 번호";
 const wchar_t g_szSetStartSpot[64] = L"시작 반경 [0~273]";
-const wchar_t g_szSetEndSpot[64] = L"종료 반경 [1~274]";
+const wchar_t g_szSetEndSpot[64] = L"측정 반경 [1~274]";
 const wchar_t g_szSetAPD_Distance[64] = L"최적 측정 거리 [8~16m]";
 const wchar_t g_szSetMAX_Distance[64] = L"최대 측정 거리 [0~65000mm]";
 
@@ -97,6 +103,9 @@ const wchar_t g_szEndSpot[64] = L"종료반경";
 const wchar_t g_szEndSpotAngle[64] = L"종료각도";
 const wchar_t g_szAPDDistance[64] = L"최적거리";
 const wchar_t g_szMAXDistance[64] = L"최대거리";
+const wchar_t g_szDetectionPercentage[64] = L"감지비율";
+const wchar_t g_szDetectionScale[64] = L"감지차이";
+const wchar_t g_szDetectionInterval[64] = L"감지주기";
 
 wchar_t g_szCurMode[64] = L"측정모드";
 wchar_t g_szDetection[64] = L"DETECTION!";					// DETECTION!
@@ -107,6 +116,9 @@ wchar_t g_szEndSpotAngleValue[64] = L"";
 wchar_t g_szEndSpotValue[64] = L"";
 wchar_t g_szAPDDistanceValue[64] = L"";
 wchar_t g_szMAXDistanceValue[64] = L"";				// 65000 mm
+wchar_t g_szDetectionPercentageValue[64] = L"";			// %
+wchar_t g_szDetectionScaleValue[64] = L"";					// mm
+wchar_t g_szDetectionIntervalValue[64] = L"";				// ms
 bool g_bDetection = false;
 bool g_isDetectionTimerRunning = false;
 
@@ -185,8 +197,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				// 연결 성공 시 내부에 현재 설정값 요청 타이머 생성 (측정모드는 동작없음)
 				request_CurrentMode();
 			}
-			else {
-				printf("시리얼포트 연결 실패\n");
+			else if(nResult == 0){
+				MessageBox(GetActiveWindow(), L"시리얼포트 연결 실패", L"연결 실패", MB_OK);
 			}
 		}
 		else if (id == IDC_BUTTON_MODE_MEASUREMENT)
@@ -206,8 +218,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		else if (id == IDC_BUTTON_SETTING_CHANGE)			// 설정값 변경
 		{
 			//MessageBox(g_hWnd, L"설정변경", L"", MB_OK);
-			
-			
 			int D10_11_number_distance_values = -1;				// 종료 반경 1~274
 			int D12_13_starting_spot = -1;								// 시작 반경 0~273
 			int D16_apd_distance_range = -1;							// 최적거리 0(8m), 1(12m), 2(16m)
@@ -240,9 +250,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				int start = _wtoi(szSetStartingSpot);
 				int count = _wtoi(szSetNumberDisatanceValues);
 
-				if (start >= 0 && start <= 273 && count >= 1 && count <= 274) {
+				if (
+					start >= 0 
+					&& start <= 273 
+					&& count >= 1 
+					&& count <= 274
+					&& (start + count) <= 274
+					) {
 					D12_13_starting_spot = start;
 					D10_11_number_distance_values = count;
+				}
+				else {
+					MessageBox(g_hWnd, L"측정 각도 범위를 벗어났습니다.\n시작반경 + 측정포인트 < 275", L"range over", MB_OK);
 				}
 			}
 
@@ -308,11 +327,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			memcpy(g_lastMDIData, pMdi->mdi, sizeof(g_lastMDIData));
 			free(pMdi);
 
-			RECT rectAll;
-			GetClientRect(g_hWnd, &rectAll);
-			InvalidateRect(hWnd, &rectAll, FALSE);
+			// 테스트용
+			//RECT rectAll;
+			//GetClientRect(g_hWnd, &rectAll);
+			//InvalidateRect(hWnd, &rectAll, FALSE);
 			
-			//InvalidateRect(hWnd, &g_rgnMDIViewer.rect, FALSE);
+			InvalidateRect(hWnd, &g_rgnMDIViewer.rect, FALSE);
 		}
 		return 0;
 	}
@@ -765,6 +785,12 @@ void initPos()
 	//ViewRgn_SetRgn(&g_rgnTextPlane2Value, calculateWidth(82), calculateHeight(66), calculateWidth(96), calculateHeight(70));
 	//ViewRgn_SetRgn(&g_rgnTextPlane3, calculateWidth(82), calculateHeight(72), calculateWidth(96), calculateHeight(76));
 	//ViewRgn_SetRgn(&g_rgnTextPlane3Value, calculateWidth(82), calculateHeight(72), calculateWidth(96), calculateHeight(76));
+	ViewRgn_SetRgn(&g_rgnDetection_Percentage, calculateWidth(82), calculateHeight(60), calculateWidth(96), calculateHeight(64));
+	ViewRgn_SetRgn(&g_rgnDetection_PercentageValue, calculateWidth(82), calculateHeight(60), calculateWidth(96), calculateHeight(64));
+	ViewRgn_SetRgn(&g_rgnDetection_Scale, calculateWidth(82), calculateHeight(66), calculateWidth(96), calculateHeight(70));
+	ViewRgn_SetRgn(&g_rgnDetection_ScaleValue, calculateWidth(82), calculateHeight(66), calculateWidth(96), calculateHeight(70));
+	ViewRgn_SetRgn(&g_rgnDetection_Interval, calculateWidth(82), calculateHeight(72), calculateWidth(96), calculateHeight(76));
+	ViewRgn_SetRgn(&g_rgnDetection_IntervalValue, calculateWidth(82), calculateHeight(72), calculateWidth(96), calculateHeight(76));
 
 	// 좌측하단 - 연결 및 모드
 	ViewRgn_SetRgn(&g_rgnConnModeBox, calculateWidth(2), calculateHeight(82), calculateWidth(36), calculateHeight(98));
@@ -790,8 +816,6 @@ void initPos()
 	ViewRgn_SetRgn(&g_rgnBtnSetChangeSetting, calculateWidth(92), calculateHeight(84), calculateWidth(97), calculateHeight(89));
 	ViewRgn_SetRgn(&g_rgnBtnSetInitSetting, calculateWidth(86), calculateHeight(91), calculateWidth(91), calculateHeight(96));
 	ViewRgn_SetRgn(&g_rgnBtnSetSaveSetting, calculateWidth(92), calculateHeight(91), calculateWidth(97), calculateHeight(96));
-
-
 }
 
 void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
@@ -834,6 +858,9 @@ void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
 		DrawText(pBuffer->m_hMemDC, g_szEndSpotAngle, -1, &g_rgnTextEndAngle.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szAPDDistance, -1, &g_rgnAPD_Distance.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szMAXDistance, -1, &g_rgnMAX_Distance.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szDetectionPercentage, -1, &g_rgnDetection_Percentage.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szDetectionScale, -1, &g_rgnDetection_Scale.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szDetectionInterval, -1, &g_rgnDetection_Interval.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szPlane0, -1, &g_rgnTextPlane0.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szPlane1, -1, &g_rgnTextPlane1.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szPlane2, -1, &g_rgnTextPlane2.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
@@ -849,6 +876,12 @@ void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
 		DrawText(pBuffer->m_hMemDC, g_szEndSpotAngleValue, -1, &g_rgnTextEndAngleValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szAPDDistanceValue, -1, &g_rgnAPD_DistanceValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szMAXDistanceValue, -1, &g_rgnMAX_DistanceValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		swprintf_s(g_szDetectionPercentageValue, sizeof(g_szDetectionPercentageValue) / sizeof(g_szDetectionPercentageValue[0]), L"%.0f %%", g_change_percentage.load());
+		swprintf_s(g_szDetectionScaleValue, sizeof(g_szDetectionScaleValue)/ sizeof(g_szDetectionScaleValue[0]), L"%d mm", g_change_distance.load());
+		swprintf_s(g_szDetectionIntervalValue, sizeof(g_szDetectionIntervalValue)/ sizeof(g_szDetectionIntervalValue[0]), L"%d ms", g_detection_delay_time_ms.load());
+		DrawText(pBuffer->m_hMemDC, g_szDetectionPercentageValue, -1, &g_rgnDetection_PercentageValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szDetectionScaleValue, -1, &g_rgnDetection_ScaleValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szDetectionIntervalValue, -1, &g_rgnDetection_IntervalValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szPlane0Value, -1, &g_rgnTextPlane0Value.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szPlane1Value, -1, &g_rgnTextPlane1Value.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		//DrawText(pBuffer->m_hMemDC, g_szPlane2Value, -1, &g_rgnTextPlane2Value.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);

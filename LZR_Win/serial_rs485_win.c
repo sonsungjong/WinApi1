@@ -70,6 +70,15 @@ static DWORD WINAPI recvThreadSerial(void* lpParam)
 		// ReadFile 로 수신받는다
 		EnterCriticalSection(&g_txCS);
 		BOOL read_result = ReadFile(g_hSerial, tempBuf, sizeof(tempBuf), &bytesRead, NULL);
+
+
+		for (DWORD i = 0; i < bytesRead; ++i) {
+			printf("%02X ", (unsigned char)tempBuf[i]);
+		}
+		COMSTAT stat; DWORD errs;
+		ClearCommError(g_hSerial, &errs, &stat);
+
+
 		LeaveCriticalSection(&g_txCS);
 		if (read_result)
 		{
@@ -380,45 +389,53 @@ int openSerialPort(char* portName, int baudRate)
 
 	if (portName)
 	{
-		g_hSerial = CreateFileA(portName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+		if (g_hSerial == INVALID_HANDLE_VALUE) {
+			g_hSerial = CreateFileA(portName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+			// 1) 버퍼 클리어
+			PurgeComm(g_hSerial, PURGE_RXCLEAR | PURGE_TXCLEAR);
 
-		if (g_hSerial != INVALID_HANDLE_VALUE)
-		{
-			DCB dcb = { 0 };
-			dcb.DCBlength = sizeof(DCB);
-			BOOL state = GetCommState(g_hSerial, &dcb);
-			if (TRUE == state)
+			if (g_hSerial != INVALID_HANDLE_VALUE)
 			{
-				dcb.BaudRate = baudRate;
-				dcb.ByteSize = 8;
-				dcb.Parity = NOPARITY;
-				dcb.StopBits = ONESTOPBIT;
-				SetCommState(g_hSerial, &dcb);
+				DCB dcb = { 0 };
+				dcb.DCBlength = sizeof(DCB);
+				BOOL state = GetCommState(g_hSerial, &dcb);
+				if (TRUE == state)
+				{
+					dcb.BaudRate = baudRate;
+					dcb.ByteSize = 8;
+					dcb.Parity = NOPARITY;
+					dcb.StopBits = ONESTOPBIT;
+					dcb.fDtrControl = DTR_CONTROL_ENABLE;
+					dcb.fRtsControl = RTS_CONTROL_ENABLE;
+					SetCommState(g_hSerial, &dcb);
 
-				// 타임아웃 설정
-				COMMTIMEOUTS timeouts = {
-					MAXDWORD,  // ReadIntervalTimeout: 무조건 논블록킹 인터벌 모드
-					0,         // ReadTotalTimeoutMultiplier
-					18,         // ReadTotalTimeoutConstant: 첫 바이트는 최대 15ms 대기 (11ms ~ 19ms)
-					0,         // WriteTotalTimeoutMultiplier
-					0          // WriteTotalTimeoutConstant
-				};
-				SetCommTimeouts(g_hSerial, &timeouts);
+					// 타임아웃 설정
+					COMMTIMEOUTS timeouts = {
+						MAXDWORD,  // ReadIntervalTimeout: 무조건 논블록킹 인터벌 모드
+						0,         // ReadTotalTimeoutMultiplier
+						18,         // ReadTotalTimeoutConstant: 첫 바이트는 최대 15ms 대기 (11ms ~ 19ms)
+						0,         // WriteTotalTimeoutMultiplier
+						0          // WriteTotalTimeoutConstant
+					};
+					SetCommTimeouts(g_hSerial, &timeouts);
 
-				// 링버퍼 생성
-				int max_buffer = 1024 * 1024 * 4;           // 4MB
-				int ring_id = 0;
-				RingBuffer_init(&ring1, max_buffer, ring_id);
+					// 링버퍼 생성
+					int max_buffer = 1024 * 1024 * 4;           // 4MB
+					int ring_id = 0;
+					RingBuffer_init(&ring1, max_buffer, ring_id);
 
-				// 처리 및 수신쓰레드 생성
-				initConfigData(&g_sensorConfig);
-				g_hProcessThread = CreateThread(NULL, 0, processMessageThread, NULL, 0, NULL);
-				g_hRecvThread = CreateThread(NULL, 0, recvThreadSerial, NULL, 0, NULL);
-				g_curMode = MODE_MEASURE;				// 처음은 측정모드로 초기화
-				request_GetConfig();
-				nResult = 1;
+					// 처리 및 수신쓰레드 생성
+					initConfigData(&g_sensorConfig);
+					g_hProcessThread = CreateThread(NULL, 0, processMessageThread, NULL, 0, NULL);
+					g_hRecvThread = CreateThread(NULL, 0, recvThreadSerial, NULL, 0, NULL);
+					g_curMode = MODE_MEASURE;				// 처음은 측정모드로 초기화
+					request_GetConfig();
+					nResult = 1;
+				}
 			}
 		}
+
+		
 	}
 
 	return nResult;
@@ -720,69 +737,75 @@ DWORD WINAPI sendGetConfigThread(LPVOID lpParam)
 
 void request_changeSetting(int D10_11_number_distance_values, int D12_13_starting_spot, int D26_27_max_distance_range_SW, int D16_apd_distance_range)
 {
-	ST_SETRAWDATACONFIG_50003 stData;
-	setConfigData(&stData);
-
-	if (D10_11_number_distance_values != -1) {
-		stData.D10_11_number_distance_values = D10_11_number_distance_values;
-	}
-
-	if (D12_13_starting_spot != -1) {
-		stData.D12_13_starting_spot = D12_13_starting_spot;
-	}
-
-	if (D26_27_max_distance_range_SW != -1) {
-		stData.D26_27_max_distance_range_SW = D26_27_max_distance_range_SW;
-	}
-
-	if (D16_apd_distance_range != -1) {
-		stData.D16_apd_distance_range = D16_apd_distance_range;
-	}
-
-	unsigned short cmd = 50003;
-	unsigned short data_len = sizeof(stData);
-	unsigned short msg_len = sizeof(cmd) + data_len;
-
-	// SYNC(4) + SIZE(2) + MSG + CHK(2)
-	unsigned long long frame_len = sizeof(unsigned int) + sizeof(unsigned short) + msg_len + sizeof(unsigned short);
-	unsigned char* frame = malloc(frame_len);
-	if (!frame)return;
-
-	unsigned long long copy_idx = 0;
-
-	// SYNC
-	unsigned int sync = HEADER_SYNC_VAL;
-	memcpy(frame + copy_idx, &sync, sizeof(sync));
-	copy_idx += sizeof(sync);
-
-	// MSG_SIZE
-	unsigned short size_len = msg_len;
-	memcpy(frame + copy_idx, &size_len, sizeof(size_len));
-	copy_idx += sizeof(size_len);
-
-	// CMD
-	memcpy(frame + copy_idx, &cmd, sizeof(cmd));
-	copy_idx += sizeof(cmd);
-
-	// DATA
-	memcpy(frame + copy_idx, &stData, data_len);
-	copy_idx += data_len;
-
-	// CHK
-	unsigned short chk = 0;
-	for (int i = 4 + 2; i < 4 + 2 + msg_len; ++i)
+	if (g_curMode == MODE_CONFIG)
 	{
-		chk += frame[i];
-	}
-	memcpy(frame + copy_idx, &chk, sizeof(chk));
-	copy_idx += sizeof(chk);
+		ST_SETRAWDATACONFIG_50003 stData;
+		setConfigData(&stData);
 
-	long long bw = sendPacket(frame, frame_len);
-	if (bw == (long long)frame_len) {
-		printf("설정 변경 요청 전송 완료 (CMD=50003)\n");
-	}
+		if (D10_11_number_distance_values != -1) {
+			stData.D10_11_number_distance_values = D10_11_number_distance_values;
+		}
 
-	free(frame);
+		if (D12_13_starting_spot != -1) {
+			stData.D12_13_starting_spot = D12_13_starting_spot;
+		}
+
+		if (D26_27_max_distance_range_SW != -1) {
+			stData.D26_27_max_distance_range_SW = D26_27_max_distance_range_SW;
+		}
+
+		if (D16_apd_distance_range != -1) {
+			stData.D16_apd_distance_range = D16_apd_distance_range;
+		}
+
+		unsigned short cmd = 50003;
+		unsigned short data_len = sizeof(stData);
+		unsigned short msg_len = sizeof(cmd) + data_len;
+
+		// SYNC(4) + SIZE(2) + MSG + CHK(2)
+		unsigned long long frame_len = sizeof(unsigned int) + sizeof(unsigned short) + msg_len + sizeof(unsigned short);
+		unsigned char* frame = malloc(frame_len);
+		if (!frame)return;
+
+		unsigned long long copy_idx = 0;
+
+		// SYNC
+		unsigned int sync = HEADER_SYNC_VAL;
+		memcpy(frame + copy_idx, &sync, sizeof(sync));
+		copy_idx += sizeof(sync);
+
+		// MSG_SIZE
+		unsigned short size_len = msg_len;
+		memcpy(frame + copy_idx, &size_len, sizeof(size_len));
+		copy_idx += sizeof(size_len);
+
+		// CMD
+		memcpy(frame + copy_idx, &cmd, sizeof(cmd));
+		copy_idx += sizeof(cmd);
+
+		// DATA
+		memcpy(frame + copy_idx, &stData, data_len);
+		copy_idx += data_len;
+
+		// CHK
+		unsigned short chk = 0;
+		for (int i = 4 + 2; i < 4 + 2 + msg_len; ++i)
+		{
+			chk += frame[i];
+		}
+		memcpy(frame + copy_idx, &chk, sizeof(chk));
+		copy_idx += sizeof(chk);
+
+		long long bw = sendPacket(frame, frame_len);
+		if (bw == (long long)frame_len) {
+			printf("설정 변경 요청 전송 완료 (CMD=50003)\n");
+		}
+
+		free(frame);
+	}
+	else {
+		MessageBox(GetActiveWindow(), L"설정모드에서 가능합니다", L"모드", MB_OK);
+	}
 }
 
 // 외부에서 호출할 래퍼
@@ -799,120 +822,138 @@ void request_GetConfig(void)
 
 void request_RestoreSetting(void)
 {
-	unsigned short cmd = 50007;    // SETRAWDATACONFIGRESTORE
-	unsigned short msg_len = sizeof(cmd);      // CMD만 있으므로 2
-	unsigned short frame_len = 4 + 2 + msg_len + 2; // SYNC(4)+SIZE(2)+MSG+CHK(2)
+	if (g_curMode == MODE_CONFIG)
+	{
+		unsigned short cmd = 50007;    // SETRAWDATACONFIGRESTORE
+		unsigned short msg_len = sizeof(cmd);      // CMD만 있으므로 2
+		unsigned short frame_len = 4 + 2 + msg_len + 2; // SYNC(4)+SIZE(2)+MSG+CHK(2)
 
-	unsigned char frame[4 + 2 + 2 + 2] = { 0 };
-	size_t idx = 0;
+		unsigned char frame[4 + 2 + 2 + 2] = { 0 };
+		size_t idx = 0;
 
-	// 1) SYNC
-	unsigned int sync = HEADER_SYNC_VAL; // 0xFFFEFDFC
-	memcpy(frame + idx, &sync, 4);
-	idx += 4;
+		// 1) SYNC
+		unsigned int sync = HEADER_SYNC_VAL; // 0xFFFEFDFC
+		memcpy(frame + idx, &sync, 4);
+		idx += 4;
 
-	// 2) SIZE (MSG 길이)
-	memcpy(frame + idx, &msg_len, 2);
-	idx += 2;
+		// 2) SIZE (MSG 길이)
+		memcpy(frame + idx, &msg_len, 2);
+		idx += 2;
 
-	// 3) CMD
-	memcpy(frame + idx, &cmd, 2);
-	idx += 2;
+		// 3) CMD
+		memcpy(frame + idx, &cmd, 2);
+		idx += 2;
 
-	// 4) CHK (CMD 바이트 합)
-	unsigned short chk = (cmd & 0xFF) + (cmd >> 8);
-	memcpy(frame + idx, &chk, 2);
-	idx += 2;
+		// 4) CHK (CMD 바이트 합)
+		unsigned short chk = (cmd & 0xFF) + (cmd >> 8);
+		memcpy(frame + idx, &chk, 2);
+		idx += 2;
 
-	// 5) 전송
-	long bw = sendPacket(frame, frame_len);
-	if (bw != frame_len) {
-		printf("공장 초기화 명령 전송 실패: %ld/%u\n", bw, frame_len);
+		// 5) 전송
+		long bw = sendPacket(frame, frame_len);
+		if (bw != frame_len) {
+			printf("공장 초기화 명령 전송 실패: %ld/%u\n", bw, frame_len);
+		}
+		else {
+			printf("공장 초기화 요청 전송 완료 (CMD=50007)\n");
+		}
 	}
 	else {
-		printf("공장 초기화 요청 전송 완료 (CMD=50007)\n");
+		MessageBox(GetActiveWindow(), L"설정모드에서 가능합니다", L"모드", MB_OK);
 	}
 }
 
 void request_saveConfig_EEPROM(void)
 {
-	// SETRAWDATACONFIGSTORE
+	if (MODE_CONFIG == g_curMode)
+	{
+		// SETRAWDATACONFIGSTORE
 	// 1) 파라미터 정의
-	const unsigned int SYNC = HEADER_SYNC_VAL; // 0xFFFEFDFC
-	const unsigned short CMD = 50005;           // SETRAWDATACONFIGSTORE
-	const unsigned short SIZE = sizeof(CMD);     // DATA 없으므로 CMD(2바이트)만
-	const unsigned short CHK = (CMD & 0xFF) + (CMD >> 8);
+		const unsigned int SYNC = HEADER_SYNC_VAL; // 0xFFFEFDFC
+		const unsigned short CMD = 50005;           // SETRAWDATACONFIGSTORE
+		const unsigned short SIZE = sizeof(CMD);     // DATA 없으므로 CMD(2바이트)만
+		const unsigned short CHK = (CMD & 0xFF) + (CMD >> 8);
 
-	// 2) 프레임 버퍼 할당 (SYNC(4) + SIZE(2) + CMD(2) + CHK(2) = 10바이트)
-	unsigned char packet[10];
-	size_t idx = 0;
+		// 2) 프레임 버퍼 할당 (SYNC(4) + SIZE(2) + CMD(2) + CHK(2) = 10바이트)
+		unsigned char packet[10];
+		size_t idx = 0;
 
-	// 3) SYNC (LSB first)
-	memcpy(packet + idx, &SYNC, sizeof(SYNC));
-	idx += sizeof(SYNC);
+		// 3) SYNC (LSB first)
+		memcpy(packet + idx, &SYNC, sizeof(SYNC));
+		idx += sizeof(SYNC);
 
-	// 4) SIZE
-	memcpy(packet + idx, &SIZE, sizeof(SIZE));
-	idx += sizeof(SIZE);
+		// 4) SIZE
+		memcpy(packet + idx, &SIZE, sizeof(SIZE));
+		idx += sizeof(SIZE);
 
-	// 5) CMD
-	memcpy(packet + idx, &CMD, sizeof(CMD));
-	idx += sizeof(CMD);
+		// 5) CMD
+		memcpy(packet + idx, &CMD, sizeof(CMD));
+		idx += sizeof(CMD);
 
-	// 6) CHK
-	memcpy(packet + idx, &CHK, sizeof(CHK));
-	idx += sizeof(CHK);
+		// 6) CHK
+		memcpy(packet + idx, &CHK, sizeof(CHK));
+		idx += sizeof(CHK);
 
-	// 7) 전송
-	long long written = sendPacket(packet, sizeof(packet));
-	if (written == sizeof(packet)) {
-		printf("영구 저장 요청 전송 완료 (CMD=50005)\n");
+		// 7) 전송
+		long long written = sendPacket(packet, sizeof(packet));
+		if (written == sizeof(packet)) {
+			printf("영구 저장 요청 전송 완료 (CMD=50005)\n");
+		}
+		else {
+			printf("영구 저장 요청 전송 실패: %lld/%zu\n", written, sizeof(packet));
+		}
 	}
 	else {
-		printf("영구 저장 요청 전송 실패: %lld/%zu\n", written, sizeof(packet));
+		MessageBox(GetActiveWindow(), L"설정모드에서 가능합니다", L"모드", MB_OK);
 	}
 }
 
 void request_SETRAWDATAREDLASER(void)
 {
-	// SETRAWDATAREDLASER
-	// 1) 파라미터 정의
-	const unsigned int SYNC = HEADER_SYNC_VAL; // 0xFFFEFDFC
-	const unsigned short CMD = 50009;           // SETRAWDATAREDLASER
-	const unsigned char DATA = 1;					// ON
-	const unsigned short SIZE = sizeof(CMD) + sizeof(DATA);
-	const unsigned short CHK = (CMD & 0xFF) + (CMD >> 8) + DATA;
+	if (g_curMode == MODE_CONFIG)
+	{
+		// SETRAWDATAREDLASER
+		// 1) 파라미터 정의
+		const unsigned int SYNC = HEADER_SYNC_VAL; // 0xFFFEFDFC
+		const unsigned short CMD = 50009;           // SETRAWDATAREDLASER
+		const unsigned char DATA = 1;					// ON
+		const unsigned short SIZE = sizeof(CMD) + sizeof(DATA);
+		const unsigned short CHK = (CMD & 0xFF) + (CMD >> 8) + DATA;
 
-	// 2) 프레임 버퍼 할당 (SYNC(4) + SIZE(2) + CMD(2) + CHK(2) = 10바이트)
-	unsigned char packet[11] = { 0 };
-	size_t idx = 0;
+		// 2) 프레임 버퍼 할당 (SYNC(4) + SIZE(2) + CMD(2) + CHK(2) = 10바이트)
+		unsigned char packet[11] = { 0 };
+		size_t idx = 0;
 
-	// 3) SYNC (LSB first)
-	memcpy(packet + idx, &SYNC, sizeof(SYNC));
-	idx += sizeof(SYNC);
+		// 3) SYNC (LSB first)
+		memcpy(packet + idx, &SYNC, sizeof(SYNC));
+		idx += sizeof(SYNC);
 
-	// 4) SIZE
-	memcpy(packet + idx, &SIZE, sizeof(SIZE));
-	idx += sizeof(SIZE);
+		// 4) SIZE
+		memcpy(packet + idx, &SIZE, sizeof(SIZE));
+		idx += sizeof(SIZE);
 
-	// 5) CMD
-	memcpy(packet + idx, &CMD, sizeof(CMD));
-	idx += sizeof(CMD);
+		// 5) CMD
+		memcpy(packet + idx, &CMD, sizeof(CMD));
+		idx += sizeof(CMD);
 
-	// DATA
-	packet[idx++] = DATA;
+		// DATA
+		packet[idx++] = DATA;
 
-	// 6) CHK
-	memcpy(packet + idx, &CHK, sizeof(CHK));
-	idx += sizeof(CHK);
+		// 6) CHK
+		memcpy(packet + idx, &CHK, sizeof(CHK));
+		idx += sizeof(CHK);
 
-	// 7) 전송
-	long long written = sendPacket(packet, sizeof(packet));
-	if (written == sizeof(packet)) {
-		printf("레드레이저ON (CMD=50009)\n");
+		// 7) 전송
+		long long written = sendPacket(packet, sizeof(packet));
+		if (written == sizeof(packet)) {
+			printf("레드레이저ON (CMD=50009)\n");
+		}
+		else {
+			printf("레드레이저ON 전송 실패: %lld/%zu\n", written, sizeof(packet));
+		}
 	}
 	else {
-		printf("레드레이저ON 전송 실패: %lld/%zu\n", written, sizeof(packet));
+		MessageBox(GetActiveWindow(), L"설정모드에서 가능합니다", L"모드", MB_OK);
 	}
 }
 
