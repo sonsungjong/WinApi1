@@ -16,6 +16,9 @@
 #define IDC_BUTTON_RED_LASER										30012
 #define ID_PAINT_MDI														40001
 #define ID_TIMER_DETECTION_OFF									40002
+#define IDC_EDIT_DETECTION_PERCENTAGE									40002
+#define IDC_EDIT_DETECTION_SCALE									40002
+#define IDC_EDIT_DETECTION_INTERVAL									40002
 
 typedef struct STDoubleBuffer
 {

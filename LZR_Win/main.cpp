@@ -54,6 +54,12 @@ ST_ViewRgn g_rgnBtnRedLaser;							// 레드레이저
 ST_ViewRgn g_rgnBtnSetChangeSetting;				// 설정 변경 (RAM)
 ST_ViewRgn g_rgnBtnSetInitSetting;					// 공장설정으로 초기화 (RAM)
 ST_ViewRgn g_rgnBtnSetSaveSetting;				// 변경사항 저장 (EPPROM)
+ST_ViewRgn g_rgnTextDetectionPercentage;
+ST_ViewRgn g_rgnEditDetectionPercentage;
+ST_ViewRgn g_rgnTextDetectionScale;
+ST_ViewRgn g_rgnEditDetectionScale;
+ST_ViewRgn g_rgnTextDetectionTimeInterval;
+ST_ViewRgn g_rgnEditDetectionTimeInterval;
 
 ST_ViewRgn g_rgnTextCurMode;				// 측정모드, 설정모드
 ST_ViewRgn g_rgnDetection;						// 측정모드 : DETECTION!
@@ -83,8 +89,8 @@ ST_ViewRgn g_rgnDetection_Percentage;				// 감지비율
 ST_ViewRgn g_rgnDetection_PercentageValue;				// 감지비율 (값)
 ST_ViewRgn g_rgnDetection_Scale;							// 감지거리차이
 ST_ViewRgn g_rgnDetection_ScaleValue;				// 감지거리차이
-ST_ViewRgn g_rgnDetection_Interval;						// 감지비율
-ST_ViewRgn g_rgnDetection_IntervalValue;				// 감지비율 (값)
+ST_ViewRgn g_rgnDetection_Interval;						// 감지주기
+ST_ViewRgn g_rgnDetection_IntervalValue;				// 감지주기 (값)
 
 RECT g_wndRect;
 // 변경창 (고정 UI)
@@ -92,8 +98,11 @@ const wchar_t g_szTitle[64] = L"LZR920";					// 제목
 const wchar_t g_szPort[64] = L"포트 번호";
 const wchar_t g_szSetStartSpot[64] = L"시작 반경 [0~273]";
 const wchar_t g_szSetEndSpot[64] = L"측정 반경 [1~274]";
-const wchar_t g_szSetAPD_Distance[64] = L"최적 측정 거리 [8~16m]";
+const wchar_t g_szSetAPD_Distance[64] = L"최적 측정 거리";
 const wchar_t g_szSetMAX_Distance[64] = L"최대 측정 거리 [0~65000mm]";
+const wchar_t g_szSetDetection_Percentage[64] = L"감지 비율 [%]";
+const wchar_t g_szSetDetection_Scale[64] = L"감지 차이 [mm]";
+const wchar_t g_szSetDetection_TimeInterval[64] = L"감지 주기 [ms]";
 
 // 현재설정값 (수신기반)
 const wchar_t g_szBaudRate[64] = L"전송속도";
@@ -135,6 +144,10 @@ HWND g_hEditStartSpot;
 HWND g_hEditEndSpot;
 HWND g_hComboAPDDistance;
 HWND g_hEditMAXDistance;
+HWND g_hEditDetectionPercentage;
+HWND g_hEditDetectionScale;
+HWND g_hEditDetectionInterval;
+
 HWND g_hBtnChangeSetting;
 HWND g_hBtnInitSetting;
 HWND g_hBtnSaveSetting;
@@ -231,9 +244,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			wchar_t szSetMAXDistance[16] = { 0 };
 			wchar_t szSetStartingSpot[16] = { 0 };
 			wchar_t szSetNumberDisatanceValues[16] = { 0 };
+			wchar_t szSetDetectionPercentage[16] = { 0 };
+			wchar_t szSetDetectionScale[16] = { 0 };
+			wchar_t szSetDetectionInterval[16] = { 0 };
 			GetWindowText(g_hEditStartSpot, szSetStartingSpot, sizeof(szSetStartingSpot)/sizeof(szSetStartingSpot[0]));
 			GetWindowText(g_hEditEndSpot, szSetNumberDisatanceValues, sizeof(szSetNumberDisatanceValues)/sizeof(szSetNumberDisatanceValues[0]));
 			GetWindowText(g_hEditMAXDistance, szSetMAXDistance, sizeof(szSetMAXDistance)/sizeof(szSetMAXDistance[0]));
+			GetWindowText(g_hEditDetectionPercentage, szSetDetectionPercentage, sizeof(szSetDetectionPercentage)/sizeof(szSetDetectionPercentage[0]));
+			GetWindowText(g_hEditDetectionScale, szSetDetectionScale, sizeof(szSetDetectionScale)/sizeof(szSetDetectionScale[0]));
+			GetWindowText(g_hEditDetectionInterval, szSetDetectionInterval, sizeof(szSetDetectionInterval)/sizeof(szSetDetectionInterval[0]));
+
+			if (wcslen(szSetDetectionPercentage) > 0)
+			{
+				int value = _wtoi(szSetDetectionPercentage);
+				g_change_percentage.store(value);
+				swprintf_s(g_szDetectionPercentageValue, sizeof(g_szDetectionPercentageValue) / sizeof(g_szDetectionPercentageValue[0]), L"%.0f %%", g_change_percentage.load());
+			}
+
+			if (wcslen(szSetDetectionScale) > 0)
+			{
+				int value = _wtoi(szSetDetectionScale);
+				g_change_distance.store(value);
+				swprintf_s(g_szDetectionScaleValue, sizeof(g_szDetectionScaleValue) / sizeof(g_szDetectionScaleValue[0]), L"%d mm", g_change_distance.load());
+			}
+
+			if (wcslen(szSetDetectionInterval) > 0)
+			{
+				int value = _wtoi(szSetDetectionInterval);
+				g_detection_delay_time_ms.store(value);
+				swprintf_s(g_szDetectionIntervalValue, sizeof(g_szDetectionIntervalValue) / sizeof(g_szDetectionIntervalValue[0]), L"%d ms", g_detection_delay_time_ms.load());
+			}
 
 			if (wcslen(szSetMAXDistance) > 0) 
 			{
@@ -602,6 +642,9 @@ void recvFunction()
 				else {
 					swprintf(g_szAPDDistanceValue, 64, L"");
 				}
+				swprintf_s(g_szDetectionPercentageValue, sizeof(g_szDetectionPercentageValue) / sizeof(g_szDetectionPercentageValue[0]), L"%.0f %%", g_change_percentage.load());
+				swprintf_s(g_szDetectionScaleValue, sizeof(g_szDetectionScaleValue) / sizeof(g_szDetectionScaleValue[0]), L"%d mm", g_change_distance.load());
+				swprintf_s(g_szDetectionIntervalValue, sizeof(g_szDetectionIntervalValue) / sizeof(g_szDetectionIntervalValue[0]), L"%d ms", g_detection_delay_time_ms.load());
 
 				// 시작각도/종료각도 계산 (스팟 간격 * 거리값 개수)
 				double DEG_UNIT = 0.3515625;
@@ -692,6 +735,32 @@ void createControls(HWND hWnd)
 		GetModuleHandle(NULL), NULL
 	);
 	SendMessageW(g_hEditEndSpot, EM_LIMITTEXT, (WPARAM)3, 0);				// 글자수 3글자 제한
+
+	g_hEditDetectionPercentage = CreateWindowExW(
+		WS_EX_CLIENTEDGE, L"EDIT", L"",
+		WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_NUMBER,
+		g_rgnEditDetectionPercentage.rect.left, g_rgnEditDetectionPercentage.rect.top, g_rgnEditDetectionPercentage.width, g_rgnEditDetectionPercentage.height,
+		hWnd, (HMENU)IDC_EDIT_DETECTION_PERCENTAGE,
+		GetModuleHandle(NULL), NULL
+	);
+	SendMessageW(g_hEditDetectionPercentage, EM_LIMITTEXT, (WPARAM)3, 0);				// 글자수 3글자 제한
+
+	g_hEditDetectionScale = CreateWindowExW(
+		WS_EX_CLIENTEDGE, L"EDIT", L"",
+		WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_NUMBER,
+		g_rgnEditDetectionScale.rect.left, g_rgnEditDetectionScale.rect.top, g_rgnEditDetectionScale.width, g_rgnEditDetectionScale.height,
+		hWnd, (HMENU)IDC_EDIT_DETECTION_SCALE,
+		GetModuleHandle(NULL), NULL
+	);
+	SendMessageW(g_hEditDetectionScale, EM_LIMITTEXT, (WPARAM)5, 0);				// 글자수 3글자 제한
+
+	g_hEditDetectionInterval = CreateWindowExW(
+		WS_EX_CLIENTEDGE, L"EDIT", L"",
+		WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_NUMBER,
+		g_rgnEditDetectionTimeInterval.rect.left, g_rgnEditDetectionTimeInterval.rect.top, g_rgnEditDetectionTimeInterval.width, g_rgnEditDetectionTimeInterval.height,
+		hWnd, (HMENU)IDC_EDIT_DETECTION_INTERVAL,
+		GetModuleHandle(NULL), NULL
+	);
 
 	// CBS_DROPDOWNLIST : 입력불가, CBS_DROPDOWN : 입력가능
 	g_hComboAPDDistance = CreateWindowExW(
@@ -807,10 +876,17 @@ void initPos()
 	ViewRgn_SetRgn(&g_rgnTextSetEndSpot, calculateWidth(60), calculateHeight(83.5), calculateWidth(71), calculateHeight(87.5));
 	ViewRgn_SetRgn(&g_rgnEditSetEndSpot, calculateWidth(72), calculateHeight(84.5), calculateWidth(78), calculateHeight(87));
 
-	ViewRgn_SetRgn(&g_rgnTextSetMAXDistance, calculateWidth(40), calculateHeight(88.5), calculateWidth(58), calculateHeight(92.5));
-	ViewRgn_SetRgn(&g_rgnEditSetMAXDistance, calculateWidth(58), calculateHeight(89.5), calculateWidth(78), calculateHeight(92));
-	ViewRgn_SetRgn(&g_rgnTextSetAPDDistance, calculateWidth(40), calculateHeight(93), calculateWidth(58), calculateHeight(97));
-	ViewRgn_SetRgn(&g_rgnComboSetAPDDistance, calculateWidth(58), calculateHeight(94), calculateWidth(78), calculateHeight(97));
+	ViewRgn_SetRgn(&g_rgnTextSetMAXDistance, calculateWidth(40), calculateHeight(88.5), calculateWidth(65), calculateHeight(92.5));
+	ViewRgn_SetRgn(&g_rgnEditSetMAXDistance, calculateWidth(58), calculateHeight(89.5), calculateWidth(65), calculateHeight(92));
+	ViewRgn_SetRgn(&g_rgnTextSetAPDDistance, calculateWidth(66), calculateHeight(88.5), calculateWidth(75), calculateHeight(92.5));
+	ViewRgn_SetRgn(&g_rgnComboSetAPDDistance, calculateWidth(75), calculateHeight(89.5), calculateWidth(85), calculateHeight(92.5));
+
+	ViewRgn_SetRgn(&g_rgnTextDetectionPercentage, calculateWidth(40), calculateHeight(93), calculateWidth(48), calculateHeight(97));
+	ViewRgn_SetRgn(&g_rgnEditDetectionPercentage, calculateWidth(48), calculateHeight(94), calculateWidth(53.5), calculateHeight(96.5));
+	ViewRgn_SetRgn(&g_rgnTextDetectionScale, calculateWidth(54), calculateHeight(93), calculateWidth(63), calculateHeight(97));
+	ViewRgn_SetRgn(&g_rgnEditDetectionScale, calculateWidth(63.5), calculateHeight(94), calculateWidth(68.5), calculateHeight(96.5));
+	ViewRgn_SetRgn(&g_rgnTextDetectionTimeInterval, calculateWidth(69.5), calculateHeight(93), calculateWidth(79), calculateHeight(97));
+	ViewRgn_SetRgn(&g_rgnEditDetectionTimeInterval, calculateWidth(79), calculateHeight(94), calculateWidth(85), calculateHeight(96.5));
 
 	ViewRgn_SetRgn(&g_rgnBtnRedLaser, calculateWidth(86), calculateHeight(84), calculateWidth(91), calculateHeight(89));
 	ViewRgn_SetRgn(&g_rgnBtnSetChangeSetting, calculateWidth(92), calculateHeight(84), calculateWidth(97), calculateHeight(89));
@@ -876,9 +952,6 @@ void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
 		DrawText(pBuffer->m_hMemDC, g_szEndSpotAngleValue, -1, &g_rgnTextEndAngleValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szAPDDistanceValue, -1, &g_rgnAPD_DistanceValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szMAXDistanceValue, -1, &g_rgnMAX_DistanceValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
-		swprintf_s(g_szDetectionPercentageValue, sizeof(g_szDetectionPercentageValue) / sizeof(g_szDetectionPercentageValue[0]), L"%.0f %%", g_change_percentage.load());
-		swprintf_s(g_szDetectionScaleValue, sizeof(g_szDetectionScaleValue)/ sizeof(g_szDetectionScaleValue[0]), L"%d mm", g_change_distance.load());
-		swprintf_s(g_szDetectionIntervalValue, sizeof(g_szDetectionIntervalValue)/ sizeof(g_szDetectionIntervalValue[0]), L"%d ms", g_detection_delay_time_ms.load());
 		DrawText(pBuffer->m_hMemDC, g_szDetectionPercentageValue, -1, &g_rgnDetection_PercentageValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szDetectionScaleValue, -1, &g_rgnDetection_ScaleValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szDetectionIntervalValue, -1, &g_rgnDetection_IntervalValue.rect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
@@ -893,6 +966,9 @@ void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
 		DrawText(pBuffer->m_hMemDC, g_szSetEndSpot, -1, &g_rgnTextSetEndSpot.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szSetAPD_Distance, -1, &g_rgnTextSetAPDDistance.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		DrawText(pBuffer->m_hMemDC, g_szSetMAX_Distance, -1, &g_rgnTextSetMAXDistance.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szSetDetection_Percentage, -1, &g_rgnTextDetectionPercentage.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szSetDetection_Scale, -1, &g_rgnTextDetectionScale.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+		DrawText(pBuffer->m_hMemDC, g_szSetDetection_TimeInterval, -1, &g_rgnTextDetectionTimeInterval.rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 
 		// 복원 및 정리
 		SelectObject(pBuffer->m_hMemDC, hOldBrush);
