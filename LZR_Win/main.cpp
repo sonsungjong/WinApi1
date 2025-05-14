@@ -54,6 +54,8 @@ ST_ViewRgn g_rgnBtnRedLaser;							// 레드레이저
 ST_ViewRgn g_rgnBtnSetChangeSetting;				// 설정 변경 (RAM)
 ST_ViewRgn g_rgnBtnSetInitSetting;					// 공장설정으로 초기화 (RAM)
 ST_ViewRgn g_rgnBtnSetSaveSetting;				// 변경사항 저장 (EPPROM)
+ST_ViewRgn g_rgnBtnReqConfigInfo;				// 설정값 갱신
+ST_ViewRgn g_rgnBtnSetChangeDetection;				// 감지 범위 변경
 ST_ViewRgn g_rgnTextDetectionPercentage;
 ST_ViewRgn g_rgnEditDetectionPercentage;
 ST_ViewRgn g_rgnTextDetectionScale;
@@ -151,6 +153,8 @@ HWND g_hEditDetectionInterval;
 HWND g_hBtnChangeSetting;
 HWND g_hBtnInitSetting;
 HWND g_hBtnSaveSetting;
+HWND g_hBtnChangeDetection;
+HWND g_hBtnReqConfigInfo;
 
 
 
@@ -258,22 +262,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				int value = _wtoi(szSetDetectionPercentage);
 				g_change_percentage.store(value);
-				swprintf_s(g_szDetectionPercentageValue, sizeof(g_szDetectionPercentageValue) / sizeof(g_szDetectionPercentageValue[0]), L"%.0f %%", g_change_percentage.load());
 			}
+			swprintf_s(g_szDetectionPercentageValue, sizeof(g_szDetectionPercentageValue) / sizeof(g_szDetectionPercentageValue[0]), L"%.0f %%", g_change_percentage.load());
 
 			if (wcslen(szSetDetectionScale) > 0)
 			{
 				int value = _wtoi(szSetDetectionScale);
 				g_change_distance.store(value);
-				swprintf_s(g_szDetectionScaleValue, sizeof(g_szDetectionScaleValue) / sizeof(g_szDetectionScaleValue[0]), L"%d mm", g_change_distance.load());
 			}
+			swprintf_s(g_szDetectionScaleValue, sizeof(g_szDetectionScaleValue) / sizeof(g_szDetectionScaleValue[0]), L"%d mm", g_change_distance.load());
 
 			if (wcslen(szSetDetectionInterval) > 0)
 			{
 				int value = _wtoi(szSetDetectionInterval);
 				g_detection_delay_time_ms.store(value);
-				swprintf_s(g_szDetectionIntervalValue, sizeof(g_szDetectionIntervalValue) / sizeof(g_szDetectionIntervalValue[0]), L"%d ms", g_detection_delay_time_ms.load());
 			}
+			swprintf_s(g_szDetectionIntervalValue, sizeof(g_szDetectionIntervalValue) / sizeof(g_szDetectionIntervalValue[0]), L"%d ms", g_detection_delay_time_ms.load());
 
 			if (wcslen(szSetMAXDistance) > 0) 
 			{
@@ -345,6 +349,41 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			//MessageBox(g_hWnd, L"설정영구저장", L"", MB_OK);
 			request_saveConfig_EEPROM();
 		}
+		else if (id == IDC_BUTTON_CHANGE_DETECTION) {
+			// 감지값 변경
+			wchar_t szSetDetectionPercentage[16] = { 0 };
+			wchar_t szSetDetectionScale[16] = { 0 };
+			wchar_t szSetDetectionInterval[16] = { 0 };
+			GetWindowText(g_hEditDetectionPercentage, szSetDetectionPercentage, sizeof(szSetDetectionPercentage) / sizeof(szSetDetectionPercentage[0]));
+			GetWindowText(g_hEditDetectionScale, szSetDetectionScale, sizeof(szSetDetectionScale) / sizeof(szSetDetectionScale[0]));
+			GetWindowText(g_hEditDetectionInterval, szSetDetectionInterval, sizeof(szSetDetectionInterval) / sizeof(szSetDetectionInterval[0]));
+			if (wcslen(szSetDetectionPercentage) > 0)
+			{
+				int value = _wtoi(szSetDetectionPercentage);
+				g_change_percentage.store(value);
+			}
+
+			if (wcslen(szSetDetectionScale) > 0)
+			{
+				int value = _wtoi(szSetDetectionScale);
+				g_change_distance.store(value);
+			}
+
+			if (wcslen(szSetDetectionInterval) > 0)
+			{
+				int value = _wtoi(szSetDetectionInterval);
+				g_detection_delay_time_ms.store(value);
+			}
+			swprintf_s(g_szDetectionPercentageValue, sizeof(g_szDetectionPercentageValue) / sizeof(g_szDetectionPercentageValue[0]), L"%.0f %%", g_change_percentage.load());
+			swprintf_s(g_szDetectionScaleValue, sizeof(g_szDetectionScaleValue) / sizeof(g_szDetectionScaleValue[0]), L"%d mm", g_change_distance.load());
+			swprintf_s(g_szDetectionIntervalValue, sizeof(g_szDetectionIntervalValue) / sizeof(g_szDetectionIntervalValue[0]), L"%d ms", g_detection_delay_time_ms.load());
+			InvalidateRect(g_hWnd, &g_rgnSettingViewerBox.rect, FALSE);
+		}
+		else if (id == IDC_BUTTON_REQUEST_CONFIGINFO) {
+			// 설정값 요청 버튼
+			request_GetConfig();
+		}
+
 		return 0;
 	}
 	else if (WM_SIZE == msg)
@@ -536,7 +575,10 @@ void recvFunction()
 
 							for (int i = 0; i < spot_count; ++i)
 							{
-								if ((idx + 2) > real_body_size) break;					// 2216
+								if ((idx + 2) > real_body_size) 		// 2216
+								{ 
+									break; 
+								}			
 
 								unsigned short temp = 0;
 								memcpy(&temp, &real_body_msg[idx], sizeof(unsigned short));
@@ -815,6 +857,21 @@ void createControls(HWND hWnd)
 		hWnd, (HMENU)IDC_BUTTON_SETTING_SAVE,
 		GetModuleHandle(NULL), NULL
 	);
+	g_hBtnChangeDetection = CreateWindowW(
+		L"BUTTON", L"감지 변경",
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		g_rgnBtnSetChangeDetection.rect.left, g_rgnBtnSetChangeDetection.rect.top, g_rgnBtnSetChangeDetection.width, g_rgnBtnSetChangeDetection.height,
+		hWnd, (HMENU)IDC_BUTTON_CHANGE_DETECTION,
+		GetModuleHandle(NULL), NULL
+	);
+
+	g_hBtnReqConfigInfo = CreateWindowW(
+		L"BUTTON", L"설정값 갱신",
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		g_rgnBtnReqConfigInfo.rect.left, g_rgnBtnReqConfigInfo.rect.top, g_rgnBtnReqConfigInfo.width, g_rgnBtnReqConfigInfo.height,
+		hWnd, (HMENU)IDC_BUTTON_REQUEST_CONFIGINFO,
+		GetModuleHandle(NULL), NULL
+	);
 	
 	g_isCreated = TRUE;
 }
@@ -888,10 +945,12 @@ void initPos()
 	ViewRgn_SetRgn(&g_rgnTextDetectionTimeInterval, calculateWidth(69.5), calculateHeight(93), calculateWidth(79), calculateHeight(97));
 	ViewRgn_SetRgn(&g_rgnEditDetectionTimeInterval, calculateWidth(79), calculateHeight(94), calculateWidth(85), calculateHeight(96.5));
 
-	ViewRgn_SetRgn(&g_rgnBtnRedLaser, calculateWidth(86), calculateHeight(84), calculateWidth(91), calculateHeight(89));
-	ViewRgn_SetRgn(&g_rgnBtnSetChangeSetting, calculateWidth(92), calculateHeight(84), calculateWidth(97), calculateHeight(89));
-	ViewRgn_SetRgn(&g_rgnBtnSetInitSetting, calculateWidth(86), calculateHeight(91), calculateWidth(91), calculateHeight(96));
-	ViewRgn_SetRgn(&g_rgnBtnSetSaveSetting, calculateWidth(92), calculateHeight(91), calculateWidth(97), calculateHeight(96));
+	ViewRgn_SetRgn(&g_rgnBtnRedLaser, calculateWidth(86), calculateHeight(83), calculateWidth(91), calculateHeight(87));
+	ViewRgn_SetRgn(&g_rgnBtnSetChangeSetting, calculateWidth(92), calculateHeight(83), calculateWidth(97), calculateHeight(87));
+	ViewRgn_SetRgn(&g_rgnBtnSetInitSetting, calculateWidth(86), calculateHeight(88), calculateWidth(91), calculateHeight(92));
+	ViewRgn_SetRgn(&g_rgnBtnSetSaveSetting, calculateWidth(92), calculateHeight(88), calculateWidth(97), calculateHeight(92));
+	ViewRgn_SetRgn(&g_rgnBtnSetChangeDetection, calculateWidth(86), calculateHeight(93), calculateWidth(91), calculateHeight(97));
+	ViewRgn_SetRgn(&g_rgnBtnReqConfigInfo, calculateWidth(92), calculateHeight(93), calculateWidth(97), calculateHeight(97));
 }
 
 void DoubleBuffer_Paint(ST_DoubleBuffer* pBuffer, HWND hWnd, PAINTSTRUCT* ps)
