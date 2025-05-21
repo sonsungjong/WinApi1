@@ -71,7 +71,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     wcex.hInstance = g_hInst;
     wcex.hIcon = NULL;
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground = CreateSolidBrush(RGB(243, 243, 243));
+    wcex.hbrBackground = CreateSolidBrush(RGB(127, 127, 127));
     wcex.lpszMenuName = NULL;
     wcex.lpszClassName = L"D2D_Omok";
     wcex.hIconSm = NULL;
@@ -91,7 +91,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
     RECT r;
     GetClientRect(g_hWnd, &r);
-    D2DRenderManager::getInstance().addTargetWnd(g_hWnd, r);      // 4. 윈도우 및 범위지정
+    
+    D2DRenderManager::getInstance().addTargetWnd(g_hWnd, D2DCustomDraw);                    // 4. 윈도우 및 범위지정
     gp_back_buffer = D2DRenderManager::getInstance().getBackBuffer(g_hWnd);
 
     MSG msg = { 0 };
@@ -104,8 +105,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         }
         else
         {
-            D2DCustomDraw(gp_back_buffer);
-
 			D2DRenderManager::getInstance().updateViewAll();
         }
     }

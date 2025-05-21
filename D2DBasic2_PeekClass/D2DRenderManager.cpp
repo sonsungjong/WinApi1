@@ -38,27 +38,29 @@ void D2DRenderManager::destroy()
 	}
 }
 
-void D2DRenderManager::addTargetWnd(HWND hWnd, const RECT& rc)
+void D2DRenderManager::addTargetWnd(HWND hWnd, std::function<void(ID2D1BitmapRenderTarget*)> drawFunc)
 {
+	RECT rc; 
+	GetClientRect(hWnd, &rc);
 	D2D1_SIZE_U size = D2D1::SizeU(rc.right - rc.left, rc.bottom - rc.top);
 
 	ST_RenderTargetInfo info = {};
 	info.hWnd = hWnd;
+	info.drawCallback = drawFunc;
 
 	if (m_factory)
 	{
-		HRESULT hr = m_factory->CreateHwndRenderTarget(
-			D2D1::RenderTargetProperties(),
-			D2D1::HwndRenderTargetProperties(hWnd, size),
-			&info.pRenderTarget
-		);
+		HRESULT hr = m_factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(hWnd, size), &info.pRenderTarget);
 
 		if (SUCCEEDED(hr))
 		{
 			hr = info.pRenderTarget->CreateCompatibleRenderTarget(&info.pBackBuffer);
 		}
 
-		m_umapTargets[hWnd] = info;
+		if (m_umapTargets.find(hWnd) == m_umapTargets.end())
+		{
+			m_umapTargets[hWnd] = info;
+		}
 	}
 }
 
@@ -100,6 +102,11 @@ void D2DRenderManager::updateView(HWND hWnd)
 	{
 		ST_RenderTargetInfo& info = it->second;
 
+		if (info.drawCallback && info.pBackBuffer)
+		{
+			info.drawCallback(info.pBackBuffer);
+		}
+
 		if (info.pCopyBitmap)
 		{
 			info.pCopyBitmap->Release();
@@ -130,4 +137,9 @@ void D2DRenderManager::updateViewAll()
 	{
 		updateView(hWnd);
 	}
+}
+
+bool D2DRenderManager::isEmptyMap() const
+{
+	return m_umapTargets.empty();
 }
