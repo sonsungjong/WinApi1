@@ -11,6 +11,9 @@
 #include <dxgi.h>
 // D2D
 #include <d2d1.h>
+#include <d2d1helper.h>
+#include <dwrite.h>
+#include <wincodec.h>
 // GDI+
 #include <gdiplus.h>
 
@@ -51,6 +54,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         HANDLE_MSG(hWnd, WM_PAINT, OnPaint);
         HANDLE_MSG(hWnd, WM_LBUTTONDOWN, OnLButtonDown);
         HANDLE_MSG(hWnd, WM_DESTROY, OnDestroy);
+        HANDLE_MSG(hWnd, WM_SIZE, OnSize);
     }
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -63,11 +67,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     g_hInst = hInstance;                    // 인스턴스 핸들을 전역 변수에 저장합니다.
 
     // D2D 라이브러리 초기화
+	SetProcessDPIAware();
     (void)CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-    // D2D factory 생성
-    if (S_OK != D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &gp_factory)) {
-        return 0;
-    }
 
     // Register Class
 	const TCHAR wnd_class_name[] = _T("D2DPeek");
@@ -102,7 +103,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // DirectX 엔진 초기화
 	//CEngine::getInstance()->init(g_hWnd, SimpleMath::Vector2(1280, 768));
 
-	// D2D 랜더타겟 지정
+	// D2D factory 생성
+	if (S_OK != D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &gp_factory)) {
+		return 0;
+	}
+	// D2D 랜더타겟 지정 및 범위설정 r
 	RECT r;
 	GetClientRect(g_hWnd, &r);
 
@@ -141,9 +146,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     // D2D 해제
-	if (gp_back_buffer) { gp_back_buffer->Release(); }
-	if (gp_render_target) { gp_render_target->Release(); }
-	if (gp_factory) { gp_factory->Release(); }
+	if (gp_copy_bitmap) { 
+		gp_copy_bitmap->Release(); 
+		gp_copy_bitmap = NULL;
+	}
+	if (gp_back_buffer) {
+		gp_back_buffer->Release();
+		gp_back_buffer = NULL;
+	}
+	if (gp_render_target) {
+		gp_render_target->Release();
+		gp_render_target = NULL;
+	}
+	if (gp_factory) { 
+		gp_factory->Release();
+		gp_factory = NULL;
+	}
     CoUninitialize();
 
     return (int)msg.wParam;
@@ -252,6 +270,20 @@ void OnPaint(HWND ah_wnd)
 
 
 		EndPaint(g_hWnd, &ps);
+	}
+}
+
+void OnSize(HWND hWnd, UINT state, int cx, int cy)
+{
+	if (gp_render_target) {
+		gp_render_target->Resize(D2D1::SizeU(cx, cy));
+	}
+	if (gp_back_buffer) {
+		gp_back_buffer->Release();
+		gp_back_buffer = nullptr;
+	}
+	if (gp_render_target) {
+		gp_render_target->CreateCompatibleRenderTarget(&gp_back_buffer);
 	}
 }
 

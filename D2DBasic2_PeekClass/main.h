@@ -19,10 +19,4 @@
 #define XPOS(x)				(float)(START_X + (x)*INTERVAL)
 #define YPOS(y)					(float)(START_Y + (y)*INTERVAL)
 
-void OnPaint(HWND ah_wnd);
-void OnSize(HWND hWnd, UINT state, int cx, int cy);
-void OnLButtonDown(HWND ah_wnd, BOOL a_double_click, int x, int y, UINT a_key_flags);
-void OnDestroy(HWND ah_wnd);
-
-void D2DCustomDraw();
-void D2DRender();
+void D2DCustomDraw(ID2D1BitmapRenderTarget* backBuffer);
