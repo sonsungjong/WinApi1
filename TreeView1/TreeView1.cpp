@@ -125,7 +125,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         
 
-        // (기존에 쓰고 계신 다른 NM_NOTIFY 핸들링 아래에 그대로 두시면 됩니다.)
     }
     break;
     case WM_COMMAND:
