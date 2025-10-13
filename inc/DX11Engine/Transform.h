@@ -7,8 +7,9 @@ private:
     Vec3 m_RelativePos;                     // 위치
     Vec3 m_RelativeScale;                   // 크기 배율
     Vec3 m_RelativeRotation;                // 회전
-
     Vec3 m_RelativeDirection[(UINT)DIR_TYPE::END];                // 방향 벡터 3개
+
+
 
     Matrix m_matWorld;                  // 월드 행렬 (4x4)
 
