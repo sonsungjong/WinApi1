@@ -127,6 +127,16 @@ public:
         return true;
     }
 
+    // Ensure both folders exist (create if missing)
+    void EnsureFolders()
+    {
+        namespace fs = std::filesystem;
+        try {
+            if (!m_cfg.checkFolder.empty()) fs::create_directories(m_cfg.checkFolder);
+            if (!m_cfg.imageFolder.empty()) fs::create_directories(m_cfg.imageFolder);
+        } catch (...) {}
+    }
+
     static bool IsImageFileExt(const std::wstring& ext)
     {
         std::wstring e = ext;
@@ -258,7 +268,10 @@ public:
         if (m_processing.load()) return; // already processing
         namespace fs = std::filesystem;
         fs::path checkDir = m_cfg.checkFolder;
-        if (!fs::exists(checkDir)) return;
+        if (!fs::exists(checkDir)) {
+            std::error_code ec; fs::create_directories(checkDir, ec);
+            if (!fs::exists(checkDir)) return;
+        }
         fs::path flag = checkDir / L"ocr.txt";
         if (!fs::exists(flag)) return;
 
@@ -300,6 +313,7 @@ public:
     void AppendLinesToExcelCsvCompat(const std::vector<std::string>& lines)
     {
         std::filesystem::path outPath = std::filesystem::path(m_cfg.checkFolder) / L"활동데이터_견적서템플릿.xlsx";
+        try { std::filesystem::create_directories(outPath.parent_path()); } catch (...) {}
         std::ofstream ofs(outPath, std::ios::binary | std::ios::app);
         if (!ofs) return;
         for (auto& l : lines) {
@@ -313,10 +327,13 @@ public:
         namespace fs = std::filesystem;
         fs::path imgDir = m_cfg.imageFolder;
         if (!fs::exists(imgDir)) {
-            SetStatus(L"이미지 폴더가 존재하지 않습니다");
-            m_processing.store(false);
-            StartTimer();
-            return;
+            std::error_code ec; fs::create_directories(imgDir, ec);
+            if (!fs::exists(imgDir)) {
+                SetStatus(L"이미지 폴더가 존재하지 않습니다");
+                m_processing.store(false);
+                StartTimer();
+                return;
+            }
         }
 
         bool anyProcessed = false;
@@ -531,7 +548,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     wcex.hInstance = g_hInst;
     wcex.hIcon = NULL;
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
     wcex.lpszMenuName = NULL;
     wcex.lpszClassName = L"ocrchecker";
     wcex.hIconSm = NULL;
@@ -539,9 +556,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
     // ini 파일을 불러와서 셋팅한다
     g_pMain->loadINI(L"./OCRChecker.ini");
+    // 폴더 없으면 생성
+    g_pMain->EnsureFolders();
 
     // 창의 크기를 지정
-    RECT rc = { 0, 0, 800, 200 };
+    RECT rc = { 0, 0, 400, 200 };
 
     g_pMain->m_wndWidth = rc.right - rc.left;
     g_pMain->m_wndHeight = rc.bottom - rc.top;
