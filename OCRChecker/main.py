@@ -1,5 +1,6 @@
 import base64
 import logging
+import os
 import re
 from pathlib import Path
 from threading import Lock
@@ -11,7 +12,9 @@ from openpyxl import Workbook, load_workbook
 
 
 APP_NAME = "OCR Image Receiver"
-RESULT_DIR = Path(r"C:\result").resolve()
+
+# 환경변수에서 결과 디렉토리 경로를 가져오거나, 기본값으로 실행파일이 있는 디렉토리 사용
+RESULT_DIR = Path(os.getenv("OCR_RESULT_DIR", Path(__file__).resolve().parent)).resolve()
 LOG_XLSX_PATH = Path(__file__).resolve().parent / "활동데이터_견적서템플릿.xlsx"
 _EXCEL_LOCK = Lock()
 
