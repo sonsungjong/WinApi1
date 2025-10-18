@@ -207,20 +207,54 @@ public:
         }
 
         HINTERNET hSession = WinHttpOpen(L"OCRChecker/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
-        if (!hSession) return false;
+        if (!hSession) {
+            #ifdef _DEBUG
+            OutputDebugStringA("WinHttpOpen 실패\n");
+            #endif
+            return false;
+        }
         WinHttpSetTimeouts(hSession, timeoutMs, timeoutMs, timeoutMs, timeoutMs);
 
         HINTERNET hConnect = WinHttpConnect(hSession, host.c_str(), port, 0);
-        if (!hConnect) { WinHttpCloseHandle(hSession); return false; }
+        if (!hConnect) { 
+            #ifdef _DEBUG
+            OutputDebugStringA("WinHttpConnect 실패\n");
+            #endif
+            WinHttpCloseHandle(hSession); 
+            return false; 
+        }
 
         HINTERNET hRequest = WinHttpOpenRequest(hConnect, L"POST", path.c_str(), NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
-        if (!hRequest) { WinHttpCloseHandle(hConnect); WinHttpCloseHandle(hSession); return false; }
+        if (!hRequest) { 
+            #ifdef _DEBUG
+            OutputDebugStringA("WinHttpOpenRequest 실패\n");
+            #endif
+            WinHttpCloseHandle(hConnect); 
+            WinHttpCloseHandle(hSession); 
+            return false; 
+        }
 
         const wchar_t* headers = L"Content-Type: application/json; charset=utf-8\r\n";
         BOOL b = WinHttpSendRequest(hRequest, headers, (DWORD)-1L, (LPVOID)json.data(), (DWORD)json.size(), (DWORD)json.size(), 0);
-        if (!b) { WinHttpCloseHandle(hRequest); WinHttpCloseHandle(hConnect); WinHttpCloseHandle(hSession); return false; }
+        if (!b) { 
+            #ifdef _DEBUG
+            OutputDebugStringA("WinHttpSendRequest 실패\n");
+            #endif
+            WinHttpCloseHandle(hRequest); 
+            WinHttpCloseHandle(hConnect); 
+            WinHttpCloseHandle(hSession); 
+            return false; 
+        }
         b = WinHttpReceiveResponse(hRequest, NULL);
-        if (!b) { WinHttpCloseHandle(hRequest); WinHttpCloseHandle(hConnect); WinHttpCloseHandle(hSession); return false; }
+        if (!b) { 
+            #ifdef _DEBUG
+            OutputDebugStringA("WinHttpReceiveResponse 실패\n");
+            #endif
+            WinHttpCloseHandle(hRequest); 
+            WinHttpCloseHandle(hConnect); 
+            WinHttpCloseHandle(hSession); 
+            return false; 
+        }
 
         DWORD dwSize = 0;
         outResponse.clear();
@@ -250,7 +284,13 @@ public:
 
     void StopTimer()
     {
-        KillTimer(g_hWnd, ID_TIMER_CHECK_FOLDER);
+        BOOL result = KillTimer(g_hWnd, ID_TIMER_CHECK_FOLDER);
+        if (!result) {
+            // KillTimer 실패 시 로그 (디버그용)
+            #ifdef _DEBUG
+            OutputDebugStringA("KillTimer failed\n");
+            #endif
+        }
     }
 
     void RequestCancel()
@@ -266,6 +306,7 @@ public:
     void checkFolder()
     {
         if (m_processing.load()) return; // already processing
+        
         namespace fs = std::filesystem;
         fs::path checkDir = m_cfg.checkFolder;
         if (!fs::exists(checkDir)) {
@@ -281,6 +322,11 @@ public:
         m_cancelRequested.store(false);
         SetStatus(L"처리중");
 
+        // 기존 스레드가 있으면 정리
+        if (m_worker.joinable()) {
+            m_worker.join();
+        }
+
         // start worker
         m_worker = std::thread([this]() { this->ProcessImagesLoop(); });
     }
@@ -292,12 +338,30 @@ public:
 
     void ForceCancel()
     {
-        // Send cancel to server and cleanup
+        // 이미 처리 중이 아니면 무시
+        if (!m_processing.load()) {
+            return;
+        }
+
+        // 취소 요청 설정
         m_cancelRequested.store(true);
+        
+        // 서버에 취소 요청 전송
         SendCancelToServer();
+        
+        // 플래그 파일 삭제
         DeleteFlagFile();
+        
+        // 기존 스레드가 완료될 때까지 대기
         EnsureWorkerJoined();
+        
+        // 처리 상태 초기화
         m_processing.store(false);
+        
+        // 상태를 감시중으로 변경
+        SetStatus(L"감시중");
+        
+        // 타이머 재시작
         StartTimer();
     }
 
@@ -305,7 +369,15 @@ public:
     {
         try {
             std::filesystem::path flag = std::filesystem::path(m_cfg.checkFolder) / L"ocr.txt";
-            if (std::filesystem::exists(flag)) std::filesystem::remove(flag);
+            if (std::filesystem::exists(flag)) {
+                bool removed = std::filesystem::remove(flag);
+                if (!removed) {
+                    // 플래그 파일 삭제 실패 로그 (디버그용)
+                    #ifdef _DEBUG
+                    OutputDebugStringA("ocr.txt 파일 삭제 실패\n");
+                    #endif
+                }
+            }
         }
         catch (...) {}
     }
@@ -325,6 +397,7 @@ public:
     void ProcessImagesLoop()
     {
         namespace fs = std::filesystem;
+        // 이미지 폴더에서 이미지를 찾음 (INI 설정의 IMAGE_FOLDER 사용)
         fs::path imgDir = m_cfg.imageFolder;
         if (!fs::exists(imgDir)) {
             std::error_code ec; fs::create_directories(imgDir, ec);
@@ -346,12 +419,28 @@ public:
             for (auto& entry : fs::directory_iterator(imgDir)) {
                 if (!entry.is_regular_file()) continue;
                 fs::path p = entry.path();
-                if (!IsImageFileExt(p.extension().wstring())) continue;
+                std::wstring ext = p.extension().wstring();
+                if (!IsImageFileExt(ext)) continue;
                 all.push_back(p);
             }
             std::sort(all.begin(), all.end());
 
-            if (all.empty()) break;
+            // 디버그: 찾은 이미지 파일 수 출력
+            #ifdef _DEBUG
+            std::wstring debugMsg = L"찾은 이미지 파일 수: " + std::to_wstring(all.size()) + L"개\n";
+            OutputDebugStringW(debugMsg.c_str());
+            for (const auto& img : all) {
+                std::wstring fileMsg = L"  - " + img.filename().wstring() + L"\n";
+                OutputDebugStringW(fileMsg.c_str());
+            }
+            #endif
+
+            if (all.empty()) {
+                // 이미지가 없으면 플래그 파일만 삭제하고 종료
+                DeleteFlagFile();
+                SetStatus(L"처리할 이미지가 없습니다");
+                break;
+            }
 
             // build a group for the initial root
             std::wstring name0 = all.front().filename().wstring();
@@ -369,7 +458,13 @@ public:
             {
                 if (m_cancelRequested.load()) break;
                 std::string b64 = ReadFileToBase64(p.wstring());
-                if (b64.empty()) continue;
+                if (b64.empty()) {
+                    #ifdef _DEBUG
+                    std::wstring errorMsg = L"파일 읽기 실패: " + p.filename().wstring() + L"\n";
+                    OutputDebugStringW(errorMsg.c_str());
+                    #endif
+                    continue;
+                }
                 std::wstring wfname = p.filename().wstring();
                 std::string fname = WideToUtf8(wfname);
                 std::string item = "{\"filename\":\"" + EscapeJson(fname) + "\",\"data\":\"" + EscapeJson(b64) + "\"}";
@@ -395,29 +490,89 @@ public:
 
             if (m_cancelRequested.load()) break;
 
+            SetStatus(L"서버에 전송 중...");
+            
+            #ifdef _DEBUG
+            debugMsg = L"전송할 JSON 크기: " + std::to_wstring(json.size()) + L" bytes\n";
+            OutputDebugStringW(debugMsg.c_str());
+            #endif
+            
             std::string resp;
             bool ok = HttpPostJson(m_cfg.ocrServer, L"/ocr", json, resp, 10 * 60 * 1000);
+            
+            #ifdef _DEBUG
+            std::wstring serverMsg = L"서버 통신 결과: " + std::wstring(ok ? L"성공" : L"실패") + L"\n";
+            OutputDebugStringW(serverMsg.c_str());
+            #endif
+            
             if (!ok) {
                 SetStatus(L"서버 통신 실패");
                 errorOccurred = true;
                 break;
             }
+            
+            #ifdef _DEBUG
+            std::wstring respMsg = L"서버 응답 크기: " + std::to_wstring(resp.size()) + L" bytes\n";
+            OutputDebugStringW(respMsg.c_str());
+            if (resp.size() > 0) {
+                std::wstring respContent = L"서버 응답 내용: " + std::wstring(resp.begin(), resp.end()) + L"\n";
+                OutputDebugStringW(respContent.c_str());
+            }
+            #endif
+            
+            SetStatus(L"서버 응답 받음, 파일 삭제 중...");
 
             AppendLinesToExcelCsvCompat({ resp });
 
             // delete processed files
+            #ifdef _DEBUG
+            std::wstring deleteMsg = L"삭제할 파일 수: " + std::to_wstring(files.size()) + L"개\n";
+            OutputDebugStringW(deleteMsg.c_str());
+            #endif
+            
             for (auto& p : files) {
-                std::error_code ec; fs::remove(p, ec);
+                std::error_code ec; 
+                bool removed = fs::remove(p, ec);
+                if (removed) {
+                    #ifdef _DEBUG
+                    std::wstring successMsg = L"파일 삭제 성공: " + p.filename().wstring() + L"\n";
+                    OutputDebugStringW(successMsg.c_str());
+                    #endif
+                } else {
+                    // 파일 삭제 실패 로그 (디버그용)
+                    #ifdef _DEBUG
+                    std::wstring msg = L"파일 삭제 실패: " + p.wstring() + L" (에러코드: " + std::to_wstring(ec.value()) + L")\n";
+                    OutputDebugStringW(msg.c_str());
+                    #endif
+                }
             }
             anyProcessed = true;
         }
 
+        #ifdef _DEBUG
+        std::wstring finalMsg = L"처리 완료 - anyProcessed: " + std::wstring(anyProcessed ? L"true" : L"false") + 
+                               L", errorOccurred: " + std::wstring(errorOccurred ? L"true" : L"false") + 
+                               L", cancelRequested: " + std::wstring(m_cancelRequested.load() ? L"true" : L"false") + L"\n";
+        OutputDebugStringW(finalMsg.c_str());
+        #endif
+
         if (!m_cancelRequested.load() && !errorOccurred && anyProcessed) {
+            #ifdef _DEBUG
+            OutputDebugStringA("플래그 파일 삭제 시도\n");
+            #endif
             DeleteFlagFile();
             SetStatus(L"감시중");
         } else if (errorOccurred) {
             SetStatus(L"오류 발생");
+        } else if (m_cancelRequested.load()) {
+            SetStatus(L"취소됨");
+        } else {
+            SetStatus(L"처리할 이미지 없음");
         }
+        
+        #ifdef _DEBUG
+        OutputDebugStringA("처리 상태 초기화 및 타이머 재시작\n");
+        #endif
         m_processing.store(false);
         StartTimer();
     }
