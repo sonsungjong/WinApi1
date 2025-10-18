@@ -13,8 +13,25 @@ from openpyxl import Workbook, load_workbook
 
 APP_NAME = "OCR Image Receiver"
 
+# .env 파일이 있으면 수동으로 로드
+env_file = Path(__file__).parent / ".env"
+if env_file.exists():
+    with open(env_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                os.environ[key.strip()] = value.strip()
+
 # 환경변수에서 결과 디렉토리 경로를 가져오거나, 기본값으로 실행파일이 있는 디렉토리 사용
+env_result_dir = os.getenv("OCR_RESULT_DIR")
+print(f"[DEBUG] OCR_RESULT_DIR 환경변수: {env_result_dir}")
+print(f"[DEBUG] .env 파일 경로: {env_file}")
+print(f"[DEBUG] .env 파일 존재 여부: {env_file.exists()}")
+
 RESULT_DIR = Path(os.getenv("OCR_RESULT_DIR", Path(__file__).resolve().parent)).resolve()
+print(f"[DEBUG] 최종 RESULT_DIR: {RESULT_DIR}")
+
 LOG_XLSX_PATH = Path(__file__).resolve().parent / "활동데이터_견적서템플릿.xlsx"
 _EXCEL_LOCK = Lock()
 
