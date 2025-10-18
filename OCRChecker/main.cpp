@@ -1,7 +1,7 @@
 ﻿#include "framework.h"
 #include "main.h"
 
-HINSTANCE g_hInst;                                // 현재 인스턴스입니다.
+HINSTANCE g_hInst;
 HWND g_hWnd;
 
 static std::wstring Utf8ToWide(const std::string& str)
@@ -34,7 +34,7 @@ struct AppConfig
 {
     std::wstring checkFolder; // CHECK_FOLDER PATH
     std::wstring imageFolder; // IMAGE_FOLDER PATH
-    std::wstring ocrServer;   // OCR_SERVER URL e.g. localhost:8000
+    std::wstring ocrServer;   // OCR_SERVER URL
 };
 
 class CMain
@@ -338,30 +338,30 @@ public:
 
     void ForceCancel()
     {
-        // 이미 처리 중이 아니면 무시
+        // if not processing, ignore
         if (!m_processing.load()) {
             return;
         }
 
-        // 취소 요청 설정
+        // set cancel request
         m_cancelRequested.store(true);
         
-        // 서버에 취소 요청 전송
+        // send cancel request to server
         SendCancelToServer();
         
-        // 플래그 파일 삭제
+        // delete flag file
         DeleteFlagFile();
         
-        // 기존 스레드가 완료될 때까지 대기
+        // wait for existing thread to complete
         EnsureWorkerJoined();
         
-        // 처리 상태 초기화
+        // initialize processing state
         m_processing.store(false);
         
-        // 상태를 감시중으로 변경
+        // change status to monitoring
         SetStatus(L"감시중");
         
-        // 타이머 재시작
+        // restart timer
         StartTimer();
     }
 
@@ -372,9 +372,8 @@ public:
             if (std::filesystem::exists(flag)) {
                 bool removed = std::filesystem::remove(flag);
                 if (!removed) {
-                    // 플래그 파일 삭제 실패 로그 (디버그용)
                     #ifdef _DEBUG
-                    OutputDebugStringA("ocr.txt 파일 삭제 실패\n");
+                    OutputDebugStringA("ocr.txt delete failed\n");
                     #endif
                 }
             }
@@ -397,7 +396,7 @@ public:
     void ProcessImagesLoop()
     {
         namespace fs = std::filesystem;
-        // 이미지 폴더에서 이미지를 찾음 (INI 설정의 IMAGE_FOLDER 사용)
+        // IMAGE_FOLDER
         fs::path imgDir = m_cfg.imageFolder;
         if (!fs::exists(imgDir)) {
             std::error_code ec; fs::create_directories(imgDir, ec);
@@ -425,7 +424,6 @@ public:
             }
             std::sort(all.begin(), all.end());
 
-            // 디버그: 찾은 이미지 파일 수 출력
             #ifdef _DEBUG
             std::wstring debugMsg = L"찾은 이미지 파일 수: " + std::to_wstring(all.size()) + L"개\n";
             OutputDebugStringW(debugMsg.c_str());
@@ -436,7 +434,7 @@ public:
             #endif
 
             if (all.empty()) {
-                // 이미지가 없으면 플래그 파일만 삭제하고 종료
+                // if no images, delete flag file and exit
                 DeleteFlagFile();
                 SetStatus(L"처리할 이미지가 없습니다");
                 break;
@@ -539,7 +537,7 @@ public:
                     OutputDebugStringW(successMsg.c_str());
                     #endif
                 } else {
-                    // 파일 삭제 실패 로그 (디버그용)
+                    // file delete failed log (debug)
                     #ifdef _DEBUG
                     std::wstring msg = L"파일 삭제 실패: " + p.wstring() + L" (에러코드: " + std::to_wstring(ec.value()) + L")\n";
                     OutputDebugStringW(msg.c_str());
@@ -638,7 +636,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         if (wParam == ID_TIMER_CHECK_FOLDER)
         {
             g_pMain->checkFolder();
-            //MessageBox(g_hWnd, L"테스트용", L"test", MB_OK);
         }
     }
     else if (WM_COMMAND == msg)
@@ -654,7 +651,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     else if (WM_NCHITTEST == msg)
     {
-        // 마우스 위치에 따라 이동 가능하게
+        // allow moving by mouse position
         LRESULT hitTest = DefWindowProc(hWnd, msg, wParam, lParam);
         if (hitTest == HTCLIENT) {
             return HTCAPTION;
@@ -709,12 +706,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     wcex.hIconSm = NULL;
     RegisterClassExW(&wcex);
 
-    // ini 파일을 불러와서 셋팅한다
+    // load ini
     g_pMain->loadINI(L"./OCRChecker.ini");
-    // 폴더 없으면 생성
+    // if folder not exists, create it
     g_pMain->EnsureFolders();
 
-    // 창의 크기를 지정
+    // set window size
     RECT rc = { 0, 0, 400, 200 };
 
     g_pMain->m_wndWidth = rc.right - rc.left;
@@ -722,7 +719,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
     g_pMain->m_screenWidth = GetSystemMetrics(SM_CXSCREEN);
     g_pMain->m_screenHeight = GetSystemMetrics(SM_CYSCREEN);
-    // 중앙 정렬 위치 계산
+    // calculate center position
     g_pMain->m_posX = (g_pMain->m_screenWidth - g_pMain->m_wndWidth) / 2;
     g_pMain->m_posY = (g_pMain->m_screenHeight - g_pMain->m_wndHeight) / 2;
 
@@ -736,7 +733,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     ShowWindow(g_hWnd, true);
     UpdateWindow(g_hWnd);
 
-    // 폴더 체크 타이머 시작
+    // start folder check timer
     SetTimer(g_hWnd, ID_TIMER_CHECK_FOLDER, 5000, NULL);
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_OCRCHECKER));
@@ -748,7 +745,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         DispatchMessage(&msg);
     }
 
-    // 리소스 정리
+    // clean up resources
     KillTimer(g_hWnd, ID_TIMER_CHECK_FOLDER);
     delete g_pMain;
 
