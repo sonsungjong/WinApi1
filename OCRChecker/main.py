@@ -49,15 +49,15 @@ app = FastAPI(title=APP_NAME)
 
 
 class ResponseItem(BaseModel):
-    itemNo: int
-    item: str
-    name: str
-    spec: str
-    quantity: str
-    unitPrice: str
-    finalAmount: str
-    manufacturer: str
-    size: str
+    partNumber: str          # 품번
+    itemCategory: str        # 품목
+    productName: str         # 품명
+    specifications: str      # 규격
+    quantity: str            # 수량
+    unitPrice: str           # 단가
+    totalAmount: str         # 최종금액
+    manufacturer: str        # 제조사
+    size: str                # 사이즈
 
 
 def ensure_result_dir() -> None:
@@ -138,15 +138,15 @@ def build_response_items(saved_names: List[str]) -> List[ResponseItem]:
     for idx, name in enumerate(saved_names, start=1):
         items.append(
             ResponseItem(
-                itemNo=idx,
-                item=name,
-                name=name,
-                spec=name,
-                quantity=name,
-                unitPrice=name,
-                finalAmount=name,
-                manufacturer=name,
-                size=name,
+                partNumber="partNumber",
+                itemCategory="품목",
+                productName=name,
+                specifications="specifications",
+                quantity="10",
+                unitPrice="1400",
+                totalAmount="14000",
+                manufacturer="nextware",
+                size="size",
             )
         )
     return items
@@ -161,9 +161,10 @@ def append_to_excel(items: List[ResponseItem]) -> None:
         else:
             wb = Workbook()
             ws = wb.active
-            ws.append(["itemNo", "item", "name", "spec", "quantity", "unitPrice", "finalAmount", "manufacturer", "size"])
+            ws.append(["품번", "품목", "품명", "규격", "수량", "단가", "최종금액", "제조사", "사이즈"])
         for it in items:
-            ws.append([it.itemNo, it.item, it.name, it.spec, it.quantity, it.unitPrice, it.finalAmount, it.manufacturer, it.size])
+            ws.append([it.partNumber, it.itemCategory, it.productName, it.specifications, 
+                      it.quantity, it.unitPrice, it.totalAmount, it.manufacturer, it.size])
         wb.save(LOG_XLSX_PATH)
     except Exception:
         logging.exception("Failed to append responses to Excel: %s", LOG_XLSX_PATH)

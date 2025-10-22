@@ -433,17 +433,17 @@ public:
             L"품번", L"품목", L"품명", L"규격", L"수량", L"단가", L"최종금액", L"제조사", L"사이즈"
         };
         
-        // JSON 키와 컬럼 인덱스 매핑
+        // JSON 키와 컬럼 인덱스 매핑 (새로운 키값으로 업데이트)
         const std::map<std::string, int> keyToColumn = {
-            {"itemNo", 1},
-            {"item", 2},
-            {"name", 3},
-            {"spec", 4},
-            {"quantity", 5},
-            {"unitPrice", 6},
-            {"finalAmount", 7},
-            {"manufacturer", 8},
-            {"size", 9}
+            {"partNumber", 1},      // 품번
+            {"itemCategory", 2},    // 품목
+            {"productName", 3},     // 품명
+            {"specifications", 4},  // 규격
+            {"quantity", 5},        // 수량
+            {"unitPrice", 6},       // 단가
+            {"totalAmount", 7},     // 최종금액
+            {"manufacturer", 8},    // 제조사
+            {"size", 9}             // 사이즈
         };
         
         try {
