@@ -1,6 +1,15 @@
 ﻿#include "framework.h"
 #include "main.h"
 
+#include <nlohmann/json.hpp>
+#include <xlnt/xlnt.hpp>
+
+#ifdef _DEBUG
+#pragma comment(lib, "xlntd.lib")
+#else
+#pragma comment(lib, "xlnt.lib")
+#endif
+
 HINSTANCE g_hInst;
 HWND g_hWnd;
 
@@ -333,6 +342,35 @@ public:
 
     void ForceStart()
     {
+        // Create ocr.txt in CHECK_FOLDER
+        namespace fs = std::filesystem;
+        fs::path checkDir = m_cfg.checkFolder;
+        
+        // Ensure folder exists
+        if (!fs::exists(checkDir)) {
+            std::error_code ec;
+            fs::create_directories(checkDir, ec);
+        }
+        
+        // Create ocr.txt file
+        fs::path flagFile = checkDir / L"ocr.txt";
+        try {
+            std::ofstream ofs(flagFile);
+            if (ofs) {
+                ofs << "start" << std::endl;
+                ofs.close();
+                
+                #ifdef _DEBUG
+                OutputDebugStringA("ocr.txt 파일 생성 완료\n");
+                #endif
+            }
+        } catch (...) {
+            #ifdef _DEBUG
+            OutputDebugStringA("ocr.txt 파일 생성 실패\n");
+            #endif
+        }
+        
+        // Then trigger normal processing
         checkFolder();
     }
 
@@ -383,14 +421,214 @@ public:
 
     void AppendLinesToExcelCsvCompat(const std::vector<std::string>& lines)
     {
+        using json = nlohmann::json;
+        
         std::filesystem::path outPath = std::filesystem::path(m_cfg.checkFolder) / L"활동데이터_견적서템플릿.xlsx";
-        try { std::filesystem::create_directories(outPath.parent_path()); } catch (...) {}
-        std::ofstream ofs(outPath, std::ios::binary | std::ios::app);
-        if (!ofs) return;
-        for (auto& l : lines) {
-            ofs.write(l.data(), l.size());
-            ofs.write("\r\n", 2);
+        try { 
+            std::filesystem::create_directories(outPath.parent_path()); 
+        } catch (...) {}
+        
+        // 컬럼 헤더 정의
+        const std::vector<std::wstring> headers = {
+            L"품번", L"품목", L"품명", L"규격", L"수량", L"단가", L"최종금액", L"제조사", L"사이즈"
+        };
+        
+        // JSON 키와 컬럼 인덱스 매핑
+        const std::map<std::string, int> keyToColumn = {
+            {"itemNo", 1},
+            {"item", 2},
+            {"name", 3},
+            {"spec", 4},
+            {"quantity", 5},
+            {"unitPrice", 6},
+            {"finalAmount", 7},
+            {"manufacturer", 8},
+            {"size", 9}
+        };
+        
+        try {
+            xlnt::workbook wb;
+            xlnt::worksheet ws;
+            bool isNewFile = false;
+            
+            // 파일이 이미 존재하면 로드, 없으면 새로 생성
+            if (std::filesystem::exists(outPath)) {
+                try {
+                    wb.load(outPath.wstring());
+                    ws = wb.active_sheet();
+                } catch (const std::exception& e) {
+                    #ifdef _DEBUG
+                    std::string msg = "기존 파일 로드 실패, 새로 생성: ";
+                    msg += e.what();
+                    msg += "\n";
+                    OutputDebugStringA(msg.c_str());
+                    #endif
+                    // 로드 실패 시 새 파일 생성
+                    wb = xlnt::workbook();
+                    ws = wb.active_sheet();
+                    ws.title("OCR Results");
+                    isNewFile = true;
+                }
+            } else {
+                ws = wb.active_sheet();
+                ws.title("OCR Results");
+                isNewFile = true;
+            }
+            
+            // 다음 행 번호 찾기 (xlnt는 column, row 순서!)
+            int nextRow = 1;
+            if (!isNewFile) {
+                try {
+                    while (ws.cell(1, nextRow).has_value()) {
+                        nextRow++;
+                    }
+                } catch (...) {
+                    // 빈 셀을 만나면 여기서 멈춤
+                }
+            }
+            
+            // 새 파일이거나 첫 행이 비어있으면 헤더 추가 (가로로!)
+            if (isNewFile || nextRow == 1) {
+                for (size_t i = 0; i < headers.size(); ++i) {
+                    // UTF-8로 변환하여 1행의 각 열에 저장 (column=i+1, row=1)
+                    std::string utf8Header = WideToUtf8(headers[i]);
+                    ws.cell(static_cast<int>(i + 1), 1).value(utf8Header);
+                }
+                nextRow = 2;
+            }
+            
+            // JSON 파싱해서 Excel에 기록
+            for (auto& line : lines) {
+                try {
+                    // JSON 파싱
+                    json j = json::parse(line);
+                    
+                    // 배열이면 각 요소를 한 줄씩
+                    if (j.is_array()) {
+                        for (auto& item : j) {
+                            // 객체면 키-값 매핑으로 컬럼에 기록
+                            if (item.is_object()) {
+                                for (auto it = item.begin(); it != item.end(); ++it) {
+                                    auto colIt = keyToColumn.find(it.key());
+                                    if (colIt != keyToColumn.end()) {
+                                        int col = colIt->second;
+                                        
+                                        // 값 추출 및 처리 (column, row 순서!)
+                                        if (it.value().is_string()) {
+                                            std::string value = it.value().get<std::string>();
+                                            ws.cell(col, nextRow).value(value);
+                                        } else if (it.value().is_number_integer()) {
+                                            ws.cell(col, nextRow).value(it.value().get<int64_t>());
+                                        } else if (it.value().is_number_float()) {
+                                            ws.cell(col, nextRow).value(it.value().get<double>());
+                                        } else {
+                                            std::string value = it.value().dump();
+                                            // 따옴표 제거
+                                            if (!value.empty() && value.front() == '"' && value.back() == '"') {
+                                                value = value.substr(1, value.length() - 2);
+                                            }
+                                            ws.cell(col, nextRow).value(value);
+                                        }
+                                    }
+                                }
+                                nextRow++;
+                            } 
+                            // 단순 값이면 첫 번째 컬럼에
+                            else {
+                                if (item.is_string()) {
+                                    ws.cell(1, nextRow).value(item.get<std::string>());
+                                } else {
+                                    std::string value = item.dump();
+                                    if (!value.empty() && value.front() == '"' && value.back() == '"') {
+                                        value = value.substr(1, value.length() - 2);
+                                    }
+                                    ws.cell(1, nextRow).value(value);
+                                }
+                                nextRow++;
+                            }
+                        }
+                    }
+                    // 객체면 한 줄로
+                    else if (j.is_object()) {
+                        for (auto it = j.begin(); it != j.end(); ++it) {
+                            auto colIt = keyToColumn.find(it.key());
+                            if (colIt != keyToColumn.end()) {
+                                int col = colIt->second;
+                                
+                                if (it.value().is_string()) {
+                                    ws.cell(col, nextRow).value(it.value().get<std::string>());
+                                } else if (it.value().is_number_integer()) {
+                                    ws.cell(col, nextRow).value(it.value().get<int64_t>());
+                                } else if (it.value().is_number_float()) {
+                                    ws.cell(col, nextRow).value(it.value().get<double>());
+                                } else {
+                                    std::string value = it.value().dump();
+                                    if (!value.empty() && value.front() == '"' && value.back() == '"') {
+                                        value = value.substr(1, value.length() - 2);
+                                    }
+                                    ws.cell(col, nextRow).value(value);
+                                }
+                            }
+                        }
+                        nextRow++;
+                    }
+                    // 단순 값이면 그대로
+                    else {
+                        ws.cell(1, nextRow).value(line);
+                        nextRow++;
+                    }
+                } catch (const json::parse_error& e) {
+                    #ifdef _DEBUG
+                    std::string errorMsg = "JSON 파싱 실패: ";
+                    errorMsg += e.what();
+                    errorMsg += "\n";
+                    OutputDebugStringA(errorMsg.c_str());
+                    #endif
+                    // 파싱 실패 시 원본 텍스트 저장
+                    ws.cell(1, nextRow).value(line);
+                    nextRow++;
+                }
+            }
+            
+            wb.save(outPath.wstring());
+            
+            #ifdef _DEBUG
+            OutputDebugStringA("Excel 파일 저장 완료\n");
+            #endif
+        } catch (const std::exception& e) {
+            #ifdef _DEBUG
+            std::string errorMsg = "Excel 저장 실패: ";
+            errorMsg += e.what();
+            errorMsg += "\n";
+            OutputDebugStringA(errorMsg.c_str());
+            #endif
         }
+    }
+
+    // JSON 유효성 검사 함수 추가
+    static bool IsValidJson(const std::string& str)
+    {
+        if (str.empty()) return false;
+        
+        // 기본적인 JSON 검증: 최소한 { } 또는 [ ]로 시작하고 끝나는지 확인
+        size_t start = 0;
+        size_t end = str.length();
+        
+        // 앞뒤 공백 제거
+        while (start < end && (str[start] == ' ' || str[start] == '\t' || str[start] == '\r' || str[start] == '\n')) ++start;
+        while (end > start && (str[end-1] == ' ' || str[end-1] == '\t' || str[end-1] == '\r' || str[end-1] == '\n')) --end;
+        
+        if (end <= start) return false;
+        
+        char first = str[start];
+        char last = str[end-1];
+        
+        // JSON은 { }나 [ ]로 시작하고 끝나야 함
+        if ((first == '{' && last == '}') || (first == '[' && last == ']')) {
+            return true;
+        }
+        
+        return false;
     }
 
     void ProcessImagesLoop()
@@ -505,6 +743,27 @@ public:
             
             if (!ok) {
                 SetStatus(L"서버 통신 실패");
+                errorOccurred = true;
+                break;
+            }
+            
+            // 서버 응답 JSON 검증
+            if (!IsValidJson(resp)) {
+                #ifdef _DEBUG
+                std::wstring invalidMsg = L"유효하지 않은 JSON 응답: " + Utf8ToWide(resp) + L"\n";
+                OutputDebugStringW(invalidMsg.c_str());
+                #endif
+                
+                // 메시지박스 표시
+                std::wstring errorMsg = L"서버로부터 유효하지 않은 응답을 받았습니다.\n\n응답 내용:\n";
+                errorMsg += Utf8ToWide(resp.substr(0, 500)); // 최대 500자까지만 표시
+                if (resp.size() > 500) {
+                    errorMsg += L"\n... (생략)";
+                }
+                
+                MessageBoxW(g_hWnd, errorMsg.c_str(), L"서버 응답 오류", MB_OK | MB_ICONERROR);
+                
+                SetStatus(L"유효하지 않은 서버 응답");
                 errorOccurred = true;
                 break;
             }

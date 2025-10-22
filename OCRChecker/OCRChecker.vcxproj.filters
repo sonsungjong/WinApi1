@@ -30,5 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="proj.md" />
+    <None Include="main.py" />
+    <None Include="C:\ocr\활동데이터_견적서템플릿.xlsx" />
   </ItemGroup>
 </Project>
