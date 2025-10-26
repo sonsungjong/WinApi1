@@ -152,7 +152,6 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="C:\ocr\활동데이터_견적서템플릿.xlsx" />
     <None Include="main.py" />
     <None Include="proj.md" />
   </ItemGroup>
