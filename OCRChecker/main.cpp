@@ -419,6 +419,96 @@ public:
         catch (...) {}
     }
 
+    // 파일을 CHECK_FOLDER로 이동하는 함수
+    void MoveFilesToCheckFolder(const std::vector<std::filesystem::path>& files)
+    {
+        namespace fs = std::filesystem;
+        fs::path checkDir = m_cfg.checkFolder;
+        
+        // CHECK_FOLDER가 존재하는지 확인
+        if (!fs::exists(checkDir)) {
+            std::error_code ec;
+            fs::create_directories(checkDir, ec);
+        }
+        
+        int successCount = 0;
+        int failCount = 0;
+        
+        for (auto& srcPath : files) {
+            try {
+                // 대상 경로: CHECK_FOLDER / 파일명
+                fs::path destPath = checkDir / srcPath.filename();
+                
+                // 같은 이름의 파일이 이미 존재하면 타임스탬프 추가
+                if (fs::exists(destPath)) {
+                    auto now = std::chrono::system_clock::now();
+                    auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(
+                        now.time_since_epoch()).count();
+                    
+                    std::wstring stem = destPath.stem().wstring();
+                    std::wstring ext = destPath.extension().wstring();
+                    std::wstring newName = stem + L"_" + std::to_wstring(timestamp) + ext;
+                    destPath = checkDir / newName;
+                }
+                
+                // 파일 이동 (rename 사용)
+                std::error_code ec;
+                fs::rename(srcPath, destPath, ec);
+                
+                if (!ec) {
+                    successCount++;
+                    #ifdef _DEBUG
+                    std::wstring msg = L"파일 이동 성공: " + srcPath.filename().wstring() + 
+                                      L" -> " + destPath.wstring() + L"\n";
+                    OutputDebugStringW(msg.c_str());
+                    #endif
+                } else {
+                    // rename 실패 시 copy + remove 시도
+                    fs::copy(srcPath, destPath, fs::copy_options::overwrite_existing, ec);
+                    if (!ec) {
+                        fs::remove(srcPath, ec);
+                        if (!ec) {
+                            successCount++;
+                            #ifdef _DEBUG
+                            std::wstring msg = L"파일 복사+삭제 성공: " + srcPath.filename().wstring() + 
+                                              L" -> " + destPath.wstring() + L"\n";
+                            OutputDebugStringW(msg.c_str());
+                            #endif
+                        } else {
+                            failCount++;
+                            #ifdef _DEBUG
+                            std::wstring msg = L"파일 삭제 실패: " + srcPath.wstring() + 
+                                              L" (에러: " + std::to_wstring(ec.value()) + L")\n";
+                            OutputDebugStringW(msg.c_str());
+                            #endif
+                        }
+                    } else {
+                        failCount++;
+                        #ifdef _DEBUG
+                        std::wstring msg = L"파일 이동 실패: " + srcPath.filename().wstring() + 
+                                          L" (에러: " + std::to_wstring(ec.value()) + L")\n";
+                        OutputDebugStringW(msg.c_str());
+                        #endif
+                    }
+                }
+            } catch (const std::exception& e) {
+                failCount++;
+                #ifdef _DEBUG
+                std::string msg = "파일 이동 예외: ";
+                msg += e.what();
+                msg += "\n";
+                OutputDebugStringA(msg.c_str());
+                #endif
+            }
+        }
+        
+        #ifdef _DEBUG
+        wchar_t buf[256];
+        swprintf_s(buf, L"파일 이동 완료: 성공 %d개, 실패 %d개\n", successCount, failCount);
+        OutputDebugStringW(buf);
+        #endif
+    }
+
     void AppendLinesToExcelCsvCompat(const std::vector<std::string>& lines)
     {
         using json = nlohmann::json;
@@ -605,7 +695,84 @@ public:
         }
     }
 
-    // JSON 유효성 검사 함수 추가
+    // JSON 응답 데이터 검증 함수 (품명과 최종금액 필수 체크)
+    static bool ValidateResponseData(const std::string& resp, std::wstring& errorDetails)
+    {
+        using json = nlohmann::json;
+        
+        if (resp.empty()) {
+            errorDetails = L"서버 응답이 비어있습니다.";
+            return false;
+        }
+        
+        // 기본 JSON 검증
+        if (!IsValidJson(resp)) {
+            errorDetails = L"유효하지 않은 JSON 형식입니다.";
+            return false;
+        }
+        
+        try {
+            json j = json::parse(resp);
+            
+            // 배열이 아니면 오류
+            if (!j.is_array()) {
+                errorDetails = L"응답이 배열 형식이 아닙니다.";
+                return false;
+            }
+            
+            // 빈 배열이면 오류
+            if (j.empty()) {
+                errorDetails = L"응답 데이터가 비어있습니다.";
+                return false;
+            }
+            
+            // 각 항목에 대해 필수 필드 확인
+            int itemIndex = 0;
+            for (auto& item : j) {
+                itemIndex++;
+                
+                if (!item.is_object()) {
+                    wchar_t buf[256];
+                    swprintf_s(buf, L"항목 %d: 객체 형식이 아닙니다.", itemIndex);
+                    errorDetails = buf;
+                    return false;
+                }
+                
+                // 필수 필드: productName (품명)
+                if (!item.contains("productName") || !item["productName"].is_string() || 
+                    item["productName"].get<std::string>().empty()) {
+                    wchar_t buf[256];
+                    swprintf_s(buf, L"항목 %d: 품명(productName)이 없거나 비어있습니다.", itemIndex);
+                    errorDetails = buf;
+                    return false;
+                }
+                
+                // 필수 필드: totalAmount (최종금액)
+                if (!item.contains("totalAmount") || !item["totalAmount"].is_string() || 
+                    item["totalAmount"].get<std::string>().empty()) {
+                    wchar_t buf[256];
+                    swprintf_s(buf, L"항목 %d: 최종금액(totalAmount)이 없거나 비어있습니다.", itemIndex);
+                    errorDetails = buf;
+                    return false;
+                }
+            }
+            
+            return true;
+            
+        } catch (const json::parse_error& e) {
+            std::string errorMsg = "JSON 파싱 오류: ";
+            errorMsg += e.what();
+            errorDetails = Utf8ToWide(errorMsg);
+            return false;
+        } catch (const std::exception& e) {
+            std::string errorMsg = "데이터 검증 오류: ";
+            errorMsg += e.what();
+            errorDetails = Utf8ToWide(errorMsg);
+            return false;
+        }
+    }
+
+    // JSON 유효성 검사 함수
     static bool IsValidJson(const std::string& str)
     {
         if (str.empty()) return false;
@@ -726,6 +893,9 @@ public:
 
             if (m_cancelRequested.load()) break;
 
+            // ⭐ 정상 응답 플래그 초기화
+            bool isValidResponse = false;
+
             SetStatus(L"서버에 전송 중...");
             
             #ifdef _DEBUG
@@ -742,67 +912,77 @@ public:
             #endif
             
             if (!ok) {
-                SetStatus(L"서버 통신 실패");
+                // 서버 통신 실패 - 파일을 CHECK_FOLDER로 이동
+                SetStatus(L"서버 통신 실패 - 파일 이동 중...");
+                
+                std::wstring errorMsg = L"서버 통신에 실패했습니다.\n\n";
+                errorMsg += L"이미지 파일들을 OCR 폴더로 이동합니다.";
+                MessageBoxW(g_hWnd, errorMsg.c_str(), L"서버 통신 오류", MB_OK | MB_ICONWARNING);
+                
+                MoveFilesToCheckFolder(files);
                 errorOccurred = true;
                 break;
             }
             
-            // 서버 응답 JSON 검증
-            if (!IsValidJson(resp)) {
+            // 서버 응답 데이터 검증 (품명, 최종금액 필수)
+            std::wstring validationError;
+            if (!ValidateResponseData(resp, validationError)) {
+                // 응답 검증 실패 - 파일을 CHECK_FOLDER로 이동
+                SetStatus(L"비정상 서버 응답 - 파일 이동 중...");
+                
                 #ifdef _DEBUG
-                std::wstring invalidMsg = L"유효하지 않은 JSON 응답: " + Utf8ToWide(resp) + L"\n";
-                OutputDebugStringW(invalidMsg.c_str());
+                OutputDebugStringW((L"응답 검증 실패: " + validationError + L"\n").c_str());
                 #endif
                 
-                // 메시지박스 표시
-                std::wstring errorMsg = L"서버로부터 유효하지 않은 응답을 받았습니다.\n\n응답 내용:\n";
-                errorMsg += Utf8ToWide(resp.substr(0, 500)); // 최대 500자까지만 표시
-                if (resp.size() > 500) {
-                    errorMsg += L"\n... (생략)";
-                }
-                
-                MessageBoxW(g_hWnd, errorMsg.c_str(), L"서버 응답 오류", MB_OK | MB_ICONERROR);
-                
-                SetStatus(L"유효하지 않은 서버 응답");
+                // 비정상 응답이므로 파일을 CHECK_FOLDER로 이동
+                MoveFilesToCheckFolder(files);
                 errorOccurred = true;
                 break;
             }
+            
+            // ⭐ 검증 통과 - 플래그 설정
+            isValidResponse = true;
             
             #ifdef _DEBUG
             std::wstring respMsg = L"서버 응답 크기: " + std::to_wstring(resp.size()) + L" bytes\n";
             OutputDebugStringW(respMsg.c_str());
             if (resp.size() > 0) {
-                std::wstring respContent = L"서버 응답 내용: " + std::wstring(resp.begin(), resp.end()) + L"\n";
+                std::wstring respContent = L"서버 응답 내용: " + Utf8ToWide(resp) + L"\n";
                 OutputDebugStringW(respContent.c_str());
             }
             #endif
             
-            SetStatus(L"서버 응답 받음, 파일 삭제 중...");
+            SetStatus(L"서버 응답 받음, Excel 저장 중...");
 
+            // 응답 검증을 통과했으므로 엑셀에 저장
             AppendLinesToExcelCsvCompat({ resp });
 
-            // delete processed files
-            #ifdef _DEBUG
-            std::wstring deleteMsg = L"삭제할 파일 수: " + std::to_wstring(files.size()) + L"개\n";
-            OutputDebugStringW(deleteMsg.c_str());
-            #endif
-            
-            for (auto& p : files) {
-                std::error_code ec; 
-                bool removed = fs::remove(p, ec);
-                if (removed) {
-                    #ifdef _DEBUG
-                    std::wstring successMsg = L"파일 삭제 성공: " + p.filename().wstring() + L"\n";
-                    OutputDebugStringW(successMsg.c_str());
-                    #endif
-                } else {
-                    // file delete failed log (debug)
-                    #ifdef _DEBUG
-                    std::wstring msg = L"파일 삭제 실패: " + p.wstring() + L" (에러코드: " + std::to_wstring(ec.value()) + L")\n";
-                    OutputDebugStringW(msg.c_str());
-                    #endif
+            // ⭐ 정상 응답인 경우에만 파일 삭제
+            if (isValidResponse) {
+                SetStatus(L"파일 삭제 중...");
+                
+                #ifdef _DEBUG
+                std::wstring deleteMsg = L"삭제할 파일 수: " + std::to_wstring(files.size()) + L"개\n";
+                OutputDebugStringW(deleteMsg.c_str());
+                #endif
+                
+                for (auto& p : files) {
+                    std::error_code ec; 
+                    bool removed = fs::remove(p, ec);
+                    if (removed) {
+                        #ifdef _DEBUG
+                        std::wstring successMsg = L"파일 삭제 성공: " + p.filename().wstring() + L"\n";
+                        OutputDebugStringW(successMsg.c_str());
+                        #endif
+                    } else {
+                        #ifdef _DEBUG
+                        std::wstring msg = L"파일 삭제 실패: " + p.wstring() + L" (에러코드: " + std::to_wstring(ec.value()) + L")\n";
+                        OutputDebugStringW(msg.c_str());
+                        #endif
+                    }
                 }
             }
+            
             anyProcessed = true;
         }
 
