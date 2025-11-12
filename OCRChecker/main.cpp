@@ -1169,7 +1169,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     g_pMain->m_posX = (g_pMain->m_screenWidth - g_pMain->m_wndWidth) / 2;
     g_pMain->m_posY = (g_pMain->m_screenHeight - g_pMain->m_wndHeight) / 2;
 
-    g_hWnd = ::CreateWindowW(wcex.lpszClassName, L"OCR Checker",
+    g_hWnd = ::CreateWindowW(wcex.lpszClassName, L"OCR Checker v1.0",
         WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
         g_pMain->m_posX, g_pMain->m_posY, g_pMain->m_wndWidth, g_pMain->m_wndHeight,
         NULL, NULL, g_hInst, NULL);
