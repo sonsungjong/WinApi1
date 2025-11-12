@@ -695,7 +695,7 @@ public:
         }
     }
 
-    // JSON 응답 데이터 검증 함수 (품명은 필수이고 최종금액 또는 단가 중 하나가 있어야함 체크)
+    // JSON 응답 데이터 검증 함수 (품명, 단가, 최종금액 중 2개 이상 있어야 성공)
     static bool ValidateResponseData(const std::string& resp, std::wstring& errorDetails)
     {
         using json = nlohmann::json;
@@ -738,27 +738,32 @@ public:
                     return false;
                 }
                 
-                // 필수 필드: productName (품명)
-                if (!item.contains("productName") || !item["productName"].is_string() || 
-                    item["productName"].get<std::string>().empty()) {
-                    wchar_t buf[256];
-                    swprintf_s(buf, L"항목 %d: 품명(productName)이 없거나 비어있습니다.", itemIndex);
-                    errorDetails = buf;
-                    return false;
-                }
+                // 품명, 단가, 최종금액 중 2개 이상 있는지 확인
+                int validFieldCount = 0;
                 
-                // 필수 필드: totalAmount (최종금액) 또는 unitPrice (단가) 중 하나
-                bool hasTotalAmount = item.contains("totalAmount") && 
-                                     item["totalAmount"].is_string() && 
-                                     !item["totalAmount"].get<std::string>().empty();
+                // productName (품명) 체크
+                bool hasProductName = item.contains("productName") && 
+                                     item["productName"].is_string() && 
+                                     !item["productName"].get<std::string>().empty();
+                if (hasProductName) validFieldCount++;
                 
+                // unitPrice (단가) 체크
                 bool hasUnitPrice = item.contains("unitPrice") && 
                                    item["unitPrice"].is_string() && 
                                    !item["unitPrice"].get<std::string>().empty();
+                if (hasUnitPrice) validFieldCount++;
                 
-                if (!hasTotalAmount && !hasUnitPrice) {
-                    wchar_t buf[256];
-                    swprintf_s(buf, L"항목 %d: 최종금액(totalAmount) 또는 단가(unitPrice) 중 하나가 필요합니다.", itemIndex);
+                // totalAmount (최종금액) 체크
+                bool hasTotalAmount = item.contains("totalAmount") && 
+                                     item["totalAmount"].is_string() && 
+                                     !item["totalAmount"].get<std::string>().empty();
+                if (hasTotalAmount) validFieldCount++;
+                
+                // 2개 이상이 있어야 함
+                if (validFieldCount < 2) {
+                    wchar_t buf[512];
+                    swprintf_s(buf, L"항목 %d: 품명(productName), 단가(unitPrice), 최종금액(totalAmount) 중 최소 2개가 필요합니다. (현재: %d개)", 
+                              itemIndex, validFieldCount);
                     errorDetails = buf;
                     return false;
                 }
@@ -1169,7 +1174,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     g_pMain->m_posX = (g_pMain->m_screenWidth - g_pMain->m_wndWidth) / 2;
     g_pMain->m_posY = (g_pMain->m_screenHeight - g_pMain->m_wndHeight) / 2;
 
-    g_hWnd = ::CreateWindowW(wcex.lpszClassName, L"OCR Checker v1.0",
+    g_hWnd = ::CreateWindowW(wcex.lpszClassName, L"OCR Checker vBeta",
         WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
         g_pMain->m_posX, g_pMain->m_posY, g_pMain->m_wndWidth, g_pMain->m_wndHeight,
         NULL, NULL, g_hInst, NULL);
