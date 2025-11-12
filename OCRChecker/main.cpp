@@ -695,7 +695,7 @@ public:
         }
     }
 
-    // JSON 응답 데이터 검증 함수 (품명과 최종금액 필수 체크)
+    // JSON 응답 데이터 검증 함수 (품명은 필수이고 최종금액 또는 단가 중 하나가 있어야함 체크)
     static bool ValidateResponseData(const std::string& resp, std::wstring& errorDetails)
     {
         using json = nlohmann::json;
@@ -747,11 +747,18 @@ public:
                     return false;
                 }
                 
-                // 필수 필드: totalAmount (최종금액)
-                if (!item.contains("totalAmount") || !item["totalAmount"].is_string() || 
-                    item["totalAmount"].get<std::string>().empty()) {
+                // 필수 필드: totalAmount (최종금액) 또는 unitPrice (단가) 중 하나
+                bool hasTotalAmount = item.contains("totalAmount") && 
+                                     item["totalAmount"].is_string() && 
+                                     !item["totalAmount"].get<std::string>().empty();
+                
+                bool hasUnitPrice = item.contains("unitPrice") && 
+                                   item["unitPrice"].is_string() && 
+                                   !item["unitPrice"].get<std::string>().empty();
+                
+                if (!hasTotalAmount && !hasUnitPrice) {
                     wchar_t buf[256];
-                    swprintf_s(buf, L"항목 %d: 최종금액(totalAmount)이 없거나 비어있습니다.", itemIndex);
+                    swprintf_s(buf, L"항목 %d: 최종금액(totalAmount) 또는 단가(unitPrice) 중 하나가 필요합니다.", itemIndex);
                     errorDetails = buf;
                     return false;
                 }
