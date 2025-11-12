@@ -931,7 +931,7 @@ public:
                 break;
             }
             
-            // 서버 응답 데이터 검증 (품명, 최종금액 필수)
+            // 서버 응답 데이터 검증 (품명, 최종금액 또는 단가 필수)
             std::wstring validationError;
             if (!ValidateResponseData(resp, validationError)) {
                 // 응답 검증 실패 - 파일을 CHECK_FOLDER로 이동
