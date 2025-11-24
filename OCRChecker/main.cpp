@@ -520,20 +520,21 @@ public:
         
         // 컬럼 헤더 정의
         const std::vector<std::wstring> headers = {
-            L"품번", L"품목", L"품명", L"규격", L"수량", L"단가", L"최종금액", L"제조사", L"사이즈"
+            L"품번", L"품목", L"품명", L"규격", L"수량", L"단가", L"최종금액", L"제조사", L"사이즈", L"원본파일명"
         };
         
         // JSON 키와 컬럼 인덱스 매핑 (새로운 키값으로 업데이트)
         const std::map<std::string, int> keyToColumn = {
-            {"partNumber", 1},      // 품번
-            {"itemCategory", 2},    // 품목
-            {"productName", 3},     // 품명
-            {"specifications", 4},  // 규격
-            {"quantity", 5},        // 수량
-            {"unitPrice", 6},       // 단가
-            {"totalAmount", 7},     // 최종금액
-            {"manufacturer", 8},    // 제조사
-            {"size", 9}             // 사이즈
+            {"partNumber", 1},      // 품번 (A열)
+            {"itemCategory", 2},    // 품목 (B열)
+            {"productName", 3},     // 품명 (C열)
+            {"specifications", 4},  // 규격 (D열)
+            {"quantity", 5},        // 수량 (E열)
+            {"unitPrice", 6},       // 단가 (F열)
+            {"totalAmount", 7},     // 최종금액 (G열)
+            {"manufacturer", 8},    // 제조사 (H열)
+            {"size", 9},            // 사이즈 (I열)
+            {"sourceFilename", 11}  // 원본파일명 (K열)
         };
         
         try {
@@ -587,6 +588,9 @@ public:
                 nextRow = 2;
             }
             
+            // ⭐ 마지막 파일명 추적 변수
+            std::string lastSourceFilename;
+            
             // JSON 파싱해서 Excel에 기록
             for (auto& line : lines) {
                 try {
@@ -598,10 +602,26 @@ public:
                         for (auto& item : j) {
                             // 객체면 키-값 매핑으로 컬럼에 기록
                             if (item.is_object()) {
+                                // ⭐ 현재 항목의 sourceFilename 추출
+                                std::string currentSourceFilename;
+                                if (item.contains("sourceFilename") && item["sourceFilename"].is_string()) {
+                                    currentSourceFilename = item["sourceFilename"].get<std::string>();
+                                }
+                                
                                 for (auto it = item.begin(); it != item.end(); ++it) {
                                     auto colIt = keyToColumn.find(it.key());
                                     if (colIt != keyToColumn.end()) {
                                         int col = colIt->second;
+                                        
+                                        // ⭐ sourceFilename(K열)은 중복 체크
+                                        if (it.key() == "sourceFilename") {
+                                            // 이전 파일명과 같으면 스킵
+                                            if (currentSourceFilename == lastSourceFilename) {
+                                                continue;  // K열에 기록하지 않음
+                                            }
+                                            // 다르면 기록하고 업데이트
+                                            lastSourceFilename = currentSourceFilename;
+                                        }
                                         
                                         // 값 추출 및 처리 (column, row 순서!)
                                         if (it.value().is_string()) {
@@ -738,7 +758,7 @@ public:
                     return false;
                 }
                 
-                // 품명, 단가, 최종금액 중 2개 이상 있는지 확인
+                // 품명, 단가, 최종금액 중 2개 이상이 있어야 함
                 int validFieldCount = 0;
                 
                 // productName (품명) 체크
@@ -1174,7 +1194,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     g_pMain->m_posX = (g_pMain->m_screenWidth - g_pMain->m_wndWidth) / 2;
     g_pMain->m_posY = (g_pMain->m_screenHeight - g_pMain->m_wndHeight) / 2;
 
-    g_hWnd = ::CreateWindowW(wcex.lpszClassName, L"OCR Checker vBeta",
+    g_hWnd = ::CreateWindowW(wcex.lpszClassName, L"OCR Checker v1.3",
         WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
         g_pMain->m_posX, g_pMain->m_posY, g_pMain->m_wndWidth, g_pMain->m_wndHeight,
         NULL, NULL, g_hInst, NULL);

@@ -58,6 +58,7 @@ class ResponseItem(BaseModel):
     totalAmount: str         # 최종금액
     manufacturer: str        # 제조사
     size: str                # 사이즈
+    sourceFilename: str      # 원본 파일명
 
 
 def ensure_result_dir() -> None:
@@ -147,6 +148,7 @@ def build_response_items(saved_names: List[str]) -> List[ResponseItem]:
                 totalAmount="14000",
                 manufacturer="nextware",
                 size="size",
+                sourceFilename=name,
             )
         )
     return items
@@ -161,10 +163,10 @@ def append_to_excel(items: List[ResponseItem]) -> None:
         else:
             wb = Workbook()
             ws = wb.active
-            ws.append(["품번", "품목", "품명", "규격", "수량", "단가", "최종금액", "제조사", "사이즈"])
+            ws.append(["품번", "품목", "품명", "규격", "수량", "단가", "최종금액", "제조사", "사이즈", "원본파일명"])
         for it in items:
             ws.append([it.partNumber, it.itemCategory, it.productName, it.specifications, 
-                      it.quantity, it.unitPrice, it.totalAmount, it.manufacturer, it.size])
+                      it.quantity, it.unitPrice, it.totalAmount, it.manufacturer, it.size, it.sourceFilename])
         wb.save(LOG_XLSX_PATH)
     except Exception:
         logging.exception("Failed to append responses to Excel: %s", LOG_XLSX_PATH)
