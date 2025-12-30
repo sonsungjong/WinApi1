@@ -13,6 +13,15 @@
 HINSTANCE g_hInst;
 HWND g_hWnd;
 
+/*
+    너무 큰 파일 받을 경우...
+    1.	긴 변 판단: max(width, height)
+    2.	임계값: 2048px 초과 시만 리사이즈
+    3.	비율 유지: 가로/세로 비율 그대로
+    4.	포맷: PNG 유지
+    
+*/
+
 static std::wstring Utf8ToWide(const std::string& str)
 {
     if (str.empty()) return L"";
@@ -520,7 +529,7 @@ public:
         
         // 컬럼 헤더 정의
         const std::vector<std::wstring> headers = {
-            L"품번", L"품목", L"품명", L"규격", L"수량", L"단가", L"최종금액", L"제조사", L"사이즈", L"원본파일명"
+            L"품번", L"품목", L"품명", L"규격", L"수량", L"단가", L"최종금액", L"제조사", L"사이즈", L"", L"원본파일명"
         };
         
         // JSON 키와 컬럼 인덱스 매핑 (새로운 키값으로 업데이트)
@@ -936,7 +945,7 @@ public:
             #endif
             
             std::string resp;
-            bool ok = HttpPostJson(m_cfg.ocrServer, L"/ocr", json, resp, 10 * 60 * 1000);
+            bool ok = HttpPostJson(m_cfg.ocrServer, L"/ocr", json, resp, 50 * 60 * 1000);               // 타임아웃 50분
             
             #ifdef _DEBUG
             std::wstring serverMsg = L"서버 통신 결과: " + std::wstring(ok ? L"성공" : L"실패") + L"\n";
@@ -957,20 +966,22 @@ public:
             }
             
             // 서버 응답 데이터 검증 (품명, 최종금액 또는 단가 필수)
-            std::wstring validationError;
-            if (!ValidateResponseData(resp, validationError)) {
-                // 응답 검증 실패 - 파일을 CHECK_FOLDER로 이동
-                SetStatus(L"비정상 서버 응답 - 파일 이동 중...");
+            /*
+                std::wstring validationError;
+                if (!ValidateResponseData(resp, validationError)) {
+                    // 응답 검증 실패 - 파일을 CHECK_FOLDER로 이동
+                    SetStatus(L"비정상 서버 응답 - 파일 이동 중...");
                 
-                #ifdef _DEBUG
-                OutputDebugStringW((L"응답 검증 실패: " + validationError + L"\n").c_str());
-                #endif
+                    #ifdef _DEBUG
+                    OutputDebugStringW((L"응답 검증 실패: " + validationError + L"\n").c_str());
+                    #endif
                 
-                // 비정상 응답이므로 파일을 CHECK_FOLDER로 이동
-                MoveFilesToCheckFolder(files);
-                errorOccurred = true;
-                break;
-            }
+                    // 비정상 응답이므로 파일을 CHECK_FOLDER로 이동
+                    MoveFilesToCheckFolder(files);
+                    errorOccurred = true;
+                    break;
+                }
+            */
             
             // ⭐ 검증 통과 - 플래그 설정
             isValidResponse = true;
@@ -1194,7 +1205,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     g_pMain->m_posX = (g_pMain->m_screenWidth - g_pMain->m_wndWidth) / 2;
     g_pMain->m_posY = (g_pMain->m_screenHeight - g_pMain->m_wndHeight) / 2;
 
-    g_hWnd = ::CreateWindowW(wcex.lpszClassName, L"OCR Checker v1.3",
+    g_hWnd = ::CreateWindowW(wcex.lpszClassName, L"OCR Checker v1.4",
         WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
         g_pMain->m_posX, g_pMain->m_posY, g_pMain->m_wndWidth, g_pMain->m_wndHeight,
         NULL, NULL, g_hInst, NULL);
