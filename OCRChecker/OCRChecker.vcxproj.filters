@@ -29,7 +29,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="proj.md" />
     <None Include="main.py" />
+    <None Include="update.md" />
   </ItemGroup>
 </Project>

@@ -11,7 +11,12 @@
 #include <memory.h>
 #include <tchar.h>
 
+#include <algorithm>
 #include <filesystem>
+#include <sstream>
+#include <cctype>
+#include <cmath>
+#include <iomanip>
 #include <string>
 #include <ostream>
 #include <iostream>
@@ -21,7 +26,6 @@
 #include <atomic>
 #include <mutex>
 #include <thread>
-#include <algorithm>
 #include <cwctype>
 #include <cstdio>
 #include <iterator>
