@@ -13,15 +13,6 @@
 HINSTANCE g_hInst;
 HWND g_hWnd;
 
-/*
-    너무 큰 파일 받을 경우...
-    1.	긴 변 판단: max(width, height)
-    2.	임계값: 2048px 초과 시만 리사이즈
-    3.	비율 유지: 가로/세로 비율 그대로
-    4.	포맷: PNG 유지
-    
-*/
-
 static std::wstring Utf8ToWide(const std::string& str)
 {
     if (str.empty()) return L"";
@@ -545,6 +536,95 @@ public:
             {"size", 9},            // 사이즈 (I열)
             {"sourceFilename", 11}  // 원본파일명 (K열)
         };
+
+        auto removeCommaForNumberField = [](const std::string& key, std::string value) {
+            if (key == "quantity" || key == "unitPrice" || key == "totalAmount") {
+                value.erase(std::remove(value.begin(), value.end(), ','), value.end());
+            }
+            return value;
+        };
+
+        auto trimString = [](std::string value) {
+            auto isSpace = [](unsigned char ch) { return std::isspace(ch) != 0; };
+            while (!value.empty() && isSpace(static_cast<unsigned char>(value.front()))) {
+                value.erase(value.begin());
+            }
+            while (!value.empty() && isSpace(static_cast<unsigned char>(value.back()))) {
+                value.pop_back();
+            }
+            return value;
+        };
+
+        auto jsonValueToString = [&](const std::string& key, const json& value) {
+            std::string text;
+            if (value.is_string()) {
+                text = value.get<std::string>();
+            } else {
+                text = value.dump();
+                if (!text.empty() && text.front() == '"' && text.back() == '"') {
+                    text = text.substr(1, text.length() - 2);
+                }
+            }
+            return removeCommaForNumberField(key, text);
+        };
+
+        auto parseNumber = [&](const std::string& value, long double& out) {
+            std::string text = trimString(value);
+            if (text.empty() || text == "-") {
+                return false;
+            }
+
+            try {
+                size_t parsed = 0;
+                out = std::stold(text, &parsed);
+                while (parsed < text.size() && std::isspace(static_cast<unsigned char>(text[parsed]))) {
+                    ++parsed;
+                }
+                return parsed == text.size();
+            } catch (...) {
+                return false;
+            }
+        };
+
+        auto formatNumber = [](long double value) {
+            if (std::abs(value) < 0.000001L) {
+                value = 0.0L;
+            }
+
+            std::ostringstream oss;
+            long double rounded = std::round(value);
+            if (std::abs(value - rounded) < 0.000001L) {
+                oss << std::fixed << std::setprecision(0) << rounded;
+            } else {
+                oss << std::fixed << std::setprecision(2) << value;
+                std::string text = oss.str();
+                while (!text.empty() && text.back() == '0') {
+                    text.pop_back();
+                }
+                if (!text.empty() && text.back() == '.') {
+                    text.pop_back();
+                }
+                return text;
+            }
+            return oss.str();
+        };
+
+        auto applyAmountPostprocess = [&](std::map<std::string, std::string>& values) {
+            long double quantity = 0.0L;
+            long double unitPrice = 0.0L;
+            if (!parseNumber(values["quantity"], quantity) || !parseNumber(values["unitPrice"], unitPrice)) {
+                return;
+            }
+
+            long double calculatedAmount = quantity * unitPrice;
+            std::string totalText = trimString(values["totalAmount"]);
+            long double totalAmount = 0.0L;
+            bool hasValidTotalAmount = parseNumber(totalText, totalAmount);
+
+            if (totalText.empty() || (hasValidTotalAmount && std::abs(totalAmount) < std::abs(calculatedAmount))) {
+                values["totalAmount"] = formatNumber(calculatedAmount);
+            }
+        };
         
         try {
             xlnt::workbook wb;
@@ -599,6 +679,42 @@ public:
             
             // ⭐ 마지막 파일명 추적 변수
             std::string lastSourceFilename;
+
+            auto writeObjectToRow = [&](const json& item) {
+                std::map<std::string, std::string> rowValues;
+                for (auto it = item.begin(); it != item.end(); ++it) {
+                    if (keyToColumn.find(it.key()) != keyToColumn.end()) {
+                        rowValues[it.key()] = jsonValueToString(it.key(), it.value());
+                    }
+                }
+
+                applyAmountPostprocess(rowValues);
+
+                std::string currentSourceFilename;
+                auto sourceIt = rowValues.find("sourceFilename");
+                if (sourceIt != rowValues.end()) {
+                    currentSourceFilename = sourceIt->second;
+                }
+
+                for (const auto& kv : keyToColumn) {
+                    const std::string& key = kv.first;
+                    int col = kv.second;
+                    auto valueIt = rowValues.find(key);
+                    if (valueIt == rowValues.end()) {
+                        continue;
+                    }
+
+                    if (key == "sourceFilename") {
+                        if (currentSourceFilename == lastSourceFilename) {
+                            continue;
+                        }
+                        lastSourceFilename = currentSourceFilename;
+                    }
+
+                    ws.cell(col, nextRow).value(valueIt->second);
+                }
+                nextRow++;
+            };
             
             // JSON 파싱해서 Excel에 기록
             for (auto& line : lines) {
@@ -611,46 +727,7 @@ public:
                         for (auto& item : j) {
                             // 객체면 키-값 매핑으로 컬럼에 기록
                             if (item.is_object()) {
-                                // ⭐ 현재 항목의 sourceFilename 추출
-                                std::string currentSourceFilename;
-                                if (item.contains("sourceFilename") && item["sourceFilename"].is_string()) {
-                                    currentSourceFilename = item["sourceFilename"].get<std::string>();
-                                }
-                                
-                                for (auto it = item.begin(); it != item.end(); ++it) {
-                                    auto colIt = keyToColumn.find(it.key());
-                                    if (colIt != keyToColumn.end()) {
-                                        int col = colIt->second;
-                                        
-                                        // ⭐ sourceFilename(K열)은 중복 체크
-                                        if (it.key() == "sourceFilename") {
-                                            // 이전 파일명과 같으면 스킵
-                                            if (currentSourceFilename == lastSourceFilename) {
-                                                continue;  // K열에 기록하지 않음
-                                            }
-                                            // 다르면 기록하고 업데이트
-                                            lastSourceFilename = currentSourceFilename;
-                                        }
-                                        
-                                        // 값 추출 및 처리 (column, row 순서!)
-                                        if (it.value().is_string()) {
-                                            std::string value = it.value().get<std::string>();
-                                            ws.cell(col, nextRow).value(value);
-                                        } else if (it.value().is_number_integer()) {
-                                            ws.cell(col, nextRow).value(it.value().get<int64_t>());
-                                        } else if (it.value().is_number_float()) {
-                                            ws.cell(col, nextRow).value(it.value().get<double>());
-                                        } else {
-                                            std::string value = it.value().dump();
-                                            // 따옴표 제거
-                                            if (!value.empty() && value.front() == '"' && value.back() == '"') {
-                                                value = value.substr(1, value.length() - 2);
-                                            }
-                                            ws.cell(col, nextRow).value(value);
-                                        }
-                                    }
-                                }
-                                nextRow++;
+                                writeObjectToRow(item);
                             } 
                             // 단순 값이면 첫 번째 컬럼에
                             else {
@@ -669,27 +746,7 @@ public:
                     }
                     // 객체면 한 줄로
                     else if (j.is_object()) {
-                        for (auto it = j.begin(); it != j.end(); ++it) {
-                            auto colIt = keyToColumn.find(it.key());
-                            if (colIt != keyToColumn.end()) {
-                                int col = colIt->second;
-                                
-                                if (it.value().is_string()) {
-                                    ws.cell(col, nextRow).value(it.value().get<std::string>());
-                                } else if (it.value().is_number_integer()) {
-                                    ws.cell(col, nextRow).value(it.value().get<int64_t>());
-                                } else if (it.value().is_number_float()) {
-                                    ws.cell(col, nextRow).value(it.value().get<double>());
-                                } else {
-                                    std::string value = it.value().dump();
-                                    if (!value.empty() && value.front() == '"' && value.back() == '"') {
-                                        value = value.substr(1, value.length() - 2);
-                                    }
-                                    ws.cell(col, nextRow).value(value);
-                                }
-                            }
-                        }
-                        nextRow++;
+                        writeObjectToRow(j);
                     }
                     // 단순 값이면 그대로
                     else {
@@ -1205,7 +1262,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     g_pMain->m_posX = (g_pMain->m_screenWidth - g_pMain->m_wndWidth) / 2;
     g_pMain->m_posY = (g_pMain->m_screenHeight - g_pMain->m_wndHeight) / 2;
 
-    g_hWnd = ::CreateWindowW(wcex.lpszClassName, L"OCR Checker v1.4",
+    g_hWnd = ::CreateWindowW(wcex.lpszClassName, L"OCR Checker v1.5",
         WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
         g_pMain->m_posX, g_pMain->m_posY, g_pMain->m_wndWidth, g_pMain->m_wndHeight,
         NULL, NULL, g_hInst, NULL);
